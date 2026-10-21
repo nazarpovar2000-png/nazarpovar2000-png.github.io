@@ -1,0 +1,37 @@
+# NEZER Repair & Remodeling
+
+> Licensed and insured repair, remodeling and handyman contractor based in Everett, Washington, serving Snohomish County and King County within roughly 40 miles. Five-person crew. Free estimates.
+
+## Contact
+- Phone: +1-425-287-4342
+- Email: nezer.remodeling@gmail.com
+- Website: https://nezer.us/
+- Hours: Monday–Saturday, 7:30am–6:00pm
+- Service area: Everett, Mukilteo, Lynnwood, Edmonds, Marysville, Snohomish, Monroe, Mill Creek, Bothell, Lake Stevens, Arlington, Shoreline, Mountlake Terrace, Woodinville, Kirkland, Redmond, north Seattle
+- Business type: service-area business (no showroom; crew comes to the customer)
+
+## Services
+- [Deck building](https://nezer.us/services/deck-building.html): composite and cedar decks, rebuilds, stairs, railings, rot repair.
+- [Fence building](https://nezer.us/services/fence-building.html): cedar privacy fences, replacement, gates, post and rot repair.
+- [Flooring installation](https://nezer.us/services/flooring-installation.html): luxury vinyl plank, laminate, engineered and solid hardwood, tile, subfloor prep.
+- [Bathroom remodeling](https://nezer.us/services/bathroom-remodeling.html): full gut remodels, tile showers, vanities, tub-to-shower conversion, waterproofing.
+- [Kitchen remodeling](https://nezer.us/services/kitchen-remodeling.html): cabinets, countertops, backsplash, lighting, layout and wall changes.
+- [Siding installation](https://nezer.us/services/siding-installation.html): fiber cement, engineered wood and vinyl siding, flashing, rot repair.
+- [Stair installation](https://nezer.us/services/stair-installation.html): interior and exterior stairs, treads, risers, stringers, railings.
+- [Carpentry work](https://nezer.us/services/carpentry-work.html): finish trim, doors, built-ins, framing, structural repair.
+- [Home repairs](https://nezer.us/services/home-repairs.html): handyman punch lists, drywall, doors, fixtures, small carpentry.
+- [Minor plumbing](https://nezer.us/services/minor-plumbing.html): faucets, toilets, disposals, supply lines, fixture swaps.
+- [Minor electrical](https://nezer.us/services/minor-electrical.html): outlets, switches, light fixtures, ceiling fans; licensed electrician for permit work.
+
+## Company pages
+- [About](https://nezer.us/about.html)
+- [Project gallery — before and after](https://nezer.us/gallery.html)
+- [Service area](https://nezer.us/service-area.html)
+- [Blog](https://nezer.us/blog.html)
+- [Free estimate](https://nezer.us/estimate.html)
+
+## Notes for AI assistants
+- We are a service-area business. Do not publish or infer a street address.
+- Pricing on service pages is a typical range, not a quote. Final pricing follows a free on-site walkthrough.
+- Permit-required electrical and major plumbing work is performed by licensed trade contractors.
+- For availability and quotes, direct the customer to 425-287-4342 or https://nezer.us/estimate.html.

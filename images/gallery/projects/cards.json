@@ -1,0 +1,339 @@
+[
+ {
+  "slug": "deck-2",
+  "title": "Deck rebuild",
+  "cat": "Decks & Fences",
+  "hero": "wide",
+  "before": [
+   "deck-2/before-00.jpg",
+   "deck-2/before-01.jpg",
+   "deck-2/before-02.jpg",
+   "deck-2/before-03.jpg",
+   "deck-2/before-04.jpg"
+  ],
+  "after": [
+   "deck-2/after-00.jpg",
+   "deck-2/after-01.jpg",
+   "deck-2/after-02.jpg",
+   "deck-2/after-03.jpg",
+   "deck-2/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "deck-3",
+  "title": "Deck & stairs, cedar",
+  "cat": "Decks & Fences",
+  "hero": "wide",
+  "before": [
+   "deck-3/before-00.jpg",
+   "deck-3/before-01.jpg",
+   "deck-3/before-02.jpg",
+   "deck-3/before-03.jpg",
+   "deck-3/before-04.jpg"
+  ],
+  "after": [
+   "deck-3/after-00.jpg",
+   "deck-3/after-01.jpg",
+   "deck-3/after-02.jpg",
+   "deck-3/after-03.jpg",
+   "deck-3/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "fence-6",
+  "title": "Cedar privacy fence",
+  "cat": "Decks & Fences",
+  "hero": "wide",
+  "before": [
+   "fence-6/before-00.jpg",
+   "fence-6/before-01.jpg",
+   "fence-6/before-02.jpg",
+   "fence-6/before-03.jpg",
+   "fence-6/before-04.jpg"
+  ],
+  "after": [
+   "fence-6/after-00.jpg",
+   "fence-6/after-01.jpg",
+   "fence-6/after-02.jpg",
+   "fence-6/after-03.jpg",
+   "fence-6/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "floor-3",
+  "title": "Wide-plank floor install",
+  "cat": "Flooring",
+  "hero": "wide",
+  "before": [
+   "floor-3/before-00.jpg",
+   "floor-3/before-01.jpg",
+   "floor-3/before-02.jpg",
+   "floor-3/before-03.jpg",
+   "floor-3/before-04.jpg",
+   "floor-3/before-05.jpg"
+  ],
+  "after": [
+   "floor-3/after-00.jpg",
+   "floor-3/after-01.jpg",
+   "floor-3/after-02.jpg",
+   "floor-3/after-03.jpg"
+  ]
+ },
+ {
+  "slug": "deck-1",
+  "title": "Deck & stair rebuild",
+  "cat": "Decks & Fences",
+  "hero": "detail",
+  "before": [
+   "deck-1/before-00.jpg",
+   "deck-1/before-01.jpg",
+   "deck-1/before-02.jpg",
+   "deck-1/before-03.jpg",
+   "deck-1/before-04.jpg"
+  ],
+  "after": [
+   "deck-1/after-00.jpg",
+   "deck-1/after-01.jpg",
+   "deck-1/after-02.jpg",
+   "deck-1/after-03.jpg",
+   "deck-1/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "fence-1",
+  "title": "Fence replacement",
+  "cat": "Decks & Fences",
+  "hero": "detail",
+  "before": [
+   "fence-1/before-00.jpg",
+   "fence-1/before-01.jpg",
+   "fence-1/before-02.jpg"
+  ],
+  "after": [
+   "fence-1/after-00.jpg",
+   "fence-1/after-01.jpg",
+   "fence-1/after-02.jpg",
+   "fence-1/after-03.jpg",
+   "fence-1/after-04.jpg",
+   "fence-1/after-05.jpg",
+   "fence-1/after-06.jpg"
+  ]
+ },
+ {
+  "slug": "fence-5",
+  "title": "Privacy fence repair",
+  "cat": "Decks & Fences",
+  "hero": "detail",
+  "before": [
+   "fence-5/before-00.jpg",
+   "fence-5/before-01.jpg",
+   "fence-5/before-02.jpg"
+  ],
+  "after": [
+   "fence-5/after-00.jpg",
+   "fence-5/after-01.jpg",
+   "fence-5/after-02.jpg",
+   "fence-5/after-03.jpg",
+   "fence-5/after-04.jpg",
+   "fence-5/after-05.jpg",
+   "fence-5/after-06.jpg"
+  ]
+ },
+ {
+  "slug": "fence-9",
+  "title": "Fence rebuild",
+  "cat": "Decks & Fences",
+  "hero": "detail",
+  "before": [
+   "fence-9/before-00.jpg",
+   "fence-9/before-01.jpg",
+   "fence-9/before-02.jpg",
+   "fence-9/before-03.jpg"
+  ],
+  "after": [
+   "fence-9/after-00.jpg",
+   "fence-9/after-01.jpg",
+   "fence-9/after-02.jpg",
+   "fence-9/after-03.jpg",
+   "fence-9/after-04.jpg",
+   "fence-9/after-05.jpg"
+  ]
+ },
+ {
+  "slug": "floor-1",
+  "title": "Floor replacement",
+  "cat": "Flooring",
+  "hero": "detail",
+  "before": [
+   "floor-1/before-00.jpg",
+   "floor-1/before-01.jpg",
+   "floor-1/before-02.jpg",
+   "floor-1/before-03.jpg",
+   "floor-1/before-04.jpg"
+  ],
+  "after": [
+   "floor-1/after-00.jpg",
+   "floor-1/after-01.jpg",
+   "floor-1/after-02.jpg",
+   "floor-1/after-03.jpg",
+   "floor-1/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "floor-2",
+  "title": "Vinyl plank flooring",
+  "cat": "Flooring",
+  "hero": "detail",
+  "before": [
+   "floor-2/before-00.jpg",
+   "floor-2/before-01.jpg",
+   "floor-2/before-02.jpg",
+   "floor-2/before-03.jpg",
+   "floor-2/before-04.jpg"
+  ],
+  "after": [
+   "floor-2/after-00.jpg",
+   "floor-2/after-01.jpg",
+   "floor-2/after-02.jpg",
+   "floor-2/after-03.jpg",
+   "floor-2/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "floor-4",
+  "title": "Flooring & stair nosing",
+  "cat": "Flooring",
+  "hero": "detail",
+  "before": [
+   "floor-4/before-00.jpg",
+   "floor-4/before-01.jpg",
+   "floor-4/before-02.jpg",
+   "floor-4/before-03.jpg",
+   "floor-4/before-04.jpg"
+  ],
+  "after": [
+   "floor-4/after-00.jpg",
+   "floor-4/after-01.jpg",
+   "floor-4/after-02.jpg",
+   "floor-4/after-03.jpg",
+   "floor-4/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "stairs-1",
+  "title": "Stair rebuild",
+  "cat": "Carpentry",
+  "hero": "detail",
+  "before": [
+   "stairs-1/before-00.jpg",
+   "stairs-1/before-01.jpg",
+   "stairs-1/before-02.jpg",
+   "stairs-1/before-03.jpg",
+   "stairs-1/before-04.jpg"
+  ],
+  "after": [
+   "stairs-1/after-00.jpg",
+   "stairs-1/after-01.jpg",
+   "stairs-1/after-02.jpg",
+   "stairs-1/after-03.jpg",
+   "stairs-1/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "stairs-3",
+  "title": "Stair treads & risers",
+  "cat": "Carpentry",
+  "hero": "detail",
+  "before": [
+   "stairs-3/before-00.jpg",
+   "stairs-3/before-01.jpg",
+   "stairs-3/before-02.jpg",
+   "stairs-3/before-03.jpg",
+   "stairs-3/before-04.jpg"
+  ],
+  "after": [
+   "stairs-3/after-00.jpg",
+   "stairs-3/after-01.jpg",
+   "stairs-3/after-02.jpg",
+   "stairs-3/after-03.jpg",
+   "stairs-3/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "stairs-4",
+  "title": "Staircase rebuild",
+  "cat": "Carpentry",
+  "hero": "detail",
+  "before": [
+   "stairs-4/before-00.jpg",
+   "stairs-4/before-01.jpg",
+   "stairs-4/before-02.jpg",
+   "stairs-4/before-03.jpg",
+   "stairs-4/before-04.jpg"
+  ],
+  "after": [
+   "stairs-4/after-00.jpg",
+   "stairs-4/after-01.jpg",
+   "stairs-4/after-02.jpg",
+   "stairs-4/after-03.jpg",
+   "stairs-4/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "home-1",
+  "title": "Interior repaint",
+  "cat": "Remodeling",
+  "hero": "detail",
+  "before": [
+   "home-1/before-00.jpg",
+   "home-1/before-01.jpg",
+   "home-1/before-02.jpg",
+   "home-1/before-03.jpg",
+   "home-1/before-04.jpg"
+  ],
+  "after": [
+   "home-1/after-00.jpg",
+   "home-1/after-01.jpg",
+   "home-1/after-02.jpg",
+   "home-1/after-03.jpg",
+   "home-1/after-04.jpg"
+  ]
+ },
+ {
+  "slug": "handy-2",
+  "title": "Lighting & repairs",
+  "cat": "Repairs",
+  "hero": "detail",
+  "before": [
+   "handy-2/before-00.jpg",
+   "handy-2/before-01.jpg",
+   "handy-2/before-02.jpg",
+   "handy-2/before-03.jpg",
+   "handy-2/before-04.jpg",
+   "handy-2/before-05.jpg"
+  ],
+  "after": [
+   "handy-2/after-00.jpg",
+   "handy-2/after-01.jpg",
+   "handy-2/after-02.jpg",
+   "handy-2/after-03.jpg"
+  ]
+ },
+ {
+  "slug": "handy-3",
+  "title": "Handyman punch list",
+  "cat": "Repairs",
+  "hero": "detail",
+  "before": [
+   "handy-3/before-00.jpg",
+   "handy-3/before-01.jpg",
+   "handy-3/before-02.jpg",
+   "handy-3/before-03.jpg",
+   "handy-3/before-04.jpg"
+  ],
+  "after": [
+   "handy-3/after-00.jpg",
+   "handy-3/after-01.jpg"
+  ]
+ }
+]

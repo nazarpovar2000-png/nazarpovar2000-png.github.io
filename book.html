@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a Free On-Site Estimate | NEZER — Everett, WA</title>
+<meta name="description" content="Pick a day and time for a free on-site estimate. 60-minute visit, Everett and Snohomish County. Confirmation and reminders by email.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=1792306048">
+<link rel="canonical" href="https://nezer.us/book.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NEZER Repair &amp; Remodeling">
+<meta property="og:title" content="Book a Free On-Site Estimate | NEZER">
+<meta property="og:description" content="Pick a day and time for a free on-site estimate. 60-minute visit, Everett and Snohomish County.">
+<meta property="og:url" content="https://nezer.us/book.html">
+<meta property="og:image" content="https://nezer.us/images/hero.jpg">
+</head>
+<body data-page="book">
+<div id="site-header"></div>
+<section class="pagehead dark"><div class="wrap"><span class="eyebrow">Book online</span><h1>Choose a time for your free estimate.</h1><p class="lead">An on-site visit takes about an hour. Pick any open slot below — you will get an email confirmation and a reminder before the visit.</p></div></section>
+
+<section class="sec" style="padding-top:36px"><div class="wrap layout">
+  <div class="main panel" style="padding:12px;min-height:640px">
+    <div id="cal-inline" style="width:100%;min-height:620px"></div>
+    <p Style="font-size:12.5px;color:#9aa5b1;margin:10px 4px 0">Booking runs on Cal.com. Times shown in Pacific Time.</p>
+  </div>
+  <div class="side">
+    <div class="card" style="background:#e7f1f1;border-color:#cfe6e6"><h3 style="font-weight:800;font-size:20px;margin-bottom:18px">How it works</h3>
+      <div style="display:flex;gap:12px;margin-bottom:16px"><span class="ms" style="color:#2d8a8a;font-size:22px">event_available</span><div><b style="font-size:15px">Pick a slot</b><div style="font-size:13.5px;line-height:1.5;color:#5b6570;margin-top:2px">Open times reflect the real calendar, so there are no double bookings.</div></div></div>
+      <div style="display:flex;gap:12px;margin-bottom:16px"><span class="ms" style="color:#2d8a8a;font-size:22px">home_work</span><div><b style="font-size:15px">We come to you</b><div style="font-size:13.5px;line-height:1.5;color:#5b6570;margin-top:2px">About 60 minutes on site to measure, check the scope and answer questions.</div></div></div>
+      <div style="display:flex;gap:12px;margin-bottom:16px"><span class="ms" style="color:#2d8a8a;font-size:22px">request_quote</span><div><b style="font-size:15px">Clear price after</b><div style="font-size:13.5px;line-height:1.5;color:#5b6570;margin-top:2px">A written estimate with the scope spelled out, usually within one business day.</div></div></div>
+    </div>
+    <div class="card dark" style="border:none"><h3 style="font-weight:800;font-size:18px;margin-bottom:6px">Prefer to talk?</h3><p style="color:#b6bfc9;margin-bottom:16px">Call or text us directly — we are happy to help.</p><a href="tel:4252874342" style="display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:700;font-size:17px"><span class="ms" style="color:#3fb3b3">call</span>425-287-4342</a></div>
+    <div class="card"><h3 style="font-weight:800;font-size:17px;margin-bottom:6px">Not ready to book?</h3><p style="color:#5b6570;font-size:14px;line-height:1.5;margin-bottom:12px">Send photos and project details instead — we will reply with questions and a price range.</p><a class="btn btn-outline" href="estimate.html">Request an estimate by form</a></div>
+  </div>
+</div></section>
+
+<div id="site-footer"></div>
+<script src="js/site.js?v=1792294994"></script>
+<script type="text/javascript">
+(function (C, A, L) {
+  let p = function (a, ar) { a.q.push(ar); };
+  let d = C.document;
+  C.Cal = C.Cal || function () {
+    let cal = C.Cal, ar = arguments;
+    if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; }
+    if (ar[0] === L) {
+      const api = function () { p(api, arguments); };
+      const namespace = ar[1];
+      api.q = api.q || [];
+      if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); }
+      else p(cal, ar);
+      return;
+    }
+    p(cal, ar);
+  };
+})(window, "https://app.cal.com/embed/embed.js", "init");
+
+Cal("init", "estimate", { origin: "https://app.cal.com" });
+Cal.ns.estimate("inline", {
+  elementOrSelector: "#cal-inline",
+  config: { layout: "month_view", theme: "light" },
+  calLink: "nazar-povar-eur7fy/estimate"
+});
+Cal.ns.estimate("ui", {
+  theme: "light",
+  hideEventTypeDetails: false,
+  layout: "month_view",
+  styles: { branding: { brandColor: "#2d8a8a" } }
+});
+</script>
+</body>
+</html>
