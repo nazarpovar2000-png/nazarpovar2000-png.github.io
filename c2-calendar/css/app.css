@@ -340,3 +340,13 @@ input,textarea,select{font:inherit;color:inherit}
 .alinks button{color:#3a6cf0;font-size:.95rem;padding:.3rem}
 .alinks button:only-child{margin:0 auto}
 .amsg{background:#eef3ff;color:#2a4fb8;border-radius:.8rem;padding:.7rem .9rem;font-size:.92rem;line-height:1.4;margin:.8rem 0 0}
+#app.narrow .hdr{padding:0 1.1rem}
+#app.narrow .hdr .dt,#app.narrow .hdr .wx{font-size:1.3rem}
+#app.narrow .hdr .wx{margin-left:.8rem}
+#app.narrow .hdr .ico{margin-left:1rem}
+#app.narrow .hdr .back{margin-right:.7rem}
+#app.narrow .clock .t{font-size:3.4rem}
+#app.narrow .set .side{width:8.6rem}
+#app.narrow .set .side button{padding:.8rem .6rem;font-size:.85rem}
+#app.narrow .hgrid{padding:.3rem 1rem 1rem}
+#app.narrow .hrow.bot{height:13rem}

@@ -358,13 +358,15 @@
     var w = window.innerWidth, h = window.innerHeight;
     var r = Math.min(w / 50, h / 80);
     if (w > h) r = Math.min(h / 62, w / 50);
+    else if (w < 640) r = Math.min(w / 31, h / 52);
     var fs = { small: 0.92, medium: 1, large: 1.08 }[S.cfg.font] || 1;
     document.documentElement.style.fontSize = (r * fs) + 'px';
     root.style.width = w + 'px'; root.style.height = h + 'px';
+    if (w < 640 && w <= h) root.classList.add('narrow'); else root.classList.remove('narrow');
   }
   function applyTheme() {
     var dark = S.cfg.theme === 'dark' || (S.cfg.theme === 'auto' && (now().getHours() >= 20 || now().getHours() < 7));
-    root.className = dark ? 'dark' : '';
+    root.classList.toggle('dark', !!dark);
     fit();
   }
 
