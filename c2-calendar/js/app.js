@@ -193,6 +193,7 @@
   function openHousehold(h) {
     S.hid = h.id; S.hh = h; LS.set('hid', h.id);
     S.cfg = defaultCfg(); applyCfg(h.config || {});
+    try { var tzz = Intl.DateTimeFormat().resolvedOptions().timeZone; if (tzz && S.cfg.tz !== tzz && h.created_by === (S.auth && S.auth.user ? S.auth.user.id : '')) { S.cfg.tz = tzz; setTimeout(saveCfg, 2000); } } catch (e) {}
     COLLS.forEach(function (c) { S.data[c] = []; }); S.since = null; S.loaded = false; S.urls = {};
     applyTheme(); render();
     loadMembers(); sync(); G.accts = []; G.ev = []; G.cals = {}; G.unread = {}; G.mail = null; loadGAccts();
@@ -322,7 +323,9 @@
       { id: 'b1', t: 'Rent', cat: 'housing', amount: 2150, freq: 'monthly', start: '2026-01-01', added: '2026-10-20', count: 0, autopay: false, remind: '3', paid: { '2026-11-01': { amt: 2150, at: Date.parse('2026-10-30') } }, at: 1 },
       { id: 'b2', t: 'Phone plan', cat: 'phone', amount: 255, freq: 'monthly', start: '2026-09-20', count: 6, autopay: true, remind: '1', paid: { '2026-09-20': { amt: 255, at: 1 }, '2026-10-20': { amt: 255, at: 2 } }, at: 2 },
       { id: 'b3', t: 'PSE Electric', cat: 'utilities', amount: 140, freq: 'monthly', start: '2026-06-09', added: '2026-10-20', count: 0, remind: '3', paid: {}, at: 3 },
-      { id: 'b4', t: 'Car insurance', cat: 'insurance', amount: 920, freq: 'yearly', start: '2026-11-28', count: 0, remind: '7', paid: {}, at: 4 }
+      { id: 'b4', t: 'Car insurance', cat: 'insurance', amount: 920, freq: 'yearly', start: '2026-11-28', count: 0, remind: '7', paid: {}, at: 4 },
+      { id: 'b5', t: 'Netflix', cat: 'subs', amount: 17.99, freq: 'monthly', start: '2026-03-15', added: '2026-10-01', remind: '', cancel: 'https://www.netflix.com/cancelplan', paid: {}, at: 5 },
+      { id: 'b6', t: 'Truck loan', cat: 'loan', scope: 'business', payer: 'nazar', amount: 640, freq: 'monthly', start: '2026-02-05', count: 36, prepaid: 9, remind: '3', paid: { '2026-11-05': { amt: 640, at: Date.parse('2026-11-04'), src: 'gmail' } }, at: 6 }
     ];
   }
 
@@ -1056,34 +1059,99 @@
   function bNext(b) { var t = sod(now()), o = bOcc(b, addD(t, -400), addD(t, 800)); for (var i = 0; i < o.length; i++) if (!bPaid(b, o[i].k)) return o[i]; return null; }
   function bStatus(o) { var t = sod(now()), dd = Math.round((o.d - t) / 864e5); if (bPaid(o.b, o.k)) return 'paid'; if (dd < 0) return 'late'; if (dd <= 3) return 'soon'; return 'up'; }
   function billsOn(d) { var out = []; S.data.bills.forEach(function (b) { bOcc(b, d, d).forEach(function (o) { out.push(o); }); }); return out; }
+  function bScopeOk(b) { var sc = S.billScope || 'all'; return sc === 'all' || (b.scope || 'personal') === sc; }
+  function bShares(b, amt) {
+    var out = {}, ppl = S.cfg.people;
+    if (!b.payer || b.payer === 'split') { ppl.forEach(function (p) { out[p.id] = amt / ppl.length; }); }
+    else out[b.payer] = amt;
+    return out;
+  }
+  function billTopbar(title) {
+    var modes = { month: 'This month', all: 'All bills', subs: 'Subscriptions', chart: 'Spending' }, sc = { all: 'Everything', personal: 'Personal', business: 'Business' };
+    var h = '<div class="tb">' + (S.billView === 'month' || !S.billView ? navPill(title, 'bnav') : '') + '<button class="pill" data-a="bview">' + modes[S.billView || 'month'] + I.dn + '</button><span class="sp"></span><button class="pill" data-a="bscope">' + sc[S.billScope || 'all'] + I.dn + '</button>';
+    h += '<button class="pill" data-a="bmore" style="margin-right:0">' + I.dots.replace('<svg', '<svg style="width:1rem;height:1rem;margin:0"') + '</button></div>';
+    return h;
+  }
+  function renderSubs() {
+    var xs = S.data.bills.filter(function (b) { return b.cat === 'subs' && bScopeOk(b); }), mo = 0;
+    xs.forEach(function (b) { var a = +b.amount || 0; mo += b.freq === 'yearly' ? a / 12 : b.freq === 'quarterly' ? a / 3 : b.freq === 'weekly' ? a * 52 / 12 : b.freq === 'biweekly' ? a * 26 / 12 : b.freq === 'once' ? 0 : a; });
+    var h = '<div class="bsum"><div><small>Per month</small><b>' + money(Math.round(mo * 100) / 100) + '</b></div><div><small>Per year</small><b>' + money(Math.round(mo * 12)) + '</b></div><div><small>Subscriptions</small><b>' + xs.length + '</b></div></div>';
+    xs.sort(function (a, b) { return (+b.amount || 0) - (+a.amount || 0); }).forEach(function (b, i) {
+      var t0 = sod(now()), nx = bOcc(b, t0, addD(t0, 400))[0], fq = BFREQ.filter(function (f) { return f[0] === b.freq; })[0];
+      h += '<div class="brow" style="animation-delay:' + Math.min(i, 12) * 25 + 'ms"><span class="bic">📺</span><div class="bt" data-a="edbill" data-v="' + b.id + '"><b>' + esc(b.t) + '</b><small>' + (fq ? fq[1] : '') + (nx ? ' · renews ' + MON[nx.d.getMonth()] + ' ' + nx.d.getDate() : '') + '</small></div><b class="bamt">' + money(b.amount) + '</b>' + (b.cancel ? '<a class="bpay" style="color:#e5484d" href="' + esc(b.cancel) + '" target="_blank" rel="noopener">Cancel</a>' : '') + '</div>';
+    });
+    if (!xs.length) h += '<div style="height:55%;display:flex">' + empty('No subscriptions yet<br>Add a bill with category “Subscription”', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    return h + '<div style="height:6rem"></div>';
+  }
+  var CATC = { housing: '#3a6cf0', utilities: '#f5a524', phone: '#16a394', car: '#8b5cf6', insurance: '#0ea5e9', loan: '#e5484d', card: '#e04f9e', subs: '#f08a24', business: '#64748b', taxes: '#a16207', other: '#94a3b8' };
+  function renderSpending() {
+    var t = sod(now()), months = [], max = 1, byCat = {}, year = 0;
+    for (var i = -8; i <= 3; i++) {
+      var m0 = new Date(t.getFullYear(), t.getMonth() + i, 1), m1 = new Date(m0.getFullYear(), m0.getMonth() + 1, 0), cats = {}, tot = 0, fut = m0 > t;
+      S.data.bills.forEach(function (b) { if (!bScopeOk(b)) return; bOcc(b, m0, m1).forEach(function (o) { var p = bPaid(b, o.k); if (!fut && !p) return; var v = bAmt(b, o.k); cats[b.cat] = (cats[b.cat] || 0) + v; tot += v; if (!fut && i > -12) { byCat[b.cat] = (byCat[b.cat] || 0) + v; year += v; } }); });
+      if (tot > max) max = tot; months.push({ d: m0, cats: cats, tot: tot, fut: fut });
+    }
+    var h = '<div class="bsum"><div><small>Paid (last 9 months)</small><b>' + money(Math.round(year)) + '</b></div><div><small>Avg per month</small><b>' + money(Math.round(year / 9)) + '</b></div></div>';
+    h += '<div class="chart">' + months.map(function (m) {
+      var segs = Object.keys(m.cats).map(function (c) { return '<i style="height:' + (m.cats[c] / max * 100) + '%;background:' + CATC[c] + '" title="' + bcat(c)[1] + ' ' + money(m.cats[c]) + '"></i>'; }).join('');
+      return '<div class="col' + (m.fut ? ' fut' : '') + (same(m.d, new Date(t.getFullYear(), t.getMonth(), 1)) ? ' cur' : '') + '"><em>' + (m.tot ? '$' + (m.tot >= 1000 ? (m.tot / 1000).toFixed(1) + 'k' : Math.round(m.tot)) : '') + '</em><div class="bars">' + segs + '</div><span>' + MON[m.d.getMonth()] + '</span></div>';
+    }).join('') + '</div><p class="muted" style="font-size:.78rem;margin:.3rem .2rem 1rem">Past months: what you marked paid. Faded bars: what is scheduled.</p>';
+    var cats = Object.keys(byCat).sort(function (a, b) { return byCat[b] - byCat[a]; });
+    h += cats.map(function (c) { return '<div class="catrow"><i style="background:' + CATC[c] + '"></i><span>' + bcat(c)[2] + ' ' + bcat(c)[1] + '</span><span class="bar"><b style="width:' + (byCat[c] / byCat[cats[0]] * 100) + '%;background:' + CATC[c] + '"></b></span><em>' + money(Math.round(byCat[c])) + '</em></div>'; }).join('');
+    return h + '<div style="height:6rem"></div>';
+  }
+  function exportBills() {
+    function q(v) { v = v == null ? '' : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    var rows = [['Bill', 'Category', 'Personal/Business', 'Who pays', 'Amount', 'Repeats', 'Payments', 'First due', 'Autopay', 'Due date', 'Status', 'Paid amount', 'Paid on', 'Source']];
+    var t = sod(now());
+    S.data.bills.forEach(function (b) {
+      var fq = BFREQ.filter(function (f) { return f[0] === b.freq; })[0], who = !b.payer || b.payer === 'split' ? 'Split' : P(b.payer).name;
+      var base = [b.t, bcat(b.cat)[1], b.scope || 'personal', who, b.amount, fq ? fq[1] : b.freq, bTotalN(b) || 'no end', b.start, b.autopay ? 'yes' : 'no'];
+      bOcc(b, addD(t, -730), addD(t, 365)).forEach(function (o) {
+        var p = bPaid(b, o.k); if (!p && o.d > addD(t, 62)) return;
+        rows.push(base.concat([o.k, p ? 'paid' : o.d < t ? 'overdue' : 'due', p ? (p.amt != null ? p.amt : b.amount) : '', p && p.at ? new Date(p.at).toISOString().slice(0, 10) : '', p && p.src ? p.src : '']));
+      });
+    });
+    var csv = '﻿' + rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' }), url = URL.createObjectURL(blob), aEl = document.createElement('a');
+    aEl.href = url; aEl.download = 'bills-' + key(t) + '.csv'; document.body.appendChild(aEl); aEl.click(); setTimeout(function () { URL.revokeObjectURL(url); aEl.remove(); }, 1000);
+    toast('Downloaded bills-' + key(t) + '.csv');
+  }
   function renderBills() {
     var a = S.billAnchor || new Date(sod(now()).getFullYear(), sod(now()).getMonth(), 1);
     var from = new Date(a.getFullYear(), a.getMonth(), 1), to = new Date(a.getFullYear(), a.getMonth() + 1, 0), t = sod(now());
     var occ = [], late = [];
     S.data.bills.forEach(function (b) {
+      if (!bScopeOk(b)) return;
       bOcc(b, from, to).forEach(function (o) { occ.push(o); });
       if (same(from, new Date(t.getFullYear(), t.getMonth(), 1))) bOcc(b, addD(from, -400), addD(from, -1)).forEach(function (o) { if (!bPaid(b, o.k)) late.push(o); });
     });
     occ = late.concat(occ);
     occ.sort(function (x, y) { return x.d - y.d; });
-    var due = 0, paid = 0, lateSum = 0;
-    occ.forEach(function (o) { var v = bAmt(o.b, o.k); due += v; if (bPaid(o.b, o.k)) paid += v; else if (o.d < t) lateSum += v; });
-    var h = hdr(false);
-    h += '<div class="tb">' + navPill(MONL[a.getMonth()] + ' ' + a.getFullYear(), 'bnav') + '<span class="sp"></span><button class="pill" data-a="billsall" style="margin-right:0">' + (S.billAll ? 'This month' : 'All bills') + I.dn + '</button></div><div class="body"><div class="scroll" style="padding:0 1.2rem">';
-    if (S.billAll) return h + renderBillsAll() + '</div>' + fab('addbill') + '</div>';
+    var due = 0, paid = 0, lateSum = 0, per = {};
+    occ.forEach(function (o) { var v = bAmt(o.b, o.k); due += v; if (bPaid(o.b, o.k)) paid += v; else if (o.d < t) lateSum += v; var sh = bShares(o.b, v); Object.keys(sh).forEach(function (pid) { per[pid] = (per[pid] || 0) + sh[pid]; }); });
+    var h = hdr(false) + billTopbar(MONL[a.getMonth()] + ' ' + a.getFullYear()) + '<div class="body"><div class="scroll" style="padding:0 1.2rem">';
+    var mode = S.billView || 'month';
+    if (myAccts().length) setTimeout(function () { gmCheck(false); }, 0);
+    if (mode === 'all') return h + renderBillsAll() + '</div>' + fab('addbill') + '</div>';
+    if (mode === 'subs') return h + renderSubs() + '</div>' + fab('addbill') + '</div>';
+    if (mode === 'chart') return h + renderSpending() + '</div>' + fab('addbill') + '</div>';
     h += '<div class="bsum"><div><small>Due this month</small><b>' + money(due) + '</b></div><div><small>Paid</small><b class="g">' + money(paid) + '</b></div><div><small>Left</small><b' + (lateSum ? ' class="r"' : '') + '>' + money(due - paid) + '</b>' + (lateSum ? '<em>' + money(lateSum) + ' overdue</em>' : '') + '</div></div>';
     h += '<div class="bbar"><i style="width:' + (due ? Math.min(100, paid / due * 100) : 0) + '%"></i></div>';
+    if (S.cfg.people.length > 1 && due) h += '<div class="bper">' + S.cfg.people.map(function (p) { return '<span><i class="av" style="background:' + p.color + '">' + esc(p.initial) + '</i>' + esc(p.name) + ' <b>' + money(Math.round((per[p.id] || 0) * 100) / 100) + '</b></span>'; }).join('') + '</div>';
+    if (S.gmMatch) h += '<div class="amsg" style="margin:0 0 .6rem">' + S.gmMatch + '</div>';
     if (!occ.length) h += '<div style="height:55%;display:flex">' + empty(S.data.bills.length ? 'No bills due this month' : 'No bills yet<br>Tap + to add rent, phone, a loan…', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
     occ.forEach(function (o, i) {
       var b = o.b, st = bStatus(o), c = bcat(b.cat), s = bStats(b), dd = Math.round((o.d - t) / 864e5);
       var when = st === 'paid' ? 'Paid' + (bPaid(b, o.k).at ? ' ' + MON[new Date(bPaid(b, o.k).at).getMonth()] + ' ' + new Date(bPaid(b, o.k).at).getDate() : '') : dd === 0 ? 'Due today' : dd === 1 ? 'Due tomorrow' : dd < 0 ? (-dd) + ' day' + (dd === -1 ? '' : 's') + ' late' : 'Due ' + MON[o.d.getMonth()] + ' ' + o.d.getDate();
-      h += '<div class="brow ' + st + (S.fxId === b.id + o.k ? ' pulse' : '') + '" style="animation-delay:' + Math.min(i, 12) * 25 + 'ms"><span class="bic">' + c[2] + '</span><div class="bt" data-a="edbill" data-v="' + b.id + '"><b>' + esc(b.t) + (b.autopay ? '<span class="ap">AUTO</span>' : '') + '</b><small>' + when + (s ? ' · ' + (o.i + 1) + ' of ' + s.n : '') + '</small>' + (s ? '<span class="bprog"><i style="width:' + (s.paid / s.n * 100) + '%"></i></span>' : '') + '</div><b class="bamt">' + money(bAmt(b, o.k)) + '</b>' + (b.url ? '<a class="bpay" href="' + esc(b.url) + '" target="_blank" rel="noopener">Pay</a>' : '') + '<button class="bck" data-a="bpay" data-v="' + b.id + '|' + o.k + '">' + (st === 'paid' ? I.check : '') + '</button></div>';
+      var pd = bPaid(b, o.k), who = !b.payer || b.payer === 'split' ? null : P(b.payer);
+      h += '<div class="brow ' + st + (S.fxId === b.id + o.k ? ' pulse' : '') + '" style="animation-delay:' + Math.min(i, 12) * 25 + 'ms"><span class="bic">' + c[2] + '</span><div class="bt" data-a="edbill" data-v="' + b.id + '"><b>' + esc(b.t) + (b.autopay ? '<span class="ap">AUTO</span>' : '') + '</b><small>' + when + (s ? ' · ' + (o.i + 1) + ' of ' + s.n : '') + (pd && pd.src === 'gmail' ? ' · ✉ found in Gmail' : '') + (who ? ' · ' + esc(who.name) : '') + (b.scope === 'business' ? ' · 🧰' : '') + '</small>' + (s ? '<span class="bprog"><i style="width:' + (s.paid / s.n * 100) + '%"></i></span>' : '') + '</div><b class="bamt">' + money(bAmt(b, o.k)) + '</b>' + (b.url ? '<a class="bpay" href="' + esc(b.url) + '" target="_blank" rel="noopener">Pay</a>' : '') + '<button class="bck" data-a="bpay" data-v="' + b.id + '|' + o.k + '">' + (st === 'paid' ? I.check : '') + '</button></div>';
     });
     return h + '<div style="height:6rem"></div></div>' + fab('addbill') + '</div>';
   }
   function renderBillsAll() {
     var h = '', tot = 0, debt = 0;
-    var xs = S.data.bills.slice().sort(function (x, y) { var a = bNext(x), b = bNext(y); return (a ? a.d : 9e15) - (b ? b.d : 9e15); });
+    var xs = S.data.bills.filter(bScopeOk).sort(function (x, y) { var a = bNext(x), b = bNext(y); return (a ? a.d : 9e15) - (b ? b.d : 9e15); });
     xs.forEach(function (b) { if (b.freq === 'monthly' && !b.count) tot += +b.amount || 0; var s = bStats(b); if (s) debt += s.leftAmt; });
     h += '<div class="bsum"><div><small>Monthly recurring</small><b>' + money(tot) + '</b></div><div><small>Left on installments</small><b>' + money(debt) + '</b></div><div><small>Bills</small><b>' + xs.length + '</b></div></div>';
     xs.forEach(function (b, i) {
@@ -1105,9 +1173,13 @@
       + '<div class="f"><i>' + FI.clock + '</i><span>Installments (fixed number of payments)</span><select name="cnt" class="mini" style="width:7.5rem">' + [0, 2, 3, 4, 6, 9, 10, 12, 18, 24, 36, 48, 60, 72].concat(limited && [2, 3, 4, 6, 9, 10, 12, 18, 24, 36, 48, 60, 72].indexOf(+b.count) < 0 ? [+b.count] : []).map(function (n) { return '<option value="' + n + '"' + (n === (+b.count || 0) ? ' selected' : '') + '>' + (n ? n + ' payments' : 'No end') + '</option>'; }).join('') + '</select></div>'
       + '<div class="f" id="bprepaid"' + (limited ? '' : ' style="display:none"') + '><i>' + FI.list + '</i><span>Already paid</span><select name="prepaid" class="mini" style="width:7.5rem">' + (function () { var o = ''; for (var i = 0; i < 72; i++) o += '<option value="' + i + '"' + (i === (+b.prepaid || 0) ? ' selected' : '') + '>' + i + ' payment' + (i === 1 ? '' : 's') + '</option>'; return o; })() + '</select></div>'
       + '<div class="bcalc" id="bcalc"></div>'
+      + fSel(FI.list, 'Personal / Business', 'scope', [['personal', 'Personal'], ['business', 'Business (NEZER)']], b.scope || 'personal')
+      + fSel(FI.user, 'Who pays', 'payer', [['split', 'Split equally']].concat(S.cfg.people.map(function (p) { return [p.id, esc(p.name)]; })), b.payer || 'split')
       + fTog(FI.check || FI.star, 'Autopay is on', 'autopay', b.autopay)
       + fSel(FI.bell, 'Remind me', 'remind', [['', 'Never'], ['0', 'On the due day'], ['1', '1 day before'], ['3', '3 days before'], ['5', '5 days before'], ['7', '1 week before']], b.remind == null ? '' : String(b.remind))
       + '<div class="f"><i>' + FI.list + '</i><input type="text" name="url" value="' + esc(b.url) + '" placeholder="Payment website (optional)" autocapitalize="off"></div>'
+      + '<div class="f" id="bcancel"' + (b.cat === 'subs' ? '' : ' style="display:none"') + '><i>' + FI.list + '</i><input type="text" name="cancel" value="' + esc(b.cancel || '') + '" placeholder="Cancel subscription link (optional)" autocapitalize="off"></div>'
+      + '<div class="f"><i>' + FI.smile + '</i><input type="text" name="gm" value="' + esc(b.gm || '') + '" placeholder="Gmail words to auto-detect payment (e.g. PSE, from:verizon)" autocapitalize="off"></div>'
       + fDesc(b.note, 'note', 'Notes (account #, how to pay…)')
       + (!isNew ? billHistory(b) : '') + '</div>' + dfoot(!isNew), function (act) {
       if (act === 'del') { if (!confirmBox('Delete "' + b.t + '" and its payment history?')) return false; del('bills', b.id); return true; }
@@ -1115,7 +1187,7 @@
       if (act !== 'ok') return false;
       var n = val('t'), amt = parseFloat(val('amount'));
       if (!n) { toast('Enter a name'); return false; } if (!(amt >= 0)) { toast('Enter the amount'); return false; }
-      put('bills', { id: b.id, t: n, amount: Math.round(amt * 100) / 100, cat: val('cat'), start: val('start') || key(sod(now())), freq: val('freq'), count: val('freq') === 'once' ? 1 : +val('cnt') || 0, prepaid: +val('cnt') ? Math.min(+val('prepaid') || 0, +val('cnt') - 1) : 0, added: b.added || key(sod(now())), autopay: togOn('autopay'), remind: val('remind'), url: val('url'), note: val('note'), paid: b.paid || {}, at: b.at });
+      put('bills', { id: b.id, t: n, amount: Math.round(amt * 100) / 100, cat: val('cat'), start: val('start') || key(sod(now())), freq: val('freq'), count: val('freq') === 'once' ? 1 : +val('cnt') || 0, prepaid: +val('cnt') ? Math.min(+val('prepaid') || 0, +val('cnt') - 1) : 0, added: b.added || key(sod(now())), autopay: togOn('autopay'), remind: val('remind'), url: val('url'), cancel: val('cancel'), gm: val('gm'), scope: val('scope'), payer: val('payer'), note: val('note'), paid: b.paid || {}, at: b.at });
       return true;
     }, { drawer: true });
     billCalc();
@@ -1144,6 +1216,67 @@
     b.paid[k] = { amt: Math.round(v2 * 100) / 100, at: Date.now() };
     S.fx = 'c'; S.fxId = b.id + k; put('bills', b);
     var s = bStats(b); toast(s && s.left === 0 ? '🎉 ' + b.t + ' is fully paid off!' : 'Marked paid' + (s ? ' · ' + s.left + ' left' : ''));
+  }
+
+  /* ---------- PUSH + GMAIL PAYMENT DETECTION ---------- */
+  function b64u(s) { var p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !IN_APP; }
+  function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function standalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+  function pushState() {
+    if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+    return navigator.serviceWorker.getRegistration().then(function (r) { return r && r.pushManager ? r.pushManager.getSubscription() : null; }).catch(function () { return null; });
+  }
+  function pushEnable() {
+    var reg;
+    return Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') throw new Error('Notifications are blocked — allow them in browser settings');
+      return navigator.serviceWorker.register('sw.js');
+    }).then(function (r) { reg = r; return navigator.serviceWorker.ready; }).then(function () {
+      return sbFetch('/functions/v1/push', { method: 'POST', json: { action: 'vkey' } });
+    }).then(function (k) {
+      return reg.pushManager.getSubscription().then(function (s) { return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(k.key) }); });
+    }).then(function (sub) {
+      var j = sub.toJSON();
+      return sbFetch('/rest/v1/push_subs?on_conflict=endpoint', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, json: { household_id: S.hid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ua: navigator.userAgent.slice(0, 200) } });
+    });
+  }
+  function pushDisable() {
+    return pushState().then(function (s) { if (!s) return; var ep = s.endpoint; return s.unsubscribe().then(function () { return sbFetch('/rest/v1/push_subs?endpoint=eq.' + encodeURIComponent(ep), { method: 'DELETE' }); }); });
+  }
+  function pushDialog() {
+    if (!S.cfg.tz) { try { S.cfg.tz = Intl.DateTimeFormat().resolvedOptions().timeZone; saveCfg(); } catch (e) {} }
+    pushState().then(function (sub) {
+      var h = head('Phone notifications');
+      if (IN_APP) h += '<p style="line-height:1.5">Turn notifications on from your phone — the tablet shows reminders on screen.</p>';
+      else if (isIOS() && !standalone()) h += '<p style="line-height:1.55">On iPhone/iPad notifications work only from the Home Screen app:</p><ol class="steps"><li>Tap the <b>Share</b> button in Safari</li><li>Choose <b>Add to Home Screen</b> → Add</li><li>Open <b>C2 Calendar</b> from the Home Screen, sign in, and come back here</li></ol>';
+      else if (!pushSupported()) h += '<p>This browser does not support push notifications.</p>';
+      else h += '<p style="line-height:1.5">' + (sub ? '✅ This device gets bill reminders every morning at 9 AM (and a warning the day after a missed bill).' : 'Get bill reminders every morning at 9 AM, even when the app is closed.') + '</p>';
+      var can = pushSupported() && !(isIOS() && !standalone());
+      h += '<div class="btns">' + (can && sub ? '<button class="del" data-m="off">Turn off</button><button class="no" data-m="test">Send test</button>' : '') + (can && !sub ? '<button class="ok" data-m="on">Turn on</button>' : '<button class="ok" data-m="cancel">OK</button>') + '</div>';
+      openModal(h, function (act) {
+        if (act === 'on') { toast('Turning on…'); pushEnable().then(function () { toast('Notifications on'); pushDialog(); }).catch(function (e) { toast(e.message || 'Could not turn on'); }); return false; }
+        if (act === 'off') { pushDisable().then(function () { toast('Notifications off'); pushDialog(); }); return false; }
+        if (act === 'test') { sbFetch('/functions/v1/push', { method: 'POST', json: { action: 'test' } }).then(function (r) { toast('Sent to ' + r.sent + ' device' + (r.sent === 1 ? '' : 's')); }).catch(function (e) { toast(e.message); }); return false; }
+        return true;
+      });
+    });
+  }
+  var GM = { at: 0, busy: false };
+  function gmCheck(force) {
+    if (DEMO || !S.hid || GM.busy || !myAccts().length) { if (force && !myAccts().length) toast('Connect Gmail first (Settings → Google)'); return; }
+    if (!force && Date.now() - GM.at < 6 * 3600000) return;
+    var t = sod(now()), items = [];
+    S.data.bills.forEach(function (b) { if (!b.gm) return; bOcc(b, addD(t, -35), addD(t, 5)).forEach(function (o) { if (!bPaid(b, o.k)) items.push({ bid: b.id, k: o.k, q: b.gm, amt: b.amount, date: o.k }); }); });
+    if (!items.length) { if (force) toast('Add “Gmail words” to your bills first'); GM.at = Date.now(); return; }
+    GM.busy = true; if (force) toast('Checking Gmail…');
+    gcall('bills_gmail', { household_id: S.hid, items: items }).then(function (r) {
+      GM.at = Date.now(); var n = 0, names = [];
+      (r.items || []).forEach(function (m) { var b = find('bills', m.bid); if (!b || bPaid(b, m.k)) return; b.paid = b.paid || {}; b.paid[m.k] = { amt: m.amt != null ? m.amt : +b.amount, at: m.date, src: 'gmail', subj: m.subj }; put('bills', b); n++; names.push(b.t); });
+      S.gmMatch = n ? '✉ Found ' + n + ' payment' + (n > 1 ? 's' : '') + ' in Gmail: ' + esc(names.join(', ')) + ' — marked paid (tap the bill to undo).' : null;
+      if (force && !n) toast('No new payment emails found');
+      render();
+    }).catch(function (e) { if (force) toast(gErr(e)); }).then(function () { GM.busy = false; });
   }
 
   /* ---------- MAIL ---------- */
@@ -1631,7 +1764,7 @@
     if (t.name === 'amount') billCalc();
     if (t.name === 'q' && S.rc) { S.rc.q = t.value; var l = M.querySelector('.rlist'), hh = M.querySelector('.rmain h5'); if (l) l.innerHTML = rcList(); if (hh) hh.textContent = t.value ? 'Search' : S.rc.cat; }
   });
-  M.addEventListener('change', function (ev) { if (ev.target.name === 'cnt' || ev.target.name === 'freq' || ev.target.name === 'start' || ev.target.name === 'prepaid') billCalc(); if (M._cleanHook && S.modalOpen && M._cleanHook(ev.target)) return; if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
+  M.addEventListener('change', function (ev) { if (ev.target.name === 'cnt' || ev.target.name === 'freq' || ev.target.name === 'start' || ev.target.name === 'prepaid') billCalc(); if (ev.target.name === 'cat' && document.getElementById('bcancel')) document.getElementById('bcancel').style.display = ev.target.value === 'subs' ? '' : 'none'; if (M._cleanHook && S.modalOpen && M._cleanHook(ev.target)) return; if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
   M.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.tagName === 'INPUT' && ev.target.name !== 'q' && M._ok) { if (M._ok('ok')) { closeModal(); render(); } } });
 
   /* ---------- photos upload ---------- */
@@ -1765,7 +1898,10 @@
     edbill: function (id) { billDialog(find('bills', id)); },
     bpay: function (v) { payBill(v); },
     bnav: function (v) { var a = S.billAnchor || new Date(sod(now()).getFullYear(), sod(now()).getMonth(), 1); S.billAnchor = new Date(a.getFullYear(), a.getMonth() + (+v), 1); S.fx = 'n'; render(); },
-    billsall: function () { S.billAll = !S.billAll; S.fx = 'n'; render(); },
+    billsall: function () { S.billView = S.billView === 'all' ? 'month' : 'all'; S.fx = 'n'; render(); },
+    bview: function () { choose('Show', [['month', 'This month'], ['all', 'All bills'], ['subs', 'Subscriptions'], ['chart', 'Spending chart']], S.billView || 'month', function (m) { S.billView = m; S.fx = 'n'; }); },
+    bscope: function () { choose('Bills', [['all', 'Everything'], ['personal', 'Personal'], ['business', 'Business (NEZER)']], S.billScope || 'all', function (m) { S.billScope = m; S.fx = 'n'; }); },
+    bmore: function () { choose('Bills', [['gmail', '✉ Check Gmail for payments'], ['push', '🔔 Phone notifications'], ['csv', '⬇ Export to spreadsheet (CSV)']], null, function (o) { if (o === 'csv') exportBills(); else if (o === 'gmail') setTimeout(function () { gmCheck(true); }, 0); else if (o === 'push') setTimeout(pushDialog, 0); }); },
     clreload: function () { clLoad(true); },
     mcompose: function () { mailCompose('new'); },
     authmode: function (m) { S.authEmail = authVal('au-email') || S.authEmail; S.authMode = m; S.authMsg = null; lastHtml = ''; render(); },

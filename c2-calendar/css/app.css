@@ -636,3 +636,24 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .brow.pulse .bck{animation:ckpop .3s}
 .bcalc{font-size:.85rem;color:#4a5263;margin:-.2rem .3rem .7rem;min-height:.2rem}
 .bcalc b{color:#1d2433}
+/* bills v2 */
+.bper{display:flex;flex-wrap:wrap;margin:-.3rem .2rem .8rem;font-size:.85rem;color:var(--muted)}
+.bper span{display:flex;align-items:center;margin-right:1.2rem}
+.bper .av{width:1.3rem;height:1.3rem;font-size:.7rem;font-style:normal;margin-right:.35rem}
+.bper b{color:var(--txt);margin-left:.3rem}
+.chart{display:flex;align-items:flex-end;height:15rem;background:var(--card2);border-radius:1rem;padding:1rem .6rem .6rem;margin-bottom:.4rem}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;min-width:0}
+.chart .col em{font-style:normal;font-size:.66rem;color:var(--muted);height:1rem}
+.chart .bars{flex:1;width:60%;display:flex;flex-direction:column-reverse;justify-content:flex-start;overflow:hidden}
+.chart .bars i{display:block;width:100%;border-radius:.2rem;margin-top:1px;animation:grow .5s both;transform-origin:bottom}
+.chart .col.fut .bars i{opacity:.35}
+.chart .col span{font-size:.72rem;color:var(--muted);margin-top:.3rem}
+.chart .col.cur span{color:var(--acc);font-weight:700}
+@keyframes grow{from{transform:scaleY(0)}to{transform:none}}
+.catrow{display:flex;align-items:center;background:var(--card);border-radius:.7rem;padding:.55rem .8rem;margin-bottom:.4rem;font-size:.92rem}
+.catrow>i{width:.7rem;height:.7rem;border-radius:50%;margin-right:.6rem;flex:none}
+.catrow>span:first-of-type{width:11rem;flex:none}
+.catrow .bar{flex:1;height:.45rem;background:var(--line);border-radius:.25rem;overflow:hidden;margin:0 .8rem}
+.catrow .bar b{display:block;height:100%;border-radius:.25rem}
+.catrow em{font-style:normal;font-weight:700}
+.steps{margin:.6rem 0 0 1.3rem;line-height:1.8}
