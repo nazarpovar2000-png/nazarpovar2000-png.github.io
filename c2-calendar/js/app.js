@@ -92,12 +92,12 @@
     { id: 'nazar', name: 'Nazar', color: '#2F6BEA', initial: 'N' }
   ];
   var DEF_LISTS = [{ id: 'grocery', name: 'Grocery List', color: '#3a6cf0' }, { id: 'todo', name: 'To-Do List', color: '#E5525C' }];
-  var TABS = ['home', 'calendar', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'ncam', 'more'];
-  var TABN = { home: 'Home', calendar: 'Calendar', tasks: 'Tasks', rewards: 'Rewards', meals: 'Meals', photos: 'Photos', lists: 'Lists', anniv: 'Anniv.', ncam: 'NezerCam', more: 'More' };
+  var TABS = ['home', 'calendar', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'ncam', 'calls', 'more'];
+  var TABN = { home: 'Home', calendar: 'Calendar', tasks: 'Tasks', rewards: 'Rewards', meals: 'Meals', photos: 'Photos', lists: 'Lists', anniv: 'Anniv.', ncam: 'NezerCam', calls: 'Calls', more: 'More' };
   var COLLS = ['events', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'notes', 'recipes'];
   var S = {
     view: Q.view || 'home', sub: null, more: false,
-    cfg: { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 9), sleepFrom: '', sleepTo: '' },
+    cfg: { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 10), sleepFrom: '', sleepTo: '' },
     data: {}, ext: [],
     sel: sod(now()), anchor: sod(now()), calMode: 'month', off: {},
     taskDay: sod(now()), homeTaskP: 0, homeList: 'grocery', photoIdx: 0,
@@ -257,7 +257,7 @@
         .then(function () { S.hh.config = c; }).catch(function () { toast('Settings not saved'); }).then(function () { S.cfgDirty = false; });
     }, 400);
   }
-  function defaultCfg() { return { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 9), sleepFrom: '', sleepTo: '' }; }
+  function defaultCfg() { return { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 10), sleepFrom: '', sleepTo: '' }; }
   function applyCfg(o) { Object.keys(o).forEach(function (k) { S.cfg[k] = o[k]; }); if (!S.cfg.people || !S.cfg.people.length) S.cfg.people = DEF_PEOPLE.slice(); }
   /* photos live in Storage; items hold the path, we sign URLs in batches */
   function resolvePhotos() {
@@ -414,10 +414,11 @@
     return h;
   }
   function tabbar() {
-    var order = S.cfg.order && S.cfg.order.length ? S.cfg.order.slice() : TABS.slice(0, 9);
+    var order = S.cfg.order && S.cfg.order.length ? S.cfg.order.slice() : TABS.slice(0, 10);
     if (order.indexOf('home') < 0) order.unshift('home');
     if (order.indexOf('ncam') < 0 && !S.cfg.hideNcam) order.push('ncam');
-    order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam); });
+    if (order.indexOf('calls') < 0) order.push('calls');
+    order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam) && !(t === 'calls' && !isOwner()); });
     order.push('more');
     var cur = S.sub ? 'more' : S.view;
     return '<div class="tabs">' + order.map(function (t) {
@@ -729,6 +730,7 @@
     if (/GOOGLE_CLIENT_SECRET/.test(m)) return 'Google is not set up yet';
     return m;
   }
+  function isOwner() { if (DEMO) return true; var me = myId(); return S.members.some(function (m) { return m.user_id === me && m.role === 'owner'; }); }
   function myId() { return S.auth && S.auth.user ? S.auth.user.id : ''; }
   function loadGAccts() {
     if (DEMO || !S.hid) return Promise.resolve();
@@ -878,6 +880,69 @@
     ncamEl.style.cssText = 'display:block;position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
   }
   window.addEventListener('resize', function () { setTimeout(placeNcam, 50); });
+
+  /* ---------- CALLS (Vapi AI agent, optional Twilio) ---------- */
+  var CL = { items: null, busy: false, err: null, at: 0, cfg: null, open: null, audio: null, q: '' };
+  TI.calls = '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#16a394"/><path d="M11.5 9.5c.6-.6 1.6-.5 2 .2l1.4 2.4c.3.6.2 1.3-.3 1.7l-1 .9c.9 1.9 2.2 3.3 4.1 4.2l.9-1c.4-.5 1.2-.6 1.7-.3l2.4 1.4c.7.4.8 1.4.2 2l-1.1 1.1c-.9.9-2.3 1.2-3.5.7-3.8-1.6-6.6-4.4-8.2-8.2-.5-1.2-.2-2.6.7-3.5z" fill="#fff"/></svg>';
+  function clCall(action, b) { b = b || {}; b.action = action; b.household_id = S.hid; return sbFetch('/functions/v1/calls', { method: 'POST', json: b }); }
+  function clLoad(force) {
+    if (DEMO || !S.hid || CL.busy) return;
+    if (!force && CL.items && Date.now() - CL.at < 60000) return;
+    CL.busy = true; CL.err = null; render();
+    clCall('list', { limit: 100 }).then(function (r) {
+      CL.items = r.items || []; CL.at = Date.now(); CL.cfg = { vapi: r.vapi, twilio: r.twilio };
+      if (r.errors && r.errors.length) CL.err = r.errors.join(' · ');
+    }).catch(function (e) { CL.err = e.message === 'not_configured' ? 'nc' : e.message; if (!CL.items) CL.items = []; }).then(function () { CL.busy = false; S.fx = S.fx || 'n'; render(); });
+  }
+  function fmtPhone(n) { var d = String(n || '').replace(/\D/g, ''); if (d.length === 11 && d[0] === '1') d = d.slice(1); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : (n || 'Unknown'); }
+  function fmtDur(s) { s = +s || 0; return Math.floor(s / 60) + ':' + pad(s % 60); }
+  function clWho(c) { var n = c.dir === 'in' ? c.fromRaw || c.from : c.toRaw || c.to; return { name: c.name || fmtPhone(n), num: fmtPhone(n), raw: n }; }
+  function clDay(d) { var t = sod(now()); if (same(d, t)) return 'Today'; if (same(d, addD(t, -1))) return 'Yesterday'; return WDL[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate(); }
+  function missed(c) { return c.dir === 'in' && (c.status === 'no-answer' || c.status === 'busy' || c.status === 'canceled' || c.status === 'failed' || (!c.ai && !c.dur)); }
+  function renderCalls() {
+    var h = hdr(false);
+    h += '<div class="tb"><input class="msearch" id="clq" type="search" placeholder="Search number, name or words" value="' + esc(CL.q) + '" style="max-width:none"><button class="pill" data-a="clreload" style="margin:0 0 0 .3rem">' + I.sync.replace('<svg', '<svg style="width:1rem;height:1rem;margin:0"') + '</button></div><div class="body"><div class="scroll mlist">';
+    if (CL.items === null) { setTimeout(function () { clLoad(false); }, 0); h += '<div class="mload">Loading calls…</div>'; }
+    else if (CL.err === 'nc') h += '<div style="height:75%;display:flex">' + empty('Calls are not connected yet.<br>Add your Vapi private key on the server<br>(Supabase secret <b>VAPI_API_KEY</b>).', 2).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    else {
+      if (CL.err) h += '<div class="amsg" style="margin:.4rem 0 .6rem">' + esc(CL.err) + '</div>';
+      var q = CL.q.toLowerCase(), qd = CL.q.replace(/\D/g, ''), last = '', n = 0;
+      CL.items.forEach(function (c, i) {
+        var w = clWho(c);
+        if (q && !((w.name + ' ' + (c.summary || '') + ' ' + (c.transcript || '')).toLowerCase().indexOf(q) >= 0 || (qd.length > 2 && String(w.raw).replace(/\D/g, '').indexOf(qd) >= 0))) return;
+        var d = c.start ? new Date(c.start) : null, day = d ? clDay(sod(d)) : '';
+        if (day !== last) { h += '<div class="clday">' + day + '</div>'; last = day; }
+        var mis = missed(c);
+        h += '<div class="mrow clrow' + (mis ? ' miss' : '') + '" data-a="clopen" data-v="' + i + '" style="animation-delay:' + Math.min(n++, 12) * 20 + 'ms"><span class="cldir ' + (mis ? 'mis' : c.dir) + '">' + (mis ? '✕' : c.dir === 'in' ? '↙' : '↗') + '</span><div class="mt"><div class="m1"><b>' + esc(w.name) + '</b><em>' + (d ? fmtTime(pad(d.getHours()) + ':' + pad(d.getMinutes())) : '') + '</em></div><div class="m3">' + (c.ai ? '<span class="aitag">AI</span>' : '') + (c.name ? esc(w.num) + ' · ' : '') + (c.dur ? fmtDur(c.dur) : esc(c.status || '')) + ((c.recUrl || (c.rec && c.rec.length)) ? ' · ▶ recording' : '') + '</div>' + (c.summary ? '<div class="m3 clsum">' + esc(c.summary) + '</div>' : '') + '</div></div>';
+      });
+      if (!n) h += '<div style="height:60%;display:flex">' + empty(q ? 'Nothing found' : 'No calls yet', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    }
+    return h + '<div style="height:3rem"></div></div></div>';
+  }
+  function clOpen(i) {
+    var c = CL.items[+i]; if (!c) return;
+    var w = clWho(c), d = c.start ? new Date(c.start) : null;
+    var audio = c.recUrl ? '<audio controls preload="none" src="' + esc(c.recUrl) + '"></audio>' : (c.rec && c.rec.length ? '<button class="abtn clplay" data-m="tw:' + c.rec[0].sid + '" style="max-width:16rem">▶ Load recording</button><div class="claud"></div>' : '<div class="muted" style="font-size:.9rem">No recording</div>');
+    var tr = '';
+    if (c.msgs && c.msgs.length) tr = c.msgs.map(function (m) { return '<div class="bub ' + m.who + '"><small>' + (m.who === 'ai' ? 'AI assistant' : 'Caller') + '</small>' + esc(m.text) + '</div>'; }).join('');
+    else if (c.transcript) tr = '<div class="mtext">' + esc(c.transcript) + '</div>';
+    else tr = '<div class="muted">No transcript</div>';
+    openModal(dhead(esc(w.name)) + '<div class="db"><div class="clhead"><div><b>' + esc(w.num) + '</b><small>' + (c.dir === 'in' ? 'Incoming' : 'Outgoing') + (c.ai ? ' · answered by AI' : '') + (d ? ' · ' + esc(d.toLocaleString()) : '') + (c.dur ? ' · ' + fmtDur(c.dur) : '') + '</small></div><a class="pill" href="tel:' + esc(w.raw) + '" style="margin:0;text-decoration:none;color:#3a6cf0">Call back</a></div>'
+      + '<div class="clsec">' + audio + '</div>'
+      + (c.summary ? '<h5 class="clh">Summary</h5><div class="clsec">' + esc(c.summary) + '</div>' : '')
+      + '<h5 class="clh">Transcript</h5><div class="clsec cltr">' + tr + '</div></div>', function (act) {
+      if (act.indexOf('tw:') === 0) {
+        var btn = M.querySelector('.clplay'); if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+        ensureFresh(false).then(function () {
+          return fetch(SB_URL + '/functions/v1/calls', { method: 'POST', headers: { apikey: SB_KEY, Authorization: 'Bearer ' + S.auth.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'audio', household_id: S.hid, sid: act.slice(3) }) });
+        }).then(function (r) { if (!r.ok) throw new Error('Recording ' + r.status); return r.blob(); }).then(function (b) {
+          if (CL.audio) URL.revokeObjectURL(CL.audio); CL.audio = URL.createObjectURL(b);
+          var box = M.querySelector('.claud'); if (box) box.innerHTML = '<audio controls autoplay src="' + CL.audio + '"></audio>'; if (btn) btn.style.display = 'none';
+        }).catch(function (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = '▶ Load recording'; } });
+      }
+      return false;
+    }, { drawer: true, wide: true, nofocus: true });
+  }
 
   /* ---------- MAIL ---------- */
   var MBOX = [['INBOX', 'Inbox'], ['UNREAD', 'Unread'], ['STARRED', 'Starred'], ['SENT', 'Sent'], ['ALL', 'All mail']];
@@ -1036,7 +1101,7 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
       h += tabbar();
     }
     if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
@@ -1489,6 +1554,8 @@
     mreload: function () { mailLoad(false); gUnread(); },
     mmore: function () { mailLoad(true); },
     mopen: function (id) { mailView(id); },
+    clopen: function (i) { clOpen(i); },
+    clreload: function () { clLoad(true); },
     mcompose: function () { mailCompose('new'); },
     authmode: function (m) { S.authEmail = authVal('au-email') || S.authEmail; S.authMode = m; S.authMsg = null; lastHtml = ''; render(); },
     authgo: function () {
@@ -1518,6 +1585,7 @@
     }
   });
   root.addEventListener('keydown', function (ev) {
+    if (ev.target.id === 'clq' && ev.key === 'Enter') { CL.q = ev.target.value.trim(); render(); return; }
     if (ev.key === 'Enter' && ev.target.id === 'mq') { mailState().q = ev.target.value.trim(); mailLoad(false); return; }
     if (ev.key !== 'Enter' || !ev.target.id) return;
     if (ev.target.id === 'au-fam') A.mkfam(); else if (ev.target.id.indexOf('au-') === 0) A.authgo();
@@ -1586,7 +1654,7 @@
   render();
   if (S.auth && !DEMO) { loadUser().catch(function () {}); afterLogin().catch(function (e) { if (!S.auth) return; S.dbNote = 'No connection — retrying…'; S.households = S.households || null; render(); setTimeout(function () { if (S.auth && !S.hid) afterLogin().catch(function () {}); }, 8000); }); }
   setInterval(function () { if (!document.hidden) sync(); }, 15000);
-  setInterval(function () { if (!document.hidden) { gUnread(); gEvents(true); } }, 120000);
+  setInterval(function () { if (!document.hidden) { gUnread(); gEvents(true); if (S.view === 'calls') clLoad(true); } }, 120000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { sync(); resolvePhotos(); } });
   window.__c2 = { S: S, render: render, A: A };
 })();
