@@ -92,12 +92,12 @@
     { id: 'nazar', name: 'Nazar', color: '#2F6BEA', initial: 'N' }
   ];
   var DEF_LISTS = [{ id: 'grocery', name: 'Grocery List', color: '#3a6cf0' }, { id: 'todo', name: 'To-Do List', color: '#E5525C' }];
-  var TABS = ['home', 'calendar', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'more'];
-  var TABN = { home: 'Home', calendar: 'Calendar', tasks: 'Tasks', rewards: 'Rewards', meals: 'Meals', photos: 'Photos', lists: 'Lists', anniv: 'Anniv.', more: 'More' };
+  var TABS = ['home', 'calendar', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'ncam', 'more'];
+  var TABN = { home: 'Home', calendar: 'Calendar', tasks: 'Tasks', rewards: 'Rewards', meals: 'Meals', photos: 'Photos', lists: 'Lists', anniv: 'Anniv.', ncam: 'NezerCam', more: 'More' };
   var COLLS = ['events', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'notes', 'recipes'];
   var S = {
     view: Q.view || 'home', sub: null, more: false,
-    cfg: { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 8), sleepFrom: '', sleepTo: '' },
+    cfg: { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 9), sleepFrom: '', sleepTo: '' },
     data: {}, ext: [],
     sel: sod(now()), anchor: sod(now()), calMode: 'month', off: {},
     taskDay: sod(now()), homeTaskP: 0, homeList: 'grocery', photoIdx: 0,
@@ -257,7 +257,7 @@
         .then(function () { S.hh.config = c; }).catch(function () { toast('Settings not saved'); }).then(function () { S.cfgDirty = false; });
     }, 400);
   }
-  function defaultCfg() { return { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 8), sleepFrom: '', sleepTo: '' }; }
+  function defaultCfg() { return { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 9), sleepFrom: '', sleepTo: '' }; }
   function applyCfg(o) { Object.keys(o).forEach(function (k) { S.cfg[k] = o[k]; }); if (!S.cfg.people || !S.cfg.people.length) S.cfg.people = DEF_PEOPLE.slice(); }
   /* photos live in Storage; items hold the path, we sign URLs in batches */
   function resolvePhotos() {
@@ -407,15 +407,17 @@
     if (!onHome && (S.view === 'calendar' || S.view === 'tasks')) h += '<button class="sync" data-a="sync">' + I.sync + '</button>';
     if (S.cfg.weather) h += '<span class="wx">' + I.sun + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</span>';
     h += '<span class="sp"></span>';
+    if (S.view === 'ncam' && !S.sub) h += '<a class="ico" href="https://nezercam.com/login" target="_blank" rel="noopener" title="Open NezerCam in a new window" style="color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>';
     if (myAccts().length) { var un = unreadTotal(); h += '<button class="ico mailico" data-a="sub" data-v="mail">' + TI.mail + (un ? '<b class="bdg">' + (un > 99 ? '99+' : un) + '</b>' : '') + '</button>'; }
     if (onHome) h += '<button class="ico" data-a="settings">' + I.gear + '</button>';
     h += '<span class="ico">' + I.wifi + '</span></div>';
     return h;
   }
   function tabbar() {
-    var order = S.cfg.order && S.cfg.order.length ? S.cfg.order.slice() : TABS.slice(0, 8);
+    var order = S.cfg.order && S.cfg.order.length ? S.cfg.order.slice() : TABS.slice(0, 9);
     if (order.indexOf('home') < 0) order.unshift('home');
-    order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos); });
+    if (order.indexOf('ncam') < 0 && !S.cfg.hideNcam) order.push('ncam');
+    order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam); });
     order.push('more');
     var cur = S.sub ? 'more' : S.view;
     return '<div class="tabs">' + order.map(function (t) {
@@ -677,6 +679,7 @@
       h += '<div class="row"><span>Show weather information</span>' + tg(c.weather, 'cfgtg', 'weather') + '</div>';
       if (c.weather) h += '<div class="row"><span>Temperature (manual until weather sync)</span><input type="text" data-c="temp" value="' + esc(c.temp) + '" style="width:4rem;margin-right:.4rem"><select data-c="unit"><option' + (c.unit === 'F' ? ' selected' : '') + '>F</option><option' + (c.unit === 'C' ? ' selected' : '') + '>C</option></select></div>';
       h += '<div class="row"><span>Hide Photos Tab</span>' + tg(c.hidePhotos, 'cfgtg', 'hidePhotos') + '</div>';
+      h += '<div class="row"><span>Hide NezerCam Tab</span>' + tg(c.hideNcam, 'cfgtg', 'hideNcam') + '</div>';
       h += '<div class="row" data-a="order"><span>Module Order</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
       h += '<div class="row"><span>Theme Mode</span><select data-c="theme">' + [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']].map(function (o) { return '<option value="' + o[0] + '"' + (c.theme === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
       h += '<div class="row"><span>Sleep</span><input type="time" data-c="sleepFrom" value="' + esc(c.sleepFrom) + '" style="border:1px solid var(--line);border-radius:.5rem;padding:.3rem;background:var(--card2)"><span class="v" style="margin:0 .4rem">–</span><input type="time" data-c="sleepTo" value="' + esc(c.sleepTo) + '" style="border:1px solid var(--line);border-radius:.5rem;padding:.3rem;background:var(--card2)"></div>';
@@ -712,6 +715,7 @@
   /* ---------- GOOGLE: accounts, calendars, Gmail ---------- */
   var G = { accts: [], cals: {}, ev: [], evKey: '', evAt: 0, evBusy: false, unread: {}, mail: null };
   var GCAL = '<svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="4" fill="#fff" stroke="#dadce0"/><path d="M4 9h24" stroke="#4285f4" stroke-width="5"/><text x="16" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#4285f4" font-family="Arial">31</text></svg>';
+  TI.ncam = '<svg viewBox="0 0 32 32"><rect x="3" y="9" width="26" height="19" rx="4" fill="#1f3a6e"/><path d="M11 9l2-3.5h6L21 9" fill="#1f3a6e"/><circle cx="16" cy="18.5" r="6.2" fill="#7cc4f2"/><path d="M12.6 19.3L16 16l3.4 3.3v2.8h-6.8z" fill="#1f3a6e"/></svg>';
   TI.stock = '<svg viewBox="0 0 32 32"><rect x="4" y="6" width="24" height="22" rx="5" fill="#8e9cf1"/><rect x="4" y="6" width="24" height="7" rx="3" fill="#5a6cf0"/><path d="M11 3v6M21 3v6" stroke="#5a6cf0" stroke-width="2.6" stroke-linecap="round"/><path d="M20 18h-8m3-3l-3 3 3 3" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   TI.mail = '<svg viewBox="0 0 32 32"><rect x="3" y="7" width="26" height="19" rx="3.5" fill="#ea4335"/><path d="M4.5 9l11.5 9 11.5-9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>';
   SI.google = GCAL;
@@ -854,6 +858,26 @@
     h += '<p class="muted" style="margin-top:.9rem;font-size:.82rem;line-height:1.5">' + (IN_APP ? 'On this tablet: connect Google from your phone, it will show up here. ' : '') + 'Google will warn that the app is not verified — tap “Advanced” → “Go to C2 Calendar”. The app is private to your family.</p>';
     return h;
   }
+
+  /* ---------- NEZERCAM (embedded web app, kept alive between tabs) ---------- */
+  var NCAM_URL = 'https://nezercam.com/login';
+  var ncamEl = null;
+  function renderNcam() {
+    return hdr(false) + '<div class="body ncamslot"><div class="ncamload">Loading NezerCam…<br><a href="' + NCAM_URL + '" target="_blank" rel="noopener">Open in a new tab ↗</a></div></div>';
+  }
+  function placeNcam() {
+    var slot = root.querySelector('.ncamslot'), on = !!slot;
+    if (!on) { if (ncamEl) ncamEl.style.display = 'none'; return; }
+    if (!ncamEl) {
+      ncamEl = document.createElement('iframe');
+      ncamEl.id = 'ncam'; ncamEl.src = NCAM_URL; ncamEl.setAttribute('allow', 'camera; microphone; geolocation; clipboard-write; fullscreen');
+      ncamEl.onload = function () { ncamEl.classList.add('ready'); };
+      document.body.appendChild(ncamEl);
+    }
+    var r = slot.getBoundingClientRect();
+    ncamEl.style.cssText = 'display:block;position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px';
+  }
+  window.addEventListener('resize', function () { setTimeout(placeNcam, 50); });
 
   /* ---------- MAIL ---------- */
   var MBOX = [['INBOX', 'Inbox'], ['UNREAD', 'Unread'], ['STARRED', 'Starred'], ['SENT', 'Sent'], ['ALL', 'All mail']];
@@ -1012,7 +1036,7 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
       h += tabbar();
     }
     if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
@@ -1024,6 +1048,7 @@
     var sc = root.querySelector('.scroll'), st = sc ? sc.scrollTop : 0, keep = !S.fx || S.fx === 'd' || S.fx === 'p' || S.fx === 'c';
     root.innerHTML = h; lastHtml = h; S.fxId = null;
     var sc2 = root.querySelector('.scroll'); if (sc2 && st && keep) sc2.scrollTop = st;
+    placeNcam();
     if (S.fx) { var cls = 'fx' + S.fx; S.fx = null; root.classList.remove('fxv', 'fxn', 'fxd', 'fxp', 'fxc'); void root.offsetWidth; root.classList.add(cls); clearTimeout(fxT); fxT = setTimeout(function () { root.classList.remove(cls); }, 500); }
   }
 

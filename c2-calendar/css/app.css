@@ -563,3 +563,10 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .sendbtn[disabled]{opacity:.6}
 .dlg .f textarea.mbodyin{min-height:22rem;font-family:inherit;line-height:1.5}
 #modal.drawer.wide .dlg .db{background:transparent}
+#ncam{border:0;background:#fff;z-index:3;border-radius:0}
+.ncamslot{display:flex;align-items:center;justify-content:center}
+.ncamload{color:var(--muted);text-align:center;line-height:2}
+.ncamload a{color:var(--acc)}
+.tab{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#app.narrow .tab{font-size:.62rem}
+#app.narrow .tab svg{width:1.6rem;height:1.6rem}
