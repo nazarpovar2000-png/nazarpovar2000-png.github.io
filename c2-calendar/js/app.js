@@ -92,12 +92,12 @@
     { id: 'nazar', name: 'Nazar', color: '#2F6BEA', initial: 'N' }
   ];
   var DEF_LISTS = [{ id: 'grocery', name: 'Grocery List', color: '#3a6cf0' }, { id: 'todo', name: 'To-Do List', color: '#E5525C' }];
-  var TABS = ['home', 'calendar', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'ncam', 'calls', 'more'];
-  var TABN = { home: 'Home', calendar: 'Calendar', tasks: 'Tasks', rewards: 'Rewards', meals: 'Meals', photos: 'Photos', lists: 'Lists', anniv: 'Anniv.', ncam: 'NezerCam', calls: 'Calls', more: 'More' };
-  var COLLS = ['events', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'notes', 'recipes'];
+  var TABS = ['home', 'calendar', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'bills', 'ncam', 'calls', 'more'];
+  var TABN = { home: 'Home', calendar: 'Calendar', tasks: 'Tasks', rewards: 'Rewards', meals: 'Meals', photos: 'Photos', lists: 'Lists', anniv: 'Anniv.', bills: 'Bills', ncam: 'NezerCam', calls: 'Calls', more: 'More' };
+  var COLLS = ['events', 'tasks', 'rewards', 'meals', 'photos', 'lists', 'anniv', 'notes', 'recipes', 'bills'];
   var S = {
     view: Q.view || 'home', sub: null, more: false,
-    cfg: { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 10), sleepFrom: '', sleepTo: '' },
+    cfg: { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 11), sleepFrom: '', sleepTo: '' },
     data: {}, ext: [],
     sel: sod(now()), anchor: sod(now()), calMode: 'month', off: {},
     taskDay: sod(now()), homeTaskP: 0, homeList: 'grocery', photoIdx: 0,
@@ -257,7 +257,7 @@
         .then(function () { S.hh.config = c; }).catch(function () { toast('Settings not saved'); }).then(function () { S.cfgDirty = false; });
     }, 400);
   }
-  function defaultCfg() { return { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 10), sleepFrom: '', sleepTo: '' }; }
+  function defaultCfg() { return { people: DEF_PEOPLE.slice(), h24: false, dateFmt: 'MM/DD/YYYY', fab: true, weather: true, temp: '57', unit: 'F', hidePhotos: false, theme: 'light', font: 'medium', name: 'C-2', order: TABS.slice(0, 11), sleepFrom: '', sleepTo: '' }; }
   function applyCfg(o) { Object.keys(o).forEach(function (k) { S.cfg[k] = o[k]; }); if (!S.cfg.people || !S.cfg.people.length) S.cfg.people = DEF_PEOPLE.slice(); }
   /* photos live in Storage; items hold the path, we sign URLs in batches */
   function resolvePhotos() {
@@ -318,6 +318,12 @@
       { id: 'e2', t: 'Free on-call', date: '2026-11-03', time: '15:00', ad: false, p: 'nazar', at: 2 }
     ];
     S.data.lists = [{ id: 'l1', list: 'grocery', t: 'Milk', at: 1 }, { id: 'l2', list: 'grocery', t: 'Bananas', at: 2 }];
+    S.data.bills = [
+      { id: 'b1', t: 'Rent', cat: 'housing', amount: 2150, freq: 'monthly', start: '2026-01-01', added: '2026-10-20', count: 0, autopay: false, remind: '3', paid: { '2026-11-01': { amt: 2150, at: Date.parse('2026-10-30') } }, at: 1 },
+      { id: 'b2', t: 'Phone plan', cat: 'phone', amount: 255, freq: 'monthly', start: '2026-09-20', count: 6, autopay: true, remind: '1', paid: { '2026-09-20': { amt: 255, at: 1 }, '2026-10-20': { amt: 255, at: 2 } }, at: 2 },
+      { id: 'b3', t: 'PSE Electric', cat: 'utilities', amount: 140, freq: 'monthly', start: '2026-06-09', added: '2026-10-20', count: 0, remind: '3', paid: {}, at: 3 },
+      { id: 'b4', t: 'Car insurance', cat: 'insurance', amount: 920, freq: 'yearly', start: '2026-11-28', count: 0, remind: '7', paid: {}, at: 4 }
+    ];
   }
 
   /* ---------- derived data ---------- */
@@ -356,6 +362,7 @@
       if (a.yearly ? (ad.getMonth() === d.getMonth() && ad.getDate() === d.getDate() && d.getFullYear() >= ad.getFullYear()) : same(ad, d)) out.push({ id: a.id, t: a.t, ad: true, p: (a.ps && a.ps.length === 1) ? a.ps[0] : '', kind: 'anniv', src: a });
     });
     out = out.concat(gEventsOn(d));
+    if (S.cfg.billsOnCal !== false) billsOn(d).forEach(function (o) { out.push({ id: o.b.id, t: '💵 ' + o.b.t + ' ' + money(bAmt(o.b, o.k)), ad: true, p: '', col: bPaid(o.b, o.k) ? '#22a06b' : '#e5484d', kind: 'bill', src: o.b }); });
     out = out.filter(function (e) { return !e.p || !S.off[e.p]; });
     out.sort(function (a, b) { if (a.ad !== b.ad) return a.ad ? -1 : 1; return (a.time || '') < (b.time || '') ? -1 : 1; });
     return out;
@@ -414,9 +421,10 @@
     return h;
   }
   function tabbar() {
-    var order = S.cfg.order && S.cfg.order.length ? S.cfg.order.slice() : TABS.slice(0, 10);
+    var order = S.cfg.order && S.cfg.order.length ? S.cfg.order.slice() : TABS.slice(0, 11);
     if (order.indexOf('home') < 0) order.unshift('home');
     if (order.indexOf('ncam') < 0 && !S.cfg.hideNcam) order.push('ncam');
+    if (order.indexOf('bills') < 0) { var ai = order.indexOf('anniv'); order.splice(ai >= 0 ? ai + 1 : order.length, 0, 'bills'); }
     if (order.indexOf('calls') < 0) order.push('calls');
     order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam) && !(t === 'calls' && !isOwner()); });
     order.push('more');
@@ -680,6 +688,7 @@
       h += '<div class="row"><span>Show weather information</span>' + tg(c.weather, 'cfgtg', 'weather') + '</div>';
       if (c.weather) h += '<div class="row"><span>Temperature (manual until weather sync)</span><input type="text" data-c="temp" value="' + esc(c.temp) + '" style="width:4rem;margin-right:.4rem"><select data-c="unit"><option' + (c.unit === 'F' ? ' selected' : '') + '>F</option><option' + (c.unit === 'C' ? ' selected' : '') + '>C</option></select></div>';
       h += '<div class="row"><span>Hide Photos Tab</span>' + tg(c.hidePhotos, 'cfgtg', 'hidePhotos') + '</div>';
+      h += '<div class="row"><span>Show bills in Calendar</span>' + tg(c.billsOnCal !== false, 'cfgtg2', 'billsOnCal') + '</div>';
       h += '<div class="row"><span>Hide NezerCam Tab</span>' + tg(c.hideNcam, 'cfgtg', 'hideNcam') + '</div>';
       h += '<div class="row" data-a="order"><span>Module Order</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
       h += '<div class="row"><span>Theme Mode</span><select data-c="theme">' + [['light', 'Light'], ['dark', 'Dark'], ['auto', 'Auto']].map(function (o) { return '<option value="' + o[0] + '"' + (c.theme === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
@@ -1002,6 +1011,141 @@
     scan();
   }
 
+  /* ---------- BILLS ---------- */
+  TI.bills = '<svg viewBox="0 0 32 32"><rect x="6" y="3" width="20" height="26" rx="3" fill="#22a06b"/><path d="M6 25l3.3 2.5L12.7 25l3.3 2.5 3.3-2.5 3.4 2.5L26 25v4H6z" fill="#1a8a5b"/><path d="M16 8v14M19.2 10.6c-.6-.9-1.8-1.4-3.2-1.4-1.9 0-3.1 1-3.1 2.4 0 3.3 6.4 1.7 6.4 5 0 1.5-1.4 2.5-3.3 2.5-1.5 0-2.8-.6-3.4-1.6" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>';
+  var BCAT = [['housing', 'Housing', '🏠'], ['utilities', 'Utilities', '💡'], ['phone', 'Phone & Internet', '📶'], ['car', 'Car', '🚗'], ['insurance', 'Insurance', '🛡️'], ['loan', 'Loan / Installment', '🏦'], ['card', 'Credit card', '💳'], ['subs', 'Subscription', '📺'], ['business', 'Business', '🧰'], ['taxes', 'Taxes', '🧾'], ['other', 'Other', '📄']];
+  var BFREQ = [['monthly', 'Every month'], ['biweekly', 'Every 2 weeks'], ['weekly', 'Every week'], ['quarterly', 'Every 3 months'], ['yearly', 'Every year'], ['once', 'One time']];
+  function bcat(id) { for (var i = 0; i < BCAT.length; i++) if (BCAT[i][0] === id) return BCAT[i]; return BCAT[BCAT.length - 1]; }
+  function money(n) { n = +n || 0; return '$' + n.toFixed(n % 1 ? 2 : 0).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function bStep(b, i) {
+    var s = parseKey(b.start), d;
+    if (b.freq === 'weekly') return addD(s, 7 * i);
+    if (b.freq === 'biweekly') return addD(s, 14 * i);
+    var m = b.freq === 'quarterly' ? 3 : b.freq === 'yearly' ? 12 : 1;
+    d = new Date(s.getFullYear(), s.getMonth() + m * i, 1);
+    var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    return new Date(d.getFullYear(), d.getMonth(), Math.min(s.getDate(), last));
+  }
+  function bTotalN(b) { return b.freq === 'once' ? 1 : (+b.count || 0); }
+  function bOcc(b, from, to) {
+    var out = [], n = bTotalN(b), i = 0, d;
+    if (!b.start) return out;
+    while (i < 2000) {
+      if (n && i >= n) break;
+      d = bStep(b, i);
+      if (d > to) break;
+      if (d >= from) out.push({ b: b, i: i, d: d, k: key(d) });
+      i++;
+      if (b.freq === 'once') break;
+    }
+    return out;
+  }
+  function bPaid(b, k) {
+    if (b.paid && b.paid[k]) return b.paid[k];
+    if (+b.prepaid > 0 && k <= key(bStep(b, +b.prepaid - 1))) return { amt: +b.amount, pre: true };
+    if (b.added && k < b.added && !(+b.count > 0)) return { amt: +b.amount, pre: true };
+    return null;
+  }
+  function bAmt(b, k) { var p = bPaid(b, k); return p && p.amt != null ? +p.amt : +b.amount || 0; }
+  function bStats(b) {
+    var n = bTotalN(b); if (!n) return null;
+    var paidN = 0; for (var i = 0; i < n && i < 600; i++) if (bPaid(b, key(bStep(b, i)))) paidN++;
+    var left = Math.max(0, n - paidN);
+    return { n: n, paid: paidN, left: left, leftAmt: left * (+b.amount || 0), end: bStep(b, n - 1) };
+  }
+  function bNext(b) { var t = sod(now()), o = bOcc(b, addD(t, -400), addD(t, 800)); for (var i = 0; i < o.length; i++) if (!bPaid(b, o[i].k)) return o[i]; return null; }
+  function bStatus(o) { var t = sod(now()), dd = Math.round((o.d - t) / 864e5); if (bPaid(o.b, o.k)) return 'paid'; if (dd < 0) return 'late'; if (dd <= 3) return 'soon'; return 'up'; }
+  function billsOn(d) { var out = []; S.data.bills.forEach(function (b) { bOcc(b, d, d).forEach(function (o) { out.push(o); }); }); return out; }
+  function renderBills() {
+    var a = S.billAnchor || new Date(sod(now()).getFullYear(), sod(now()).getMonth(), 1);
+    var from = new Date(a.getFullYear(), a.getMonth(), 1), to = new Date(a.getFullYear(), a.getMonth() + 1, 0), t = sod(now());
+    var occ = [], late = [];
+    S.data.bills.forEach(function (b) {
+      bOcc(b, from, to).forEach(function (o) { occ.push(o); });
+      if (same(from, new Date(t.getFullYear(), t.getMonth(), 1))) bOcc(b, addD(from, -400), addD(from, -1)).forEach(function (o) { if (!bPaid(b, o.k)) late.push(o); });
+    });
+    occ = late.concat(occ);
+    occ.sort(function (x, y) { return x.d - y.d; });
+    var due = 0, paid = 0, lateSum = 0;
+    occ.forEach(function (o) { var v = bAmt(o.b, o.k); due += v; if (bPaid(o.b, o.k)) paid += v; else if (o.d < t) lateSum += v; });
+    var h = hdr(false);
+    h += '<div class="tb">' + navPill(MONL[a.getMonth()] + ' ' + a.getFullYear(), 'bnav') + '<span class="sp"></span><button class="pill" data-a="billsall" style="margin-right:0">' + (S.billAll ? 'This month' : 'All bills') + I.dn + '</button></div><div class="body"><div class="scroll" style="padding:0 1.2rem">';
+    if (S.billAll) return h + renderBillsAll() + '</div>' + fab('addbill') + '</div>';
+    h += '<div class="bsum"><div><small>Due this month</small><b>' + money(due) + '</b></div><div><small>Paid</small><b class="g">' + money(paid) + '</b></div><div><small>Left</small><b' + (lateSum ? ' class="r"' : '') + '>' + money(due - paid) + '</b>' + (lateSum ? '<em>' + money(lateSum) + ' overdue</em>' : '') + '</div></div>';
+    h += '<div class="bbar"><i style="width:' + (due ? Math.min(100, paid / due * 100) : 0) + '%"></i></div>';
+    if (!occ.length) h += '<div style="height:55%;display:flex">' + empty(S.data.bills.length ? 'No bills due this month' : 'No bills yet<br>Tap + to add rent, phone, a loan…', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    occ.forEach(function (o, i) {
+      var b = o.b, st = bStatus(o), c = bcat(b.cat), s = bStats(b), dd = Math.round((o.d - t) / 864e5);
+      var when = st === 'paid' ? 'Paid' + (bPaid(b, o.k).at ? ' ' + MON[new Date(bPaid(b, o.k).at).getMonth()] + ' ' + new Date(bPaid(b, o.k).at).getDate() : '') : dd === 0 ? 'Due today' : dd === 1 ? 'Due tomorrow' : dd < 0 ? (-dd) + ' day' + (dd === -1 ? '' : 's') + ' late' : 'Due ' + MON[o.d.getMonth()] + ' ' + o.d.getDate();
+      h += '<div class="brow ' + st + (S.fxId === b.id + o.k ? ' pulse' : '') + '" style="animation-delay:' + Math.min(i, 12) * 25 + 'ms"><span class="bic">' + c[2] + '</span><div class="bt" data-a="edbill" data-v="' + b.id + '"><b>' + esc(b.t) + (b.autopay ? '<span class="ap">AUTO</span>' : '') + '</b><small>' + when + (s ? ' · ' + (o.i + 1) + ' of ' + s.n : '') + '</small>' + (s ? '<span class="bprog"><i style="width:' + (s.paid / s.n * 100) + '%"></i></span>' : '') + '</div><b class="bamt">' + money(bAmt(b, o.k)) + '</b>' + (b.url ? '<a class="bpay" href="' + esc(b.url) + '" target="_blank" rel="noopener">Pay</a>' : '') + '<button class="bck" data-a="bpay" data-v="' + b.id + '|' + o.k + '">' + (st === 'paid' ? I.check : '') + '</button></div>';
+    });
+    return h + '<div style="height:6rem"></div></div>' + fab('addbill') + '</div>';
+  }
+  function renderBillsAll() {
+    var h = '', tot = 0, debt = 0;
+    var xs = S.data.bills.slice().sort(function (x, y) { var a = bNext(x), b = bNext(y); return (a ? a.d : 9e15) - (b ? b.d : 9e15); });
+    xs.forEach(function (b) { if (b.freq === 'monthly' && !b.count) tot += +b.amount || 0; var s = bStats(b); if (s) debt += s.leftAmt; });
+    h += '<div class="bsum"><div><small>Monthly recurring</small><b>' + money(tot) + '</b></div><div><small>Left on installments</small><b>' + money(debt) + '</b></div><div><small>Bills</small><b>' + xs.length + '</b></div></div>';
+    xs.forEach(function (b, i) {
+      var c = bcat(b.cat), nx = bNext(b), s = bStats(b), fq = BFREQ.filter(function (f) { return f[0] === b.freq; })[0];
+      h += '<div class="brow" data-a="edbill" data-v="' + b.id + '" style="animation-delay:' + Math.min(i, 12) * 25 + 'ms"><span class="bic">' + c[2] + '</span><div class="bt"><b>' + esc(b.t) + (b.autopay ? '<span class="ap">AUTO</span>' : '') + '</b><small>' + (fq ? fq[1] : '') + (s ? ' · ' + s.paid + '/' + s.n + ' paid · ' + money(s.leftAmt) + ' left · ends ' + MON[s.end.getMonth()] + ' ' + s.end.getFullYear() : '') + (nx ? ' · next ' + MON[nx.d.getMonth()] + ' ' + nx.d.getDate() : (s ? ' · done ✓' : '')) + '</small>' + (s ? '<span class="bprog"><i style="width:' + (s.paid / s.n * 100) + '%"></i></span>' : '') + '</div><b class="bamt">' + money(b.amount) + '</b></div>';
+    });
+    if (!xs.length) h += '<div style="height:55%;display:flex">' + empty('No bills yet', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    return h + '<div style="height:6rem"></div>';
+  }
+  function billDialog(b) {
+    var isNew = !b;
+    b = b || { t: '', cat: 'utilities', amount: '', freq: 'monthly', start: key(sod(now())), count: 0, autopay: false, remind: 3, url: '', note: '', paid: {} };
+    var limited = +b.count > 0;
+    openModal(dhead(isNew ? 'Add Bill' : 'Edit Bill') + '<div class="db">' + fTitle(b.t, 'Name (e.g. Rent, PSE, Car loan)')
+      + '<div class="f"><i>' + FI.star + '</i><span>Amount</span><span style="flex:none;color:#1d2433;margin-right:.2rem">$</span><input type="number" name="amount" step="0.01" min="0" value="' + esc(b.amount) + '" class="mini" style="width:7rem" placeholder="0.00"></div>'
+      + fSel(FI.list, 'Category', 'cat', BCAT.map(function (c) { return [c[0], c[2] + ' ' + c[1]]; }), b.cat)
+      + '<div class="f"><i>' + FI.cal + '</i><div class="col2"><small>' + (isNew ? 'First due date' : 'First due date (sets the day each time)') + '</small><input type="date" name="start" value="' + esc(b.start) + '"></div></div>'
+      + fSel(FI.rep, 'Repeats', 'freq', BFREQ, b.freq)
+      + '<div class="f"><i>' + FI.clock + '</i><span>Installments (fixed number of payments)</span><select name="cnt" class="mini" style="width:7.5rem">' + [0, 2, 3, 4, 6, 9, 10, 12, 18, 24, 36, 48, 60, 72].concat(limited && [2, 3, 4, 6, 9, 10, 12, 18, 24, 36, 48, 60, 72].indexOf(+b.count) < 0 ? [+b.count] : []).map(function (n) { return '<option value="' + n + '"' + (n === (+b.count || 0) ? ' selected' : '') + '>' + (n ? n + ' payments' : 'No end') + '</option>'; }).join('') + '</select></div>'
+      + '<div class="f" id="bprepaid"' + (limited ? '' : ' style="display:none"') + '><i>' + FI.list + '</i><span>Already paid</span><select name="prepaid" class="mini" style="width:7.5rem">' + (function () { var o = ''; for (var i = 0; i < 72; i++) o += '<option value="' + i + '"' + (i === (+b.prepaid || 0) ? ' selected' : '') + '>' + i + ' payment' + (i === 1 ? '' : 's') + '</option>'; return o; })() + '</select></div>'
+      + '<div class="bcalc" id="bcalc"></div>'
+      + fTog(FI.check || FI.star, 'Autopay is on', 'autopay', b.autopay)
+      + fSel(FI.bell, 'Remind me', 'remind', [['', 'Never'], ['0', 'On the due day'], ['1', '1 day before'], ['3', '3 days before'], ['5', '5 days before'], ['7', '1 week before']], b.remind == null ? '' : String(b.remind))
+      + '<div class="f"><i>' + FI.list + '</i><input type="text" name="url" value="' + esc(b.url) + '" placeholder="Payment website (optional)" autocapitalize="off"></div>'
+      + fDesc(b.note, 'note', 'Notes (account #, how to pay…)')
+      + (!isNew ? billHistory(b) : '') + '</div>' + dfoot(!isNew), function (act) {
+      if (act === 'del') { if (!confirmBox('Delete "' + b.t + '" and its payment history?')) return false; del('bills', b.id); return true; }
+      if (act.indexOf('unpay:') === 0) { var k = act.slice(6); if (b.paid) delete b.paid[k]; put('bills', b); billDialog(b); return false; }
+      if (act !== 'ok') return false;
+      var n = val('t'), amt = parseFloat(val('amount'));
+      if (!n) { toast('Enter a name'); return false; } if (!(amt >= 0)) { toast('Enter the amount'); return false; }
+      put('bills', { id: b.id, t: n, amount: Math.round(amt * 100) / 100, cat: val('cat'), start: val('start') || key(sod(now())), freq: val('freq'), count: val('freq') === 'once' ? 1 : +val('cnt') || 0, prepaid: +val('cnt') ? Math.min(+val('prepaid') || 0, +val('cnt') - 1) : 0, added: b.added || key(sod(now())), autopay: togOn('autopay'), remind: val('remind'), url: val('url'), note: val('note'), paid: b.paid || {}, at: b.at });
+      return true;
+    }, { drawer: true });
+    billCalc();
+  }
+  function billHistory(b) {
+    var ks = Object.keys(b.paid || {}).sort().reverse();
+    if (!ks.length) return '';
+    return '<h5 class="clh">Payment history</h5><div class="clsec" style="padding:.3rem .8rem">' + ks.slice(0, 24).map(function (k) { var p = b.paid[k], d = parseKey(k); return '<div class="row" style="min-height:2.4rem"><span>' + MON[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + '</span><span class="v">' + money(p.amt != null ? p.amt : b.amount) + '</span><button class="pill" data-m="unpay:' + k + '" style="margin:0 0 0 .5rem;font-size:.75rem">Undo</button></div>'; }).join('') + '</div>';
+  }
+  function billCalc() {
+    var box = document.getElementById('bcalc'); if (!box) return;
+    var amt = parseFloat(val('amount')) || 0, n = +val('cnt') || 0, fq = val('freq'), st = val('start'), pp = document.getElementById('bprepaid');
+    if (pp) pp.style.display = n && fq !== 'once' ? '' : 'none';
+    if (!n || fq === 'once' || !st) { box.innerHTML = ''; return; }
+    var end = bStep({ start: st, freq: fq }, n - 1);
+    var pre = Math.min(+val('prepaid') || 0, n);
+    box.innerHTML = n + ' × ' + money(amt) + ' = <b>' + money(amt * n) + '</b>' + (pre ? ' · <b>' + money(amt * (n - pre)) + '</b> left' : '') + ' · last payment ' + MON[end.getMonth()] + ' ' + end.getDate() + ', ' + end.getFullYear();
+  }
+  function payBill(v) {
+    var p = v.split('|'), b = find('bills', p[0]), k = p[1]; if (!b) return;
+    b.paid = b.paid || {};
+    if (b.paid[k]) { delete b.paid[k]; S.fx = 'c'; S.fxId = b.id + k; put('bills', b); return; }
+    var amt = prompt('Amount paid for ' + b.t + ' (' + MON[parseKey(k).getMonth()] + ' ' + parseKey(k).getDate() + ')', String(b.amount));
+    if (amt === null) return;
+    var v2 = parseFloat(String(amt).replace(/[$,]/g, '')); if (!(v2 >= 0)) v2 = +b.amount || 0;
+    b.paid[k] = { amt: Math.round(v2 * 100) / 100, at: Date.now() };
+    S.fx = 'c'; S.fxId = b.id + k; put('bills', b);
+    var s = bStats(b); toast(s && s.left === 0 ? '🎉 ' + b.t + ' is fully paid off!' : 'Marked paid' + (s ? ' · ' + s.left + ' left' : ''));
+  }
+
   /* ---------- MAIL ---------- */
   var MBOX = [['PRIMARY', 'Important'], ['UNREAD', 'Unread'], ['INBOX', 'All inbox'], ['STARRED', 'Starred'], ['SENT', 'Sent'], ['PROMO', 'Promotions'], ['SPAM', 'Spam'], ['ALL', 'All mail']];
   function myAccts() { return G.accts.filter(function (a) { return a.user_id === myId(); }); }
@@ -1159,7 +1303,7 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
       h += tabbar();
     }
     if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
@@ -1484,9 +1628,10 @@
   M.addEventListener('input', function (ev) {
     var t = ev.target;
     if (t.name === 't') { var c = M.querySelector('.cnt'); if (c) c.textContent = t.value.length + '/300'; }
+    if (t.name === 'amount') billCalc();
     if (t.name === 'q' && S.rc) { S.rc.q = t.value; var l = M.querySelector('.rlist'), hh = M.querySelector('.rmain h5'); if (l) l.innerHTML = rcList(); if (hh) hh.textContent = t.value ? 'Search' : S.rc.cat; }
   });
-  M.addEventListener('change', function (ev) { if (M._cleanHook && S.modalOpen && M._cleanHook(ev.target)) return; if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
+  M.addEventListener('change', function (ev) { if (ev.target.name === 'cnt' || ev.target.name === 'freq' || ev.target.name === 'start' || ev.target.name === 'prepaid') billCalc(); if (M._cleanHook && S.modalOpen && M._cleanHook(ev.target)) return; if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
   M.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.tagName === 'INPUT' && ev.target.name !== 'q' && M._ok) { if (M._ok('ok')) { closeModal(); render(); } } });
 
   /* ---------- photos upload ---------- */
@@ -1534,7 +1679,7 @@
     filter: function () { choose('Filter', [['all', 'Show everyone']].concat(S.cfg.people.map(function (p) { return [p.id, 'Only ' + esc(p.name)]; })), null, function (id) { S.off = {}; if (id !== 'all') S.cfg.people.forEach(function (p) { if (p.id !== id) S.off[p.id] = true; }); render(); }); },
     pchip: function (id) { S.off[id] = !S.off[id]; render(); },
     day: function (k) { S.sel = parseKey(k); dayDialog(k); },
-    openev: function (v) { var p = v.split(':'), k = p[0], id = p.slice(1).join(':'); if (k === 'ev') evDialog(find('events', id)); else if (k === 'anniv') annivDialog(find('anniv', id)); else if (k === 'g') { var gp = id.split('|'), gx = G.ev.filter(function (x) { return x.a === gp[0] && x.c === gp[1] && x.id === gp.slice(2).join('|'); })[0]; if (gx) evDialogG(gx); } },
+    openev: function (v) { var p = v.split(':'), k = p[0], id = p.slice(1).join(':'); if (k === 'ev') evDialog(find('events', id)); else if (k === 'anniv') annivDialog(find('anniv', id)); else if (k === 'bill') { billDialog(find('bills', id)); } else if (k === 'g') { var gp = id.split('|'), gx = G.ev.filter(function (x) { return x.a === gp[0] && x.c === gp[1] && x.id === gp.slice(2).join('|'); })[0]; if (gx) evDialogG(gx); } },
     addev: function () { evDialog(null, key(S.sel)); },
     tnav: function (v) { S.fx = 'n'; S.taskDay = addD(S.taskDay, +v); render(); },
     taskmore: function () { choose('Tasks', [['today', 'Go to today'], ['clear', 'Clear completed (this day)']], null, function (o) { if (o === 'today') S.taskDay = sod(now()); else tasksOn(S.taskDay).forEach(function (t) { if (t.done) del('tasks', t.id); }); render(); }); },
@@ -1596,6 +1741,7 @@
     tadd: function () { var T = S.timer; if (T.run) T.end += 60000; else T.left += 60; T.total += 60; render(); },
     stab: function (v) { S.setTab = v; S.gFlash = null; if (v === 'google') { G.cals = {}; loadGAccts(); } render(); },
     cfgtg: function (k) { S.cfg[k] = !S.cfg[k]; saveCfg(); },
+    cfgtg2: function (k) { S.cfg[k] = S.cfg[k] === false; saveCfg(); },
     cfgfont: function (v) { S.cfg.font = v; saveCfg(); },
     order: function () { S.more = false; render(); orderDialog(); },
     edp: function (i) { personDialog(i); },
@@ -1615,6 +1761,11 @@
     mmore: function () { mailLoad(true); },
     mopen: function (id) { mailView(id); },
     clopen: function (i) { clOpen(i); },
+    addbill: function () { billDialog(null); },
+    edbill: function (id) { billDialog(find('bills', id)); },
+    bpay: function (v) { payBill(v); },
+    bnav: function (v) { var a = S.billAnchor || new Date(sod(now()).getFullYear(), sod(now()).getMonth(), 1); S.billAnchor = new Date(a.getFullYear(), a.getMonth() + (+v), 1); S.fx = 'n'; render(); },
+    billsall: function () { S.billAll = !S.billAll; S.fx = 'n'; render(); },
     clreload: function () { clLoad(true); },
     mcompose: function () { mailCompose('new'); },
     authmode: function (m) { S.authEmail = authVal('au-email') || S.authEmail; S.authMode = m; S.authMsg = null; lastHtml = ''; render(); },
@@ -1685,6 +1836,13 @@
     }
     S.data.events.forEach(function (e) { chk(e, 'Event', false); });
     S.data.tasks.forEach(function (t) { chk(t, 'Task', true); });
+    if (mins === 9 * 60) S.data.bills.forEach(function (b) {
+      if (b.remind === '' || b.remind == null) return;
+      var dd = addD(d, +b.remind || 0); bOcc(b, dd, dd).forEach(function (o) {
+        if (bPaid(b, o.k)) return; var id = 'b' + b.id + o.k + key(d); if (S.fired[id]) return; S.fired[id] = 1;
+        notify('Bill: ' + b.t + ' ' + money(b.amount) + (+b.remind ? ' due ' + MON[o.d.getMonth()] + ' ' + o.d.getDate() : ' due today') + (b.autopay ? ' (autopay)' : ''));
+      });
+    });
   }
   var lastMin = -1, photoTick = 0;
   setInterval(function () {

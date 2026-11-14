@@ -605,3 +605,34 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .cbt small{display:block;color:#6b7487;font-size:.78rem;margin-top:.1rem}
 .cbi em{font-style:normal;color:#3a6cf0;font-weight:500;margin-left:.6rem;white-space:nowrap}
 .cbi.dis{opacity:.5;cursor:default}
+/* bills */
+.bsum{display:flex;background:var(--card2);border-radius:1rem;padding:.9rem 1rem;margin:.3rem 0 .5rem;box-shadow:0 .1rem .5rem rgba(40,60,110,.06)}
+.bsum>div{flex:1;min-width:0}
+.bsum small{display:block;color:var(--muted);font-size:.78rem}
+.bsum b{display:block;font-size:1.45rem;font-weight:700;margin-top:.15rem}
+.bsum b.g{color:#22a06b}.bsum b.r{color:#e5484d}
+.bsum em{font-style:normal;font-size:.72rem;color:#e5484d}
+.bbar{height:.4rem;border-radius:.2rem;background:var(--line);overflow:hidden;margin:0 .2rem .8rem}
+.bbar i{display:block;height:100%;background:#22a06b;border-radius:.2rem;transition:width .5s}
+.brow{display:flex;align-items:center;background:var(--card);border-radius:.9rem;padding:.7rem .8rem;margin-bottom:.5rem;animation:fadeUp .28s both;border-left:.25rem solid transparent;cursor:pointer}
+.brow.late{border-left-color:#e5484d;background:rgba(229,72,77,.06)}
+.brow.soon{border-left-color:#f5a524}
+.brow.paid{opacity:.6}
+.brow.paid .bt b{text-decoration:line-through}
+.bic{width:2.4rem;height:2.4rem;border-radius:.7rem;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-right:.8rem;flex:none}
+.bt{flex:1;min-width:0}
+.bt b{display:block;font-weight:500;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt small{display:block;color:var(--muted);font-size:.8rem;margin-top:.1rem}
+.brow.late .bt small{color:#e5484d;font-weight:500}
+.brow.soon .bt small{color:#c47f00}
+.ap{font-size:.62rem;font-weight:700;background:#e7efff;color:#3a6cf0;border-radius:.3rem;padding:.05rem .3rem;margin-left:.4rem;vertical-align:.12rem;text-decoration:none;display:inline-block}
+.bprog{display:block;height:.28rem;background:var(--line);border-radius:.14rem;margin-top:.35rem;overflow:hidden;max-width:12rem}
+.bprog i{display:block;height:100%;background:#3a6cf0;transition:width .4s}
+.bamt{font-weight:700;font-size:1.05rem;margin:0 .6rem;white-space:nowrap}
+.bpay{font-size:.78rem;color:#3a6cf0;border:1px solid var(--line);border-radius:1rem;padding:.25rem .6rem;margin-right:.5rem;text-decoration:none}
+.bck{width:1.7rem;height:1.7rem;border-radius:50%;border:2px solid #b7c0d0;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.bck svg{width:.95rem;height:.95rem}
+.brow.paid .bck{background:#22a06b;border-color:#22a06b}
+.brow.pulse .bck{animation:ckpop .3s}
+.bcalc{font-size:.85rem;color:#4a5263;margin:-.2rem .3rem .7rem;min-height:.2rem}
+.bcalc b{color:#1d2433}
