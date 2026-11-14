@@ -1113,6 +1113,7 @@
       });
     });
     var csv = '﻿' + rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
+    if (window.Android && Android.saveFile) { var pth = Android.saveFile('bills-' + key(t) + '.csv', csv); toast(pth ? 'Saved to ' + pth : 'Could not save file'); return; }
     var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' }), url = URL.createObjectURL(blob), aEl = document.createElement('a');
     aEl.href = url; aEl.download = 'bills-' + key(t) + '.csv'; document.body.appendChild(aEl); aEl.click(); setTimeout(function () { URL.revokeObjectURL(url); aEl.remove(); }, 1000);
     toast('Downloaded bills-' + key(t) + '.csv');
