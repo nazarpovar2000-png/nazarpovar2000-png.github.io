@@ -797,7 +797,9 @@
     gcall('ev_delete', { account_id: x.a, cal: x.c, id: x.id }).then(function () { toast('Deleted'); gEvents(true); }).catch(function (e) { toast(gErr(e)); });
     G.ev = G.ev.filter(function (y) { return y !== x; }); render();
   }
+  var IN_APP = /C2Launcher/.test(navigator.userAgent);
   function gStart() {
+    if (IN_APP) { openModal(head('Connect Google') + '<p style="line-height:1.5">Google does not allow signing in inside this tablet app.</p><p style="line-height:1.5;margin-top:.6rem">Open <b>nazarpovar2000-png.github.io/c2-calendar</b> on your phone or computer, sign in with the same account and connect Google there (Settings → Google). The calendars will appear here automatically.</p><div class="btns"><button class="ok" data-m="cancel">OK</button></div>'); return; }
     toast('Opening Google…');
     gcall('start', { household_id: S.hid, return_to: location.origin + location.pathname }).then(function (r) { location.href = r.url; }).catch(function (e) { toast(gErr(e)); });
   }
@@ -847,7 +849,7 @@
       h += '</div>';
     });
     h += '<button class="abtn" data-a="gconnect" style="max-width:22rem;margin-top:.6rem">+ Connect Google account</button>';
-    h += '<p class="muted" style="margin-top:.9rem;font-size:.82rem;line-height:1.5">Google will warn that the app is not verified — tap “Advanced” → “Go to C2 Calendar”. The app is private to your family.</p>';
+    h += '<p class="muted" style="margin-top:.9rem;font-size:.82rem;line-height:1.5">' + (IN_APP ? 'On this tablet: connect Google from your phone, it will show up here. ' : '') + 'Google will warn that the app is not verified — tap “Advanced” → “Go to C2 Calendar”. The app is private to your family.</p>';
     return h;
   }
 
