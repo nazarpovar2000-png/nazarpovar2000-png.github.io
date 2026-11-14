@@ -158,7 +158,7 @@
   }
   function signOutLocal(msg) {
     setAuth(null); S.hid = null; S.hh = null; S.households = []; S.members = []; S.invites = []; S.loaded = false; S.since = null;
-    COLLS.forEach(function (c) { S.data[c] = []; }); S.urls = {};
+    COLLS.forEach(function (c) { S.data[c] = []; }); S.urls = {}; G.accts = []; G.ev = []; G.unread = {}; G.mail = null;
     S.authMsg = msg || null; S.authMode = 'in'; lastHtml = ''; render();
   }
   function signIn(email, pw) {
@@ -195,7 +195,7 @@
     S.cfg = defaultCfg(); applyCfg(h.config || {});
     COLLS.forEach(function (c) { S.data[c] = []; }); S.since = null; S.loaded = false; S.urls = {};
     applyTheme(); render();
-    loadMembers(); sync();
+    loadMembers(); sync(); G.accts = []; G.ev = []; G.cals = {}; G.unread = {}; G.mail = null; loadGAccts();
   }
   function loadMembers() {
     if (!S.hid) return;
@@ -296,6 +296,7 @@
   function loadUser() { return sbFetch('/auth/v1/user').then(function (u) { if (S.auth) { S.auth.user = u; LS.set('auth', S.auth); } }); }
   function loadLocal() {
     if (DEMO) { seedDemo(); return; }
+    gHandleHash();
     S.auth = LS.get('auth', null);
     handleAuthHash();
   }
@@ -354,6 +355,7 @@
       var ad = parseKey(a.date);
       if (a.yearly ? (ad.getMonth() === d.getMonth() && ad.getDate() === d.getDate() && d.getFullYear() >= ad.getFullYear()) : same(ad, d)) out.push({ id: a.id, t: a.t, ad: true, p: (a.ps && a.ps.length === 1) ? a.ps[0] : '', kind: 'anniv', src: a });
     });
+    out = out.concat(gEventsOn(d));
     out = out.filter(function (e) { return !e.p || !S.off[e.p]; });
     out.sort(function (a, b) { if (a.ad !== b.ad) return a.ad ? -1 : 1; return (a.time || '') < (b.time || '') ? -1 : 1; });
     return out;
@@ -405,6 +407,7 @@
     if (!onHome && (S.view === 'calendar' || S.view === 'tasks')) h += '<button class="sync" data-a="sync">' + I.sync + '</button>';
     if (S.cfg.weather) h += '<span class="wx">' + I.sun + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</span>';
     h += '<span class="sp"></span>';
+    if (myAccts().length) { var un = unreadTotal(); h += '<button class="ico mailico" data-a="sub" data-v="mail">' + TI.mail + (un ? '<b class="bdg">' + (un > 99 ? '99+' : un) + '</b>' : '') + '</button>'; }
     if (onHome) h += '<button class="ico" data-a="settings">' + I.gear + '</button>';
     h += '<span class="ico">' + I.wifi + '</span></div>';
     return h;
@@ -445,7 +448,7 @@
     return h + '</div></div>';
   }
   function evRow(e) {
-    var p = P(e.p), col = e.p ? p.color : '#3a6cf0';
+    var p = P(e.p), col = e.col || (e.p ? p.color : '#3a6cf0');
     return '<div class="ev" style="background:' + hexA(col, .1) + '" data-a="openev" data-v="' + e.kind + ':' + e.id + '"><span class="bar" style="background:' + col + '"></span><div><b>' + esc(e.t) + '</b><small>' + (e.ad ? 'All day' : fmtTime(e.time)) + (e.p ? ' · ' + esc(p.name) : '') + '</small></div></div>';
   }
   function taskRow(t, d) {
@@ -497,7 +500,7 @@
           var d = addD(start, w * 7 + k), evs = eventsOn(d), out = d.getMonth() !== a.getMonth();
           var lab = d.getDate() === 1 ? MON[d.getMonth()] + ' 1' : d.getDate();
           h += '<div class="c' + (out ? ' out' : '') + (same(d, t) ? ' today' : '') + '" data-a="day" data-v="' + key(d) + '"><div class="n"><span>' + lab + '</span></div>';
-          evs.slice(0, 3).forEach(function (e) { var col = e.p ? P(e.p).color : '#3a6cf0'; h += '<div class="ep" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
+          evs.slice(0, 3).forEach(function (e) { var col = e.col || (e.p ? P(e.p).color : '#3a6cf0'); h += '<div class="ep" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
           if (evs.length > 3) h += '<div class="more1">+' + (evs.length - 3) + '</div>';
           h += '</div>';
         }
@@ -510,7 +513,7 @@
       for (var j = 0; j < 7; j++) {
         var wd = addD(ws, j), wevs = eventsOn(wd);
         h += '<div class="col' + (same(wd, t) ? ' today' : '') + '"><div class="h" data-a="day" data-v="' + key(wd) + '"><div>' + WD[j] + '</div><b>' + wd.getDate() + '</b></div><div class="bd">';
-        wevs.forEach(function (e) { var col = e.p ? P(e.p).color : '#3a6cf0'; h += '<div class="ep" data-a="openev" data-v="' + e.kind + ':' + e.id + '" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
+        wevs.forEach(function (e) { var col = e.col || (e.p ? P(e.p).color : '#3a6cf0'); h += '<div class="ep" data-a="openev" data-v="' + e.kind + ':' + e.id + '" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
         h += '</div></div>';
       }
       h += '</div>';
@@ -658,7 +661,7 @@
   function tg(on, act, v) { return '<button class="tg' + (on ? ' on' : '') + '" data-a="' + act + '" data-v="' + (v || '') + '"></button>'; }
   function rad(cur, val, act, label) { return '<button class="rad' + (cur === val ? ' on' : '') + '" data-a="' + act + '" data-v="' + val + '"><i></i>' + (label || val) + '</button>'; }
   function renderSettings() {
-    var c = S.cfg, side = [['general', 'General'], ['calendar', 'Calendar'], ['photos', 'Photos'], ['tasks', 'Tasks'], ['wifi', 'Wi-Fi'], ['notif', 'Notification'], ['users', 'User Mgmt'], ['help', 'Help'], ['about', 'About']];
+    var c = S.cfg, side = [['general', 'General'], ['calendar', 'Calendar'], ['google', 'Google'], ['photos', 'Photos'], ['tasks', 'Tasks'], ['wifi', 'Wi-Fi'], ['notif', 'Notification'], ['users', 'User Mgmt'], ['help', 'Help'], ['about', 'About']];
     var h = '<div class="hdr" style="height:3.6rem;background:var(--card2);border-bottom:1px solid var(--line)"><button class="back" style="background:rgba(58,108,240,.1);color:var(--acc)" data-a="go" data-v="home">' + I.back + '</button><span class="sp"></span><b style="font-weight:500;font-size:1.15rem">Settings</b><span class="sp"></span><span style="width:3.2rem"></span></div><div class="body"><div class="set"><div class="side">';
     h += side.map(function (s) { return '<button class="' + (S.setTab === s[0] ? 'on' : '') + '" data-a="stab" data-v="' + s[0] + '">' + SI[s[0]] + s[1] + '</button>'; }).join('') + '</div><div class="main">';
     var T = S.setTab;
@@ -688,6 +691,8 @@
         h += '<div class="row" data-a="invite"><span style="color:var(--acc)">+ Invite by email</span></div>';
         h += '<h3>Account</h3><div class="row"><span>Signed in as</span><span class="v">' + esc(me.email || '') + '</span></div><div class="row" data-a="signout"><span style="color:#d33">Sign out</span></div>';
       }
+    } else if (T === 'google') {
+      h += DEMO ? '<h3>Google</h3><div class="row"><span class="muted">Not available in demo</span></div>' : renderGoogleSettings();
     } else if (T === 'about') {
       h += '<h3>About</h3><div class="row"><span>Calendar name</span><span class="v">' + esc(c.name) + '</span></div><div class="row"><span>App</span><span class="v">C2 Calendar · web 1.0</span></div><div class="row"><span>Sync</span><span class="v">' + (DEMO ? 'demo (not saved)' : esc(S.hh ? S.hh.name : '')) + '</span></div>';
     } else if (T === 'calendar') {
@@ -701,6 +706,257 @@
     }
     h += '</div></div></div>';
     return h;
+  }
+
+  /* ---------- GOOGLE: accounts, calendars, Gmail ---------- */
+  var G = { accts: [], cals: {}, ev: [], evKey: '', evAt: 0, evBusy: false, unread: {}, mail: null };
+  var GCAL = '<svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="4" fill="#fff" stroke="#dadce0"/><path d="M4 9h24" stroke="#4285f4" stroke-width="5"/><text x="16" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#4285f4" font-family="Arial">31</text></svg>';
+  TI.mail = '<svg viewBox="0 0 32 32"><rect x="3" y="7" width="26" height="19" rx="3.5" fill="#ea4335"/><path d="M4.5 9l11.5 9 11.5-9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>';
+  SI.google = GCAL;
+  function gcall(action, body) {
+    body = body || {}; body.action = action;
+    return sbFetch('/functions/v1/google-oauth', { method: 'POST', json: body });
+  }
+  function gErr(e) {
+    var m = (e && e.message) || 'Google error';
+    if (m.indexOf('reconnect:') === 0) { var p = m.split(':'); return 'Reconnect ' + p[1] + ' in Settings → Google'; }
+    if (/GOOGLE_CLIENT_SECRET/.test(m)) return 'Google is not set up yet';
+    return m;
+  }
+  function myId() { return S.auth && S.auth.user ? S.auth.user.id : ''; }
+  function loadGAccts() {
+    if (DEMO || !S.hid) return Promise.resolve();
+    return sbFetch('/rest/v1/google_accounts?select=id,user_id,email,settings&household_id=eq.' + S.hid + '&order=created_at').then(function (r) {
+      G.accts = r || []; G.evKey = ''; render(); gEvents(true); gUnread();
+    }).catch(function () {});
+  }
+  function gAcct(id) { for (var i = 0; i < G.accts.length; i++) if (G.accts[i].id === id) return G.accts[i]; return null; }
+  function gCalCfg(a, cid) { var c = a && a.settings && a.settings.cals; return c && c[cid] ? c[cid] : null; }
+  function gSaveSettings(a) {
+    return sbFetch('/rest/v1/google_accounts?id=eq.' + a.id, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, json: { settings: a.settings } })
+      .then(function () { G.evKey = ''; gEvents(true); }).catch(function () { toast('Not saved'); });
+  }
+  /* events: fetch a window around what is on screen */
+  function gWindow() {
+    var a = S.view === 'tasks' ? S.taskDay : (S.view === 'home' ? S.sel : S.anchor);
+    var s = addD(new Date(a.getFullYear(), a.getMonth(), 1), -7), e = addD(new Date(a.getFullYear(), a.getMonth() + 1, 1), 14);
+    return [s, e];
+  }
+  function gEvents(force) {
+    if (DEMO || !S.hid || !G.accts.length || G.evBusy) return;
+    var w = gWindow(), k = key(w[0]) + key(w[1]);
+    if (!force && k === G.evKey && Date.now() - G.evAt < 120000) return;
+    var any = G.accts.some(function (a) { var c = a.settings && a.settings.cals; return c && Object.keys(c).some(function (x) { return c[x].on; }); });
+    if (!any) { G.ev = []; G.evKey = k; render(); return; }
+    G.evBusy = true;
+    gcall('events', { household_id: S.hid, timeMin: w[0].toISOString(), timeMax: w[1].toISOString() }).then(function (r) {
+      G.ev = (r.items || []).map(function (x) {
+        x.sd = x.ad ? parseKey(x.s) : new Date(x.s); x.ed = x.ad ? parseKey(x.e) : new Date(x.e);
+        return x;
+      });
+      G.evKey = k; G.evAt = Date.now();
+      if (r.errors && r.errors.length) S.gNote = gErr({ message: r.errors[0].msg }) + ' (' + r.errors[0].account + ')'; else S.gNote = null;
+      render();
+    }).catch(function (e) { S.gNote = gErr(e); render(); }).then(function () { G.evBusy = false; });
+  }
+  function gEventsOn(d) {
+    var out = [], d2 = addD(d, 1);
+    G.ev.forEach(function (x) {
+      var hit = x.ad ? (x.sd <= d && d < x.ed) : (x.sd < d2 && x.ed > d) || same(x.sd, d);
+      if (!hit) return;
+      var a = gAcct(x.a), cc = gCalCfg(a, x.c) || {};
+      if (cc.p && S.off[cc.p]) return;
+      var sd = x.sd, time = x.ad ? '' : (same(sd, d) ? pad(sd.getHours()) + ':' + pad(sd.getMinutes()) : '00:00');
+      out.push({ id: x.a + '|' + x.c + '|' + x.id, t: x.t, ad: x.ad, time: time, p: cc.p || '', col: cc.p ? '' : (cc.color || '#4285f4'), kind: 'g', src: x });
+    });
+    return out;
+  }
+  function gWritable() {
+    var out = [];
+    G.accts.forEach(function (a) {
+      var c = (a.settings && a.settings.cals) || {};
+      Object.keys(c).forEach(function (cid) { if (c[cid].on && c[cid].w) out.push({ a: a.id, c: cid, name: c[cid].name || cid, email: a.email, color: c[cid].color }); });
+    });
+    return out;
+  }
+  function isoLocal(dk, hm) {
+    var d = parseKey(dk), p = (hm || '00:00').split(':'); d.setHours(+p[0], +p[1], 0, 0);
+    var off = -d.getTimezoneOffset(), sg = off >= 0 ? '+' : '-'; off = Math.abs(off);
+    return dk + 'T' + pad(+p[0]) + ':' + pad(+p[1]) + ':00' + sg + pad(Math.floor(off / 60)) + ':' + pad(off % 60);
+  }
+  function tz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { return 'UTC'; } }
+  function gSaveEvent(target, gid, f) {
+    var ev = { t: f.t, desc: f.desc, ad: f.ad, rem: f.rem, tz: tz() };
+    if (f.ad) { ev.s = f.date; ev.e = key(addD(parseKey(f.end), 1)); }
+    else { ev.s = isoLocal(f.date, f.time); ev.e = isoLocal(f.end, f.etime || f.time); if (ev.e <= ev.s) ev.e = isoLocal(f.end, pad((+f.time.split(':')[0] + 1) % 24) + ':' + f.time.split(':')[1]); }
+    if (f.rep && !gid) ev.rrule = 'FREQ=' + f.rep.toUpperCase();
+    toast('Saving to Google…');
+    return gcall('ev_save', { account_id: target.a, cal: target.c, id: gid || undefined, event: ev }).then(function () { toast('Saved to Google Calendar'); gEvents(true); }).catch(function (e) { toast(gErr(e)); });
+  }
+  function gDelEvent(x) {
+    gcall('ev_delete', { account_id: x.a, cal: x.c, id: x.id }).then(function () { toast('Deleted'); gEvents(true); }).catch(function (e) { toast(gErr(e)); });
+    G.ev = G.ev.filter(function (y) { return y !== x; }); render();
+  }
+  function gStart() {
+    toast('Opening Google…');
+    gcall('start', { household_id: S.hid, return_to: location.origin + location.pathname }).then(function (r) { location.href = r.url; }).catch(function (e) { toast(gErr(e)); });
+  }
+  function gHandleHash() {
+    var m = location.hash.match(/^#google=(.*)$/); if (!m) return false;
+    var v = decodeURIComponent(m[1]); history.replaceState(null, '', location.pathname + location.search);
+    var p = v.split(':');
+    S.sub = 'settings'; S.setTab = 'google';
+    if (p[0] === 'ok') S.gFlash = 'Connected ' + p[1];
+    else if (p[0] === 'partial') S.gFlash = 'Connected ' + p[1] + ', but some permissions were not granted (' + p[2] + '). Connect again and tick every box.';
+    else S.gFlash = 'Google: ' + p.slice(1).join(':');
+    return true;
+  }
+  function gUnread() {
+    if (DEMO || !S.hid || !G.accts.some(function (a) { return a.user_id === myId(); })) { G.unread = {}; return; }
+    gcall('mail_unread', { household_id: S.hid }).then(function (r) { var u = {}; (r.items || []).forEach(function (x) { u[x.a] = x.error ? -1 : x.unread; }); G.unread = u; render(); }).catch(function () {});
+  }
+  function unreadTotal() { var n = 0; Object.keys(G.unread).forEach(function (k) { if (G.unread[k] > 0) n += G.unread[k]; }); return n; }
+  function gLoadCals(a) {
+    G.cals[a.id] = 'loading'; render();
+    gcall('calendars', { account_id: a.id }).then(function (r) {
+      G.cals[a.id] = r.items || [];
+      if (a.user_id === myId() && !(a.settings && a.settings.cals)) {
+        a.settings = a.settings || {}; a.settings.cals = {};
+        (r.items || []).forEach(function (c) { if (c.primary) a.settings.cals[c.id] = { on: true, name: c.name, color: c.color, w: c.role === 'owner' || c.role === 'writer', p: '' }; });
+        gSaveSettings(a);
+      }
+      render();
+    }).catch(function (e) { G.cals[a.id] = { err: gErr(e) }; render(); });
+  }
+  function renderGoogleSettings() {
+    var me = myId(), h = '<h3>Google accounts</h3>';
+    if (S.gFlash) h += '<div class="amsg" style="margin:0 0 .8rem;text-align:left">' + esc(S.gFlash) + '</div>';
+    if (!G.accts.length) h += '<p class="muted" style="margin:.4rem 0 1rem;line-height:1.5">Connect one or more Google accounts to show their calendars here and read Gmail. Each family member connects their own.</p>';
+    G.accts.forEach(function (a) {
+      var mine = a.user_id === me, mem = S.members.filter(function (m) { return m.user_id === a.user_id; })[0];
+      h += '<div class="gacct"><div class="gh"><span class="gi">' + GCAL + '</span><div class="gt"><b>' + esc(a.email) + '</b><small>' + (mine ? 'Your account' : 'Connected by ' + esc(mem ? mem.email : 'family member')) + (G.unread[a.id] > 0 ? ' · ' + G.unread[a.id] + ' unread' : '') + '</small></div>' + (mine ? '<button class="pill" data-a="gdisc" data-v="' + a.id + '" style="color:#d33;margin:0">Disconnect</button>' : '') + '</div>';
+      var cl = G.cals[a.id];
+      if (!cl) { gLoadCals(a); cl = 'loading'; }
+      if (cl === 'loading') h += '<div class="row"><span class="muted">Loading calendars…</span></div>';
+      else if (cl.err) h += '<div class="row"><span style="color:#d33">' + esc(cl.err) + '</span>' + (mine ? '<button class="pill" data-a="gconnect" style="margin:0">Reconnect</button>' : '') + '</div>';
+      else cl.forEach(function (c) {
+        var cc = gCalCfg(a, c.id) || {};
+        h += '<div class="row gc"><span><i class="dot" style="background:' + esc(c.color || '#4285f4') + '"></i>' + esc(c.name) + (c.primary ? ' <span class="v">(main)</span>' : '') + '</span>'
+          + (mine ? '<select data-gp="' + a.id + '|' + esc(c.id) + '"' + (cc.on ? '' : ' disabled') + '><option value="">Calendar color</option>' + S.cfg.people.map(function (p) { return '<option value="' + p.id + '"' + (cc.p === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + '</select>' + tg(!!cc.on, 'gcal', a.id + '|' + c.id) : '<span class="v">' + (cc.on ? 'Shown' : 'Hidden') + '</span>') + '</div>';
+      });
+      h += '</div>';
+    });
+    h += '<button class="abtn" data-a="gconnect" style="max-width:22rem;margin-top:.6rem">+ Connect Google account</button>';
+    h += '<p class="muted" style="margin-top:.9rem;font-size:.82rem;line-height:1.5">Google will warn that the app is not verified — tap “Advanced” → “Go to C2 Calendar”. The app is private to your family.</p>';
+    return h;
+  }
+
+  /* ---------- MAIL ---------- */
+  var MBOX = [['INBOX', 'Inbox'], ['UNREAD', 'Unread'], ['STARRED', 'Starred'], ['SENT', 'Sent'], ['ALL', 'All mail']];
+  function myAccts() { return G.accts.filter(function (a) { return a.user_id === myId(); }); }
+  function mailState() {
+    if (!G.mail) G.mail = { a: '', box: 'INBOX', q: '', items: null, next: null, busy: false, err: null };
+    var mine = myAccts();
+    if (!G.mail.a || !mine.some(function (a) { return a.id === G.mail.a; })) { G.mail.a = mine.length ? mine[0].id : ''; G.mail.items = null; }
+    return G.mail;
+  }
+  function mailLoad(more) {
+    var M_ = mailState(); if (!M_.a || M_.busy) return;
+    M_.busy = true; M_.err = null; if (!more) { M_.items = null; M_.next = null; } render();
+    var box = M_.box === 'UNREAD' ? 'INBOX' : M_.box, q = (M_.box === 'UNREAD' ? 'is:unread ' : '') + M_.q;
+    gcall('mail_list', { account_id: M_.a, box: box, q: q.trim(), page: more ? M_.next : undefined }).then(function (r) {
+      M_.items = (more && M_.items ? M_.items : []).concat(r.items || []); M_.next = r.next;
+    }).catch(function (e) { M_.err = gErr(e); if (!M_.items) M_.items = []; }).then(function () { M_.busy = false; S.fx = more ? null : 'n'; render(); });
+  }
+  function fromName(f) { var m = String(f || '').match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>/); return m ? (m[1] || m[2]) : String(f || ''); }
+  function fromAddr(f) { var m = String(f || '').match(/<([^>]+)>/); return m ? m[1] : String(f || '').trim(); }
+  function mailTime(ms) { var d = new Date(ms), t = now(); if (same(d, t)) return fmtTime(pad(d.getHours()) + ':' + pad(d.getMinutes())); if (d.getFullYear() === t.getFullYear()) return MON[d.getMonth()] + ' ' + d.getDate(); return fmtDate(d); }
+  function renderMail() {
+    var h = hdr(false), mine = myAccts();
+    if (!mine.length) {
+      return h + '<div class="page-h"><h2>Mail</h2></div><div class="body"><div style="height:80%;display:flex">' + empty('Connect your Gmail in Settings → Google<br><button class="abtn" data-a="gconnect" style="margin:1rem auto 0;max-width:18rem">Connect Google account</button>', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div></div>';
+    }
+    var M_ = mailState(), a = gAcct(M_.a);
+    if (M_.items === null && !M_.busy) setTimeout(function () { mailLoad(false); }, 0);
+    h += '<div class="tb"><button class="pill" data-a="macct">' + esc(a ? a.email : '') + (G.unread[M_.a] > 0 ? ' <b class="badge">' + G.unread[M_.a] + '</b>' : '') + I.dn + '</button><button class="pill" data-a="mbox">' + MBOX.filter(function (b) { return b[0] === M_.box; })[0][1] + I.dn + '</button><input class="msearch" id="mq" type="search" placeholder="Search mail" value="' + esc(M_.q) + '"><span class="sp"></span><button class="pill" data-a="mreload" style="margin-right:.5rem">' + I.sync.replace('<svg', '<svg style="width:1rem;height:1rem;margin:0"') + '</button></div>';
+    h += '<div class="body"><div class="scroll mlist">';
+    if (M_.err) h += '<div class="amsg" style="margin:.5rem 1.4rem">' + esc(M_.err) + '</div>';
+    if (M_.items === null) h += '<div class="mload">Loading…</div>';
+    else if (!M_.items.length && !M_.err) h += '<div style="height:70%;display:flex">' + empty('No messages', 2).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    else {
+      h += M_.items.map(function (m, i) {
+        return '<div class="mrow' + (m.unread ? ' unread' : '') + '" data-a="mopen" data-v="' + m.id + '" style="animation-delay:' + Math.min(i, 12) * 20 + 'ms"><span class="av m" style="background:' + avColor(fromAddr(m.from)) + '">' + esc((fromName(m.from).charAt(0) || '?').toUpperCase()) + '</span><div class="mt"><div class="m1"><b>' + esc(fromName(m.from)) + '</b><em>' + mailTime(m.date) + '</em></div><div class="m2">' + (m.star ? '<span class="stx">★</span>' : '') + esc(m.subj || '(no subject)') + '</div><div class="m3">' + esc(decodeEnt(m.snip)) + '</div></div></div>';
+      }).join('');
+      if (M_.next) h += '<button class="mmore" data-a="mmore">' + (M_.busy ? 'Loading…' : 'Load more') + '</button>';
+    }
+    h += '<div style="height:6rem"></div></div>' + (S.cfg.fab ? '<button class="fab" data-a="mcompose">' + I.edit + '</button>' : '') + '</div>';
+    return h;
+  }
+  function decodeEnt(s) { return String(s || '').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'); }
+  var AVC = ['#3a6cf0', '#E5525C', '#16A394', '#F08A24', '#8B5CF6', '#E04F9E', '#0ea5e9', '#64748b'];
+  function avColor(s) { var n = 0; for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) % 997; return AVC[n % AVC.length]; }
+  function mailView(id) {
+    var M_ = mailState(), it = (M_.items || []).filter(function (m) { return m.id === id; })[0];
+    openModal(dhead(esc(it ? (it.subj || '(no subject)') : 'Message')) + '<div class="db"><div class="mload">Loading…</div></div>', function () { return false; }, { drawer: true, wide: true, nofocus: true });
+    gcall('mail_get', { account_id: M_.a, id: id }).then(function (m) {
+      if (!S.modalOpen) return;
+      if (it && it.unread) { it.unread = false; if (G.unread[M_.a] > 0) G.unread[M_.a]--; render(); }
+      G.cur = m;
+      var body = m.html ? '<iframe class="mframe" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>' : '<div class="mtext">' + esc(m.text || '').replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>') + '</div>';
+      openModal(dhead(esc(m.subj || '(no subject)')) + '<div class="mhead"><span class="av m" style="background:' + avColor(fromAddr(m.from)) + '">' + esc((fromName(m.from).charAt(0) || '?').toUpperCase()) + '</span><div><b>' + esc(fromName(m.from)) + '</b> <small>&lt;' + esc(fromAddr(m.from)) + '&gt;</small><small>to ' + esc(m.to) + (m.cc ? ', cc ' + esc(m.cc) : '') + ' · ' + esc(new Date(m.date).toLocaleString()) + '</small></div></div>'
+        + '<div class="mact"><button data-m="reply">↩ Reply</button><button data-m="replyall">↩↩ Reply all</button><button data-m="fwd">→ Forward</button><span class="sp"></span><button data-m="star">' + (it && it.star ? '★' : '☆') + '</button><button data-m="unread">Mark unread</button><button data-m="archive">Archive</button><button data-m="trash" style="color:#d33">Delete</button></div>'
+        + '<div class="db mbody">' + body + (m.atts.length ? '<div class="matts">' + m.atts.map(function (x) { return '<span>📎 ' + esc(x.name) + '</span>'; }).join('') + '<small>Open in Gmail to download attachments</small></div>' : '') + '</div>', function (act) {
+        var M2 = mailState();
+        if (act === 'reply' || act === 'replyall' || act === 'fwd') { mailCompose(act, m); return false; }
+        var req = act === 'trash' ? { trash: true } : act === 'archive' ? { remove: ['INBOX'] } : act === 'unread' ? { add: ['UNREAD'] } : act === 'star' ? (it && it.star ? { remove: ['STARRED'] } : { add: ['STARRED'] }) : null;
+        if (!req) return false;
+        req.account_id = M2.a; req.id = m.id;
+        gcall('mail_modify', req).then(function () { toast(act === 'trash' ? 'Moved to Trash' : act === 'archive' ? 'Archived' : 'Done'); gUnread(); }).catch(function (e) { toast(gErr(e)); });
+        if (act === 'star') { if (it) it.star = !it.star; render(); return true; }
+        if (act === 'unread') { if (it) it.unread = true; render(); return true; }
+        M2.items = (M2.items || []).filter(function (x) { return x.id !== m.id; }); render();
+        return true;
+      }, { drawer: true, wide: true, nofocus: true });
+      var fr = M.querySelector('.mframe');
+      if (fr) {
+        var css = '<base target="_blank"><style>body{font:15px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1d2433;margin:0;padding:4px;word-wrap:break-word}img{max-width:100%;height:auto}table{max-width:100%}</style>';
+        fr.srcdoc = css + m.html;
+        fr.onload = function () { try { fr.style.height = Math.max(300, fr.contentDocument.body.scrollHeight + 30) + 'px'; } catch (e) { fr.style.height = '70vh'; } };
+      }
+    }).catch(function (e) { toast(gErr(e)); closeModal(); });
+  }
+  function quote(m) {
+    return '\n\n\nOn ' + new Date(m.date).toLocaleString() + ', ' + m.from + ' wrote:\n' + (m.text || String(m.html || '').replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '')).replace(/\n{3,}/g, '\n\n').trim().split('\n').map(function (l) { return '> ' + decodeEnt(l); }).join('\n');
+  }
+  function mailCompose(kind, m) {
+    var M_ = mailState(), mine = myAccts(), a = gAcct(M_.a);
+    var to = '', cc = '', subj = '', bodyTxt = '';
+    if (m) {
+      var re = /^re:/i.test(m.subj) ? m.subj : 'Re: ' + m.subj, fw = /^fwd?:/i.test(m.subj) ? m.subj : 'Fwd: ' + m.subj;
+      if (kind === 'fwd') { subj = fw; bodyTxt = '\n\n---------- Forwarded message ----------\nFrom: ' + m.from + '\nDate: ' + new Date(m.date).toLocaleString() + '\nSubject: ' + m.subj + '\nTo: ' + m.to + '\n\n' + (m.text || String(m.html || '').replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<[^>]+>/g, '')).trim(); }
+      else {
+        subj = re; to = m.replyTo || m.from; bodyTxt = quote(m);
+        if (kind === 'replyall') {
+          var self = a ? a.email.toLowerCase() : '';
+          cc = (m.to + (m.cc ? ',' + m.cc : '')).split(',').map(function (x) { return x.trim(); }).filter(function (x) { return x && fromAddr(x).toLowerCase() !== self && fromAddr(x).toLowerCase() !== fromAddr(to).toLowerCase(); }).join(', ');
+        }
+      }
+    }
+    openModal('<div class="dh"><button class="bk" data-m="cancel">' + I.back + '</button><h3>' + (kind === 'new' ? 'New message' : kind === 'fwd' ? 'Forward' : 'Reply') + '</h3><button class="sendbtn" data-m="send">Send</button></div><div class="db">'
+      + '<div class="f"><i>' + FI.user + '</i><span style="flex:none;margin-right:.6rem">From</span><select name="from" style="flex:1;max-width:none;text-align:left">' + mine.map(function (x) { return '<option value="' + x.id + '"' + (x.id === M_.a ? ' selected' : '') + '>' + esc(x.email) + '</option>'; }).join('') + '</select></div>'
+      + '<div class="f"><span style="flex:none;width:2.4rem">To</span><input type="text" name="to" value="' + esc(to) + '" autocapitalize="off"></div>'
+      + '<div class="f"><span style="flex:none;width:2.4rem">Cc</span><input type="text" name="cc" value="' + esc(cc) + '" autocapitalize="off"></div>'
+      + '<div class="f"><span style="flex:none;width:4rem">Subject</span><input type="text" name="subject" value="' + esc(subj) + '"></div>'
+      + '<div class="f top" style="align-items:stretch"><textarea name="body" class="mbodyin">' + esc(bodyTxt) + '</textarea></div></div>', function (act) {
+      if (act !== 'send') return false;
+      var toV = val('to'); if (!toV) { toast('Add a recipient'); return false; }
+      var b = { account_id: val('from'), to: toV, cc: val('cc'), subject: val('subject'), body: (M.querySelector('[name=body]') || {}).value || '' };
+      if (m && kind !== 'fwd') { b.threadId = m.th; b.inReplyTo = m.msgid; b.references = m.refs; }
+      var btn = M.querySelector('.sendbtn'); if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+      gcall('mail_send', b).then(function () { closeModal(); toast('Sent'); if (mailState().box === 'SENT') mailLoad(false); }).catch(function (e) { toast(gErr(e)); if (btn) { btn.disabled = false; btn.textContent = 'Send'; } });
+      return false;
+    }, { drawer: true, wide: true });
+    var f = M.querySelector(kind === 'new' ? '[name=to]' : '[name=body]'); if (f && !('ontouchstart' in window)) setTimeout(function () { f.focus(); if (f.setSelectionRange) f.setSelectionRange(0, 0); }, 300);
   }
 
   /* ---------- AUTH / ONBOARDING ---------- */
@@ -752,12 +1008,14 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
       h += tabbar();
     }
-    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + [['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']].map(function (m) { return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
+    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + [['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']].map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
     if (S.sleeping) { var d = now(); h += '<div class="sleep" data-a="wake"><b>' + (S.cfg.h24 ? pad(d.getHours()) : ((d.getHours() % 12) || 12)) + ':' + pad(d.getMinutes()) + '</b><span>' + WDL[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate() + '</span></div>'; }
     if (S.dbNote) h += '<div class="dbnote">' + esc(S.dbNote) + '</div>';
+    else if (S.gNote && (v === 'calendar' || v === 'home')) h += '<div class="dbnote" data-a="settings">' + esc(S.gNote) + '</div>';
+    if (G.accts.length && (v === 'calendar' || v === 'home' || v === 'tasks')) setTimeout(function () { gEvents(false); }, 0);
     if (h === lastHtml) { S.fx = null; return; }
     var sc = root.querySelector('.scroll'), st = sc ? sc.scrollTop : 0, keep = !S.fx || S.fx === 'd' || S.fx === 'p' || S.fx === 'c';
     root.innerHTML = h; lastHtml = h; S.fxId = null;
@@ -816,20 +1074,54 @@
   function repVal() { return togOn('rep') ? (val('rep') || 'weekly') : ''; }
   function askNotify(rem) { try { if (rem !== '' && window.Notification && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {} }
 
-  function evDialog(e, date) {
-    var n = now(), hm = pad(n.getHours()) + ':' + pad(n.getMinutes()), hm2 = pad((n.getHours() + 1) % 24) + ':' + pad(n.getMinutes()), dk = date || key(S.sel);
-    e = e || { t: '', date: dk, end: dk, time: hm, etime: hm2, ad: false, ps: [], rem: '0', rep: '', desc: '' };
-    openModal(dhead(e.id ? 'Edit Event' : 'Add Event') + '<div class="db">' + fTitle(e.t)
+  function syncPicker(sel, lock) {
+    var ws = gWritable(); if (!ws.length && !lock) return '';
+    var opts = lock ? [lock] : [{ a: '', c: '', name: 'None' }].concat(ws);
+    return '<div class="f col"><div class="fl"><span>Pick a Synced calendar</span></div>' + opts.map(function (o) {
+      var v = o.a ? o.a + '|' + o.c : '', on = v === (sel || '');
+      return '<label class="sc' + (on ? ' on' : '') + '"><input type="radio" name="sync" value="' + esc(v) + '"' + (on ? ' checked' : '') + (lock ? ' disabled' : '') + '>' + (o.a ? '<span class="gi">' + GCAL + '</span><span class="sn"><b>' + esc(o.name) + '</b><small>' + esc(o.email) + '</small></span>' : '<span class="sn"><b>None</b><small>Only in C2 Calendar</small></span>') + '<i></i></label>';
+    }).join('') + '</div>';
+  }
+  function syncVal() { var r = M.querySelector('input[name=sync]:checked'); return r ? r.value : ''; }
+  function evForm(e, hm, hm2) {
+    return fTitle(e.t)
       + '<div class="two"><div class="f col"><small>Start</small><input type="date" name="date" value="' + e.date + '"></div><div class="f tm"><input type="time" name="time" value="' + esc(e.time || hm) + '"></div></div>'
       + '<div class="two"><div class="f col"><small>End</small><input type="date" name="end" value="' + (e.end || e.date) + '"></div><div class="f tm"><input type="time" name="etime" value="' + esc(e.etime || e.time || hm2) + '"></div></div>'
-      + '<div class="plain"><span>All day</span><button type="button" class="tg' + (e.ad ? ' on' : '') + '" data-tg="ad"></button></div>'
-      + fProfile(psOf(e), true) + fSel(FI.bell, 'Reminder', 'rem', REM, e.rem == null ? '' : e.rem) + fTog(FI.cal, 'Anniversary', 'ann', e.ann) + fRepeat(e.rep) + fDesc(e.desc) + '</div>' + dfoot(!!e.id), function (act) {
+      + '<div class="plain"><span>All day</span><button type="button" class="tg' + (e.ad ? ' on' : '') + '" data-tg="ad"></button></div>';
+  }
+  function evDialog(e, date) {
+    var n = now(), hm = pad(n.getHours()) + ':' + pad(n.getMinutes()), hm2 = pad((n.getHours() + 1) % 24) + ':' + pad(n.getMinutes()), dk = date || key(S.sel);
+    var isNew = !e;
+    e = e || { t: '', date: dk, end: dk, time: hm, etime: hm2, ad: false, ps: [], rem: '0', rep: '', desc: '' };
+    openModal(dhead(e.id ? 'Edit Event' : 'Add Event') + '<div class="db">' + evForm(e, hm, hm2)
+      + fProfile(psOf(e), true) + fSel(FI.bell, 'Reminder', 'rem', REM, e.rem == null ? '' : e.rem) + (isNew ? syncPicker('') : '') + fTog(FI.cal, 'Anniversary', 'ann', e.ann) + fRepeat(e.rep) + fDesc(e.desc) + '</div>' + dfoot(!!e.id), function (act) {
       if (act === 'del') { del('events', e.id); return true; }
       if (act !== 'ok') return false;
-      var t = val('t'), ps = pplVal(); if (!t) { toast('Enter a title'); return false; } if (!ps.length) { toast('Select a profile'); return false; }
+      var t = val('t'), ps = pplVal(), sv = isNew ? syncVal() : '';
+      if (!t) { toast('Enter a title'); return false; } if (!ps.length && !sv) { toast('Select a profile'); return false; }
       var d1 = val('date') || dk, d2 = val('end') || d1; if (d2 < d1) d2 = d1;
-      askNotify(val('rem'));
-      put('events', { id: e.id, t: t, date: d1, end: d2, time: val('time'), etime: val('etime'), ad: togOn('ad'), ps: ps, rem: val('rem'), ann: togOn('ann'), rep: repVal(), desc: val('desc'), at: e.at });
+      var f = { id: e.id, t: t, date: d1, end: d2, time: val('time'), etime: val('etime'), ad: togOn('ad'), ps: ps, rem: val('rem'), ann: togOn('ann'), rep: repVal(), desc: val('desc'), at: e.at };
+      askNotify(f.rem);
+      if (sv) { var sp = sv.split('|'); gSaveEvent({ a: sp[0], c: sp.slice(1).join('|') }, null, f); return true; }
+      put('events', f);
+      return true;
+    }, { drawer: true });
+  }
+  function evDialogG(x) {
+    var a = gAcct(x.a), cc = gCalCfg(a, x.c) || {}, sd = x.sd, ed = x.ed;
+    var e = { t: x.t, date: key(sd), end: key(x.ad ? addD(ed, -1) : ed), time: x.ad ? '09:00' : pad(sd.getHours()) + ':' + pad(sd.getMinutes()), etime: x.ad ? '10:00' : pad(ed.getHours()) + ':' + pad(ed.getMinutes()), ad: x.ad, desc: x.desc };
+    var lock = { a: x.a, c: x.c, name: cc.name || x.c, email: a ? a.email : '' };
+    var canEdit = !!cc.w;
+    openModal(dhead(canEdit ? 'Edit Event' : 'Event') + '<div class="db">' + evForm(e, e.time, e.etime)
+      + (x.loc ? '<div class="f"><i>' + FI.list + '</i><span>' + esc(x.loc) + '</span></div>' : '')
+      + syncPicker(x.a + '|' + x.c, lock) + fDesc(e.desc)
+      + (x.rec ? '<p class="muted" style="font-size:.82rem;margin:.2rem .2rem .8rem">Repeating event — changes apply to this day only.</p>' : '')
+      + (x.link ? '<a class="glink" href="' + esc(x.link) + '" target="_blank" rel="noopener">Open in Google Calendar ↗</a>' : '') + '</div>' + (canEdit ? dfoot(true) : ''), function (act) {
+      if (act === 'del') { if (!confirmBox('Delete this event from Google Calendar?')) return false; gDelEvent(x); return true; }
+      if (act !== 'ok') return false;
+      var t = val('t'); if (!t) { toast('Enter a title'); return false; }
+      var d1 = val('date'), d2 = val('end') || d1; if (d2 < d1) d2 = d1;
+      gSaveEvent({ a: x.a, c: x.c }, x.id, { t: t, date: d1, end: d2, time: val('time'), etime: val('etime'), ad: togOn('ad'), desc: val('desc') });
       return true;
     }, { drawer: true });
   }
@@ -1018,6 +1310,7 @@
   M.addEventListener('click', function (ev) {
     var t = ev.target;
     while (t && t !== M) {
+      if (t.hasAttribute('data-a') && A[t.getAttribute('data-a')]) { A[t.getAttribute('data-a')](t.getAttribute('data-v')); return; }
       if (t.hasAttribute('data-pp')) { var box = t.parentNode; if (box.getAttribute('data-multi') !== '1') { var bs = box.querySelectorAll('button'); for (var i = 0; i < bs.length; i++) bs[i].className = ''; t.className = 'on'; } else t.className = t.className === 'on' ? '' : 'on'; return; }
       if (t.hasAttribute('data-tg')) { t.className = t.className.indexOf(' on') > 0 ? 'tg' : 'tg on'; var rs = t.parentNode.querySelector('.repsel'); if (rs) rs.className = 'repsel' + (t.className.indexOf(' on') > 0 ? ' show' : ''); return; }
       if (t.hasAttribute('data-kind')) { var ks = t.parentNode.querySelectorAll('button'); for (var q = 0; q < ks.length; q++) ks[q].className = ''; t.className = 'on'; if (t.getAttribute('data-kind') === 'routine') { var rt = M.querySelector('[data-tg=rep]'), rsel = M.querySelector('.repsel'); if (rt && rt.className.indexOf(' on') < 0) { rt.className = 'tg on'; rsel.className = 'repsel show'; rsel.value = 'daily'; } } return; }
@@ -1040,7 +1333,7 @@
     if (t.name === 't') { var c = M.querySelector('.cnt'); if (c) c.textContent = t.value.length + '/300'; }
     if (t.name === 'q' && S.rc) { S.rc.q = t.value; var l = M.querySelector('.rlist'), hh = M.querySelector('.rmain h5'); if (l) l.innerHTML = rcList(); if (hh) hh.textContent = t.value ? 'Search' : S.rc.cat; }
   });
-  M.addEventListener('change', function (ev) { if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
+  M.addEventListener('change', function (ev) { if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
   M.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.tagName === 'INPUT' && ev.target.name !== 'q' && M._ok) { if (M._ok('ok')) { closeModal(); render(); } } });
 
   /* ---------- photos upload ---------- */
@@ -1088,7 +1381,7 @@
     filter: function () { choose('Filter', [['all', 'Show everyone']].concat(S.cfg.people.map(function (p) { return [p.id, 'Only ' + esc(p.name)]; })), null, function (id) { S.off = {}; if (id !== 'all') S.cfg.people.forEach(function (p) { if (p.id !== id) S.off[p.id] = true; }); render(); }); },
     pchip: function (id) { S.off[id] = !S.off[id]; render(); },
     day: function (k) { S.sel = parseKey(k); dayDialog(k); },
-    openev: function (v) { var p = v.split(':'), k = p[0], id = p.slice(1).join(':'); if (k === 'ev') evDialog(find('events', id)); else if (k === 'anniv') annivDialog(find('anniv', id)); else toast('Synced from Google Calendar — edit it there'); },
+    openev: function (v) { var p = v.split(':'), k = p[0], id = p.slice(1).join(':'); if (k === 'ev') evDialog(find('events', id)); else if (k === 'anniv') annivDialog(find('anniv', id)); else if (k === 'g') { var gp = id.split('|'), gx = G.ev.filter(function (x) { return x.a === gp[0] && x.c === gp[1] && x.id === gp.slice(2).join('|'); })[0]; if (gx) evDialogG(gx); } },
     addev: function () { evDialog(null, key(S.sel)); },
     tnav: function (v) { S.fx = 'n'; S.taskDay = addD(S.taskDay, +v); render(); },
     taskmore: function () { choose('Tasks', [['today', 'Go to today'], ['clear', 'Clear completed (this day)']], null, function (o) { if (o === 'today') S.taskDay = sod(now()); else tasksOn(S.taskDay).forEach(function (t) { if (t.done) del('tasks', t.id); }); render(); }); },
@@ -1148,11 +1441,26 @@
     tgo: function () { var T = S.timer; if (T.run) { T.left = tLeft(); T.run = false; } else { if (T.left <= 0) T.left = T.total; T.end = Date.now() + T.left * 1000; T.run = true; } render(); },
     treset: function () { S.timer.run = false; S.timer.left = S.timer.total; render(); },
     tadd: function () { var T = S.timer; if (T.run) T.end += 60000; else T.left += 60; T.total += 60; render(); },
-    stab: function (v) { S.setTab = v; render(); },
+    stab: function (v) { S.setTab = v; S.gFlash = null; if (v === 'google') { G.cals = {}; loadGAccts(); } render(); },
     cfgtg: function (k) { S.cfg[k] = !S.cfg[k]; saveCfg(); },
     cfgfont: function (v) { S.cfg.font = v; saveCfg(); },
     order: function () { S.more = false; render(); orderDialog(); },
     edp: function (i) { personDialog(i); },
+    gconnect: function () { gStart(); },
+    gdisc: function (id) { var a = gAcct(id); if (!a || !confirmBox('Disconnect ' + a.email + '? Its calendars and mail will disappear from C2 Calendar.')) return; gcall('disconnect', { account_id: id }).then(function () { toast('Disconnected'); loadGAccts(); }).catch(function (e) { toast(gErr(e)); }); },
+    gcal: function (v) {
+      var p = v.split('|'), a = gAcct(p[0]), cid = p.slice(1).join('|'), cl = G.cals[p[0]], c = (cl && cl.filter ? cl.filter(function (x) { return x.id === cid; })[0] : null) || {};
+      if (!a) return; a.settings = a.settings || {}; a.settings.cals = a.settings.cals || {};
+      var cur = a.settings.cals[cid] || { p: '' };
+      cur.on = !cur.on; cur.name = c.name || cur.name; cur.color = c.color || cur.color; cur.w = c.role === 'owner' || c.role === 'writer';
+      a.settings.cals[cid] = cur; render(); gSaveSettings(a);
+    },
+    macct: function () { choose('Account', myAccts().map(function (a) { return [a.id, esc(a.email) + (G.unread[a.id] > 0 ? ' (' + G.unread[a.id] + ')' : '')]; }), mailState().a, function (id) { mailState().a = id; mailLoad(false); }); },
+    mbox: function () { choose('Folder', MBOX, mailState().box, function (b) { mailState().box = b; mailLoad(false); }); },
+    mreload: function () { mailLoad(false); gUnread(); },
+    mmore: function () { mailLoad(true); },
+    mopen: function (id) { mailView(id); },
+    mcompose: function () { mailCompose('new'); },
     authmode: function (m) { S.authEmail = authVal('au-email') || S.authEmail; S.authMode = m; S.authMsg = null; lastHtml = ''; render(); },
     authgo: function () {
       var em = authVal('au-email').toLowerCase(), pw = (document.getElementById('au-pw') || {}).value || '';
@@ -1181,10 +1489,13 @@
     }
   });
   root.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter' && ev.target.id === 'mq') { mailState().q = ev.target.value.trim(); mailLoad(false); return; }
     if (ev.key !== 'Enter' || !ev.target.id) return;
     if (ev.target.id === 'au-fam') A.mkfam(); else if (ev.target.id.indexOf('au-') === 0) A.authgo();
   });
   root.addEventListener('change', function (ev) {
+    var gp = ev.target.getAttribute && ev.target.getAttribute('data-gp');
+    if (gp) { var gq = gp.split('|'), ga = gAcct(gq[0]), gc = gq.slice(1).join('|'); if (ga && ga.settings && ga.settings.cals && ga.settings.cals[gc]) { ga.settings.cals[gc].p = ev.target.value; render(); gSaveSettings(ga); } return; }
     var k = ev.target.getAttribute && ev.target.getAttribute('data-c');
     if (k) { S.cfg[k] = ev.target.value; saveCfg(); }
   });
@@ -1246,6 +1557,7 @@
   render();
   if (S.auth && !DEMO) { loadUser().catch(function () {}); afterLogin().catch(function (e) { if (!S.auth) return; S.dbNote = 'No connection — retrying…'; S.households = S.households || null; render(); setTimeout(function () { if (S.auth && !S.hid) afterLogin().catch(function () {}); }, 8000); }); }
   setInterval(function () { if (!document.hidden) sync(); }, 15000);
+  setInterval(function () { if (!document.hidden) { gUnread(); gEvents(true); } }, 120000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { sync(); resolvePhotos(); } });
   window.__c2 = { S: S, render: render, A: A };
 })();
