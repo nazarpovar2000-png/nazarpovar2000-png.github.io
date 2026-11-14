@@ -667,6 +667,7 @@
     var T = S.setTab;
     if (T === 'general') {
       h += '<h3>General</h3>';
+      if (window.Android && Android.launch) h += '<div class="row" data-a="sub" data-v="stock"><span style="color:var(--acc)">Open original E-calendar</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
       h += '<div class="row"><span>Floating Action Button (FAB)</span>' + tg(c.fab, 'cfgtg', 'fab') + '</div>';
       h += '<div class="row"><span>Use 24-hour format</span>' + tg(c.h24, 'cfgtg', 'h24') + '</div>';
       h += '<div class="row"><span>Change Calendar Name</span><input type="text" data-c="name" value="' + esc(c.name) + '"></div>';
@@ -711,6 +712,7 @@
   /* ---------- GOOGLE: accounts, calendars, Gmail ---------- */
   var G = { accts: [], cals: {}, ev: [], evKey: '', evAt: 0, evBusy: false, unread: {}, mail: null };
   var GCAL = '<svg viewBox="0 0 32 32"><rect x="4" y="4" width="24" height="24" rx="4" fill="#fff" stroke="#dadce0"/><path d="M4 9h24" stroke="#4285f4" stroke-width="5"/><text x="16" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#4285f4" font-family="Arial">31</text></svg>';
+  TI.stock = '<svg viewBox="0 0 32 32"><rect x="4" y="6" width="24" height="22" rx="5" fill="#8e9cf1"/><rect x="4" y="6" width="24" height="7" rx="3" fill="#5a6cf0"/><path d="M11 3v6M21 3v6" stroke="#5a6cf0" stroke-width="2.6" stroke-linecap="round"/><path d="M20 18h-8m3-3l-3 3 3 3" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   TI.mail = '<svg viewBox="0 0 32 32"><rect x="3" y="7" width="26" height="19" rx="3.5" fill="#ea4335"/><path d="M4.5 9l11.5 9 11.5-9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg>';
   SI.google = GCAL;
   function gcall(action, body) {
@@ -1013,7 +1015,7 @@
       h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
       h += tabbar();
     }
-    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + [['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']].map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
+    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
     if (S.sleeping) { var d = now(); h += '<div class="sleep" data-a="wake"><b>' + (S.cfg.h24 ? pad(d.getHours()) : ((d.getHours() % 12) || 12)) + ':' + pad(d.getMinutes()) + '</b><span>' + WDL[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate() + '</span></div>'; }
     if (S.dbNote) h += '<div class="dbnote">' + esc(S.dbNote) + '</div>';
     else if (S.gNote && (v === 'calendar' || v === 'home')) h += '<div class="dbnote" data-a="settings">' + esc(S.gNote) + '</div>';
@@ -1369,7 +1371,7 @@
     noop: function () {},
     dial: function () { S.dial = !S.dial; S.fx = 'd'; render(); },
     edev: function (id) { evDialog(find('events', id)); },
-    sub: function (v) { S.more = false; if (v === 'sleep') { S.sleeping = true; S.wakeUntil = 0; render(); return; } S.sub = v; S.fx = 'v'; render(); },
+    sub: function (v) { if (v === 'stock') { S.more = false; render(); try { Android.launch('com.fujia.calendar', 'com.fujia.calendar.ui.DeviceMainActivity'); } catch (e) { toast('E-calendar not available'); } return; } S.more = false; if (v === 'sleep') { S.sleeping = true; S.wakeUntil = 0; render(); return; } S.sub = v; S.fx = 'v'; render(); },
     settings: function () { S.sub = 'settings'; S.fx = 'v'; render(); },
     wake: function () { S.sleeping = false; S.wakeUntil = Date.now() + 60000; render(); },
     sync: function () { sync().then(function () { toast('Synced'); }); loadMembers(); },
