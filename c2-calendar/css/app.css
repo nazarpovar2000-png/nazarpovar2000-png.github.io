@@ -591,3 +591,17 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .bub small{display:block;font-size:.7rem;opacity:.6;margin-bottom:.1rem}
 .bub.caller{background:#eef1f7;margin-right:auto;border-bottom-left-radius:.3rem}
 .bub.ai{background:#e7efff;margin-left:auto;border-bottom-right-radius:.3rem}
+/* mail cleanup */
+.cleanbtn{background:#eaf7f3 !important;color:#0f7a64 !important;border-color:#bfe7da !important;font-weight:500}
+.cbl{background:#fff;border-radius:.8rem;padding:.2rem .4rem;margin-bottom:.4rem}
+.dlg label.cbi{display:flex;align-items:center;margin:0;font-size:1rem;color:#1d2433;padding:.65rem .5rem;border-bottom:1px solid #eef1f6;cursor:pointer}
+.cbi:last-child{border-bottom:0}
+.cbi input{position:absolute;opacity:0;pointer-events:none}
+.cbx{width:1.3rem;height:1.3rem;border-radius:.35rem;border:2px solid #b7c0d0;margin-right:.8rem;flex:none;position:relative;transition:background .15s,border-color .15s}
+.cbi input:checked+.cbx{background:#3a6cf0;border-color:#3a6cf0}
+.cbi input:checked+.cbx:after{content:"";position:absolute;left:.32rem;top:.08rem;width:.35rem;height:.65rem;border:solid #fff;border-width:0 .16rem .16rem 0;transform:rotate(45deg)}
+.cbt{flex:1;min-width:0}
+.cbt b{display:block;font-weight:500;font-size:.98rem}
+.cbt small{display:block;color:#6b7487;font-size:.78rem;margin-top:.1rem}
+.cbi em{font-style:normal;color:#3a6cf0;font-weight:500;margin-left:.6rem;white-space:nowrap}
+.cbi.dis{opacity:.5;cursor:default}

@@ -944,11 +944,69 @@
     }, { drawer: true, wide: true, nofocus: true });
   }
 
+  /* ---------- MAIL CLEANUP ---------- */
+  var CB = [['spam', 'Spam', 'Permanently deleted'], ['trash', 'Trash', 'Permanently deleted (empties Trash)'], ['promotions', 'Promotions', 'Ads and deals'], ['social', 'Social', 'Facebook, Instagram, LinkedIn…'], ['updates', 'Updates', 'Receipts, notices, statements'], ['forums', 'Forums', 'Mailing lists and groups'], ['large', 'Large old emails', 'Over 10 MB and older than 1 year']];
+  function cleanDialog() {
+    var M_ = mailState(), a = gAcct(M_.a); if (!a) return;
+    var st = { days: 30, scan: null, sel: { spam: true, promotions: true, social: true }, busy: false, res: null };
+    var au = (a.settings && a.settings.auto) || { on: false, days: 30, spam: true, promotions: true, social: true, updates: false, forums: true };
+    function draw() {
+      var c = st.scan && st.scan.counts, full = st.scan ? st.scan.full : !!(a.settings && a.settings.full);
+      var h = dhead('Clean up mail') + '<div class="db"><p class="muted" style="margin:0 .2rem .8rem;line-height:1.45">' + esc(a.email) + (st.scan ? ' · ' + st.scan.total.toLocaleString() + ' messages total' : '') + '</p>';
+      h += '<div class="f"><i>' + FI.clock + '</i><span>Older than</span><select name="cdays">' + [[7, '7 days'], [30, '30 days'], [90, '3 months'], [365, '1 year'], [0, 'Any age']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === st.days ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
+      h += '<div class="cbl">' + CB.map(function (b) {
+        var n = c ? c[b[0]] : null, perm = b[0] === 'spam' || b[0] === 'trash', dis = perm && !full;
+        return '<label class="cbi' + (dis ? ' dis' : '') + '"><input type="checkbox" data-cb="' + b[0] + '"' + (st.sel[b[0]] && !dis ? ' checked' : '') + (dis ? ' disabled' : '') + '><span class="cbx"></span><span class="cbt"><b>' + b[1] + '</b><small>' + (dis ? 'Reconnect Google (Settings → Google) to allow this' : b[2]) + '</small></span><em>' + (n === null ? (st.busy ? '…' : '') : (n >= 100000 ? '100k+' : (perm ? '' : '~') + n.toLocaleString())) + '</em></label>';
+      }).join('') + '</div>';
+      h += '<p class="muted" style="font-size:.8rem;line-height:1.45;margin:.4rem .2rem 1rem">Starred and Important emails are never touched. Promotions, Social, Updates, Forums and Large go to Trash — Gmail deletes them for good after 30 days (you can still restore them until then). Spam and Trash are deleted immediately and free space right away.</p>';
+      if (st.res) h += '<div class="amsg" style="text-align:left;margin-bottom:.8rem">' + st.res + '</div>';
+      h += '<button class="abtn" data-m="run"' + (st.busy ? ' disabled' : '') + '>' + (st.busy ? 'Working…' : 'Clean now') + '</button>';
+      h += '<h5 class="clh" style="margin-top:1.4rem">Automatic cleanup (every night)</h5><div class="clsec"><div class="row" style="border:0"><span>Clean this account automatically</span><button type="button" class="tg' + (au.on ? ' on' : '') + '" data-m="auto:on"></button></div>'
+        + (au.on ? ['spam', 'promotions', 'social', 'updates', 'forums'].map(function (k) { var b = CB.filter(function (x) { return x[0] === k; })[0]; return '<div class="row" style="min-height:2.4rem"><span>' + b[1] + (k === 'spam' && !full ? ' <small class="muted">(reconnect needed)</small>' : '') + '</span><button type="button" class="tg' + (au[k] ? ' on' : '') + '" data-m="auto:' + k + '"></button></div>'; }).join('') + '<div class="row" style="min-height:2.4rem;border:0"><span>Keep the last</span><select data-m-sel="adays">' + [[7, '7 days'], [30, '30 days'], [90, '3 months']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === (+au.days || 30) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' + (a.settings && a.settings.autoLast ? '<small class="muted">Last run: ' + esc(new Date(a.settings.autoLast.at).toLocaleString()) + '</small>' : '') : '<small class="muted">Runs every night at about 3 AM. Only the main Inbox (Primary) will stay.</small>') + '</div>';
+      h += '<p class="muted" style="font-size:.8rem;line-height:1.45;margin:.8rem .2rem">Tip: the Mail tab shows only <b>Important</b> (Primary) emails by default — ads, social and spam stay out of C2 Calendar.</p></div>';
+      openModal(h, function (act) {
+        if (act === 'run') { runClean(); return false; }
+        if (act.indexOf('auto:') === 0) {
+          var k = act.slice(5); au[k] = !au[k]; if (k === 'on' && au.on && au.days == null) au.days = 30;
+          a.settings = a.settings || {}; a.settings.auto = au;
+          gcall('auto_set', { account_id: a.id, auto: au }).then(function () { toast(au.on ? 'Automatic cleanup saved' : 'Automatic cleanup off'); }).catch(function (e) { toast(gErr(e)); });
+          draw(); return false;
+        }
+        return false;
+      }, { drawer: true, nofocus: true });
+    }
+    function scan() {
+      st.busy = true; st.scan = null; draw();
+      gcall('clean_scan', { account_id: a.id, days: st.days || 1 }).then(function (r) { st.scan = r; if (a.settings) a.settings.full = r.full; }).catch(function (e) { st.res = esc(gErr(e)); }).then(function () { st.busy = false; if (S.modalOpen) draw(); });
+    }
+    function runClean() {
+      var list = []; CB.forEach(function (b) { var x = M.querySelector('[data-cb="' + b[0] + '"]'); if (x && x.checked) list.push(b[0]); });
+      if (!list.length) { toast('Choose what to clean'); return; }
+      var perm = list.filter(function (k) { return k === 'spam' || k === 'trash'; });
+      var msg = 'Clean ' + list.map(function (k) { return CB.filter(function (b) { return b[0] === k; })[0][1]; }).join(', ') + ' in ' + a.email + '?' + (perm.length ? '\n\n' + perm.join(' and ') + ' will be deleted permanently — this cannot be undone.' : '\n\nThey go to Trash and can be restored for 30 days.');
+      if (!confirmBox(msg)) return;
+      st.busy = true; st.res = null; draw();
+      gcall('clean_run', { account_id: a.id, buckets: list, days: st.days || 1 }).then(function (r) {
+        var parts = [], more = false;
+        Object.keys(r.res || {}).forEach(function (k) { var x = r.res[k]; if (x.more) more = true; parts.push(CB.filter(function (b) { return b[0] === k; })[0][1] + ': ' + (x.mode === 'needs_full' ? 'reconnect needed' : x.n.toLocaleString() + (x.mode === 'deleted' ? ' deleted' : ' moved to Trash'))); });
+        st.res = '✓ ' + parts.join(' · ') + (more ? '<br>There is more — tap “Clean now” again.' : '');
+        gUnread(); if (mailState().items) mailLoad(false);
+      }).catch(function (e) { st.res = esc(gErr(e)); }).then(function () { st.busy = false; scan(); });
+    }
+    M._cleanHook = function (el) {
+      if (el.name === 'cdays') { st.days = +el.value; scan(); return true; }
+      if (el.getAttribute('data-m-sel') === 'adays') { au.days = +el.value; gcall('auto_set', { account_id: a.id, auto: au }).catch(function (e) { toast(gErr(e)); }); return true; }
+      if (el.getAttribute('data-cb')) { st.sel[el.getAttribute('data-cb')] = el.checked; return true; }
+      return false;
+    };
+    scan();
+  }
+
   /* ---------- MAIL ---------- */
-  var MBOX = [['INBOX', 'Inbox'], ['UNREAD', 'Unread'], ['STARRED', 'Starred'], ['SENT', 'Sent'], ['ALL', 'All mail']];
+  var MBOX = [['PRIMARY', 'Important'], ['UNREAD', 'Unread'], ['INBOX', 'All inbox'], ['STARRED', 'Starred'], ['SENT', 'Sent'], ['PROMO', 'Promotions'], ['SPAM', 'Spam'], ['ALL', 'All mail']];
   function myAccts() { return G.accts.filter(function (a) { return a.user_id === myId(); }); }
   function mailState() {
-    if (!G.mail) G.mail = { a: '', box: 'INBOX', q: '', items: null, next: null, busy: false, err: null };
+    if (!G.mail) G.mail = { a: '', box: 'PRIMARY', q: '', items: null, next: null, busy: false, err: null };
     var mine = myAccts();
     if (!G.mail.a || !mine.some(function (a) { return a.id === G.mail.a; })) { G.mail.a = mine.length ? mine[0].id : ''; G.mail.items = null; }
     return G.mail;
@@ -956,7 +1014,7 @@
   function mailLoad(more) {
     var M_ = mailState(); if (!M_.a || M_.busy) return;
     M_.busy = true; M_.err = null; if (!more) { M_.items = null; M_.next = null; } render();
-    var box = M_.box === 'UNREAD' ? 'INBOX' : M_.box, q = (M_.box === 'UNREAD' ? 'is:unread ' : '') + M_.q;
+    var box = M_.box === 'UNREAD' ? 'PRIMARY' : M_.box, q = (M_.box === 'UNREAD' ? 'is:unread ' : '') + M_.q;
     gcall('mail_list', { account_id: M_.a, box: box, q: q.trim(), page: more ? M_.next : undefined }).then(function (r) {
       M_.items = (more && M_.items ? M_.items : []).concat(r.items || []); M_.next = r.next;
     }).catch(function (e) { M_.err = gErr(e); if (!M_.items) M_.items = []; }).then(function () { M_.busy = false; S.fx = more ? null : 'n'; render(); });
@@ -971,7 +1029,7 @@
     }
     var M_ = mailState(), a = gAcct(M_.a);
     if (M_.items === null && !M_.busy) setTimeout(function () { mailLoad(false); }, 0);
-    h += '<div class="tb"><button class="pill" data-a="macct">' + esc(a ? a.email : '') + (G.unread[M_.a] > 0 ? ' <b class="badge">' + G.unread[M_.a] + '</b>' : '') + I.dn + '</button><button class="pill" data-a="mbox">' + MBOX.filter(function (b) { return b[0] === M_.box; })[0][1] + I.dn + '</button><input class="msearch" id="mq" type="search" placeholder="Search mail" value="' + esc(M_.q) + '"><span class="sp"></span><button class="pill" data-a="mreload" style="margin-right:.5rem">' + I.sync.replace('<svg', '<svg style="width:1rem;height:1rem;margin:0"') + '</button></div>';
+    h += '<div class="tb"><button class="pill" data-a="macct">' + esc(a ? a.email : '') + (G.unread[M_.a] > 0 ? ' <b class="badge">' + G.unread[M_.a] + '</b>' : '') + I.dn + '</button><button class="pill" data-a="mbox">' + MBOX.filter(function (b) { return b[0] === M_.box; })[0][1] + I.dn + '</button><input class="msearch" id="mq" type="search" placeholder="Search mail" value="' + esc(M_.q) + '"><span class="sp"></span><button class="pill cleanbtn" data-a="mclean">🧹 Clean up</button><button class="pill" data-a="mreload" style="margin-right:.5rem">' + I.sync.replace('<svg', '<svg style="width:1rem;height:1rem;margin:0"') + '</button></div>';
     h += '<div class="body"><div class="scroll mlist">';
     if (M_.err) h += '<div class="amsg" style="margin:.5rem 1.4rem">' + esc(M_.err) + '</div>';
     if (M_.items === null) h += '<div class="mload">Loading…</div>';
@@ -1129,6 +1187,7 @@
     var f = M.querySelector('input[type=text],textarea'); if (f && !still && !opt.nofocus && !('ontouchstart' in window)) setTimeout(function () { f.focus(); }, 280);
   }
   function closeModal() {
+    M._cleanHook = null;
     if (!S.modalOpen) return;
     S.modalOpen = false; M._ok = null; var tok = ++closeTok; M.classList.add('out');
     setTimeout(function () { if (tok === closeTok && !S.modalOpen) { M.className = ''; M.innerHTML = ''; } }, 210);
@@ -1427,7 +1486,7 @@
     if (t.name === 't') { var c = M.querySelector('.cnt'); if (c) c.textContent = t.value.length + '/300'; }
     if (t.name === 'q' && S.rc) { S.rc.q = t.value; var l = M.querySelector('.rlist'), hh = M.querySelector('.rmain h5'); if (l) l.innerHTML = rcList(); if (hh) hh.textContent = t.value ? 'Search' : S.rc.cat; }
   });
-  M.addEventListener('change', function (ev) { if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
+  M.addEventListener('change', function (ev) { if (M._cleanHook && S.modalOpen && M._cleanHook(ev.target)) return; if (ev.target.name === 'sync') { var ls = M.querySelectorAll('label.sc'); for (var z = 0; z < ls.length; z++) ls[z].className = 'sc' + (ls[z].querySelector('input').checked ? ' on' : ''); return; } if (ev.target.name === 'slot' && S.rc) { S.rc.slot = ev.target.value; mealDialog(); } });
   M.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.tagName === 'INPUT' && ev.target.name !== 'q' && M._ok) { if (M._ok('ok')) { closeModal(); render(); } } });
 
   /* ---------- photos upload ---------- */
@@ -1552,6 +1611,7 @@
     macct: function () { choose('Account', myAccts().map(function (a) { return [a.id, esc(a.email) + (G.unread[a.id] > 0 ? ' (' + G.unread[a.id] + ')' : '')]; }), mailState().a, function (id) { mailState().a = id; mailLoad(false); }); },
     mbox: function () { choose('Folder', MBOX, mailState().box, function (b) { mailState().box = b; mailLoad(false); }); },
     mreload: function () { mailLoad(false); gUnread(); },
+    mclean: function () { cleanDialog(); },
     mmore: function () { mailLoad(true); },
     mopen: function (id) { mailView(id); },
     clopen: function (i) { clOpen(i); },
