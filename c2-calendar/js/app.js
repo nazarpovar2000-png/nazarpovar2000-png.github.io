@@ -2097,7 +2097,8 @@
     items.forEach(function (it, k) {
       var pid = it.p || mePid(), t = it.title || (it.text || '').slice(0, 80);
       if (it.type === 'task') { put('tasks', { t: t, kind: 'chore', emoji: '', date: it.date || today, time: it.time || '09:00', ad: !it.time, p: pid, stars: 0, rem: it.time ? '0' : '', rep: '', pri: '', desc: it.text && it.text !== t ? it.text : '', color: it.color || '', done: false, via: 'voice', at: Date.now() + k }); n++; }
-      else if (it.type === 'event' || it.type === 'reminder') { var tm = it.time || '09:00', d = it.date || today; put('events', { t: t, date: d, end: d, time: tm, etime: hmPlus(tm, it.type === 'reminder' ? 15 : 60), ad: it.type === 'event' && !it.time, ps: [pid], rem: it.type === 'reminder' ? '0' : '', ann: false, rep: '', desc: it.text && it.text !== t ? it.text : '', via: 'voice', at: Date.now() + k }); n++; }
+      else if (it.type === 'reminder') { put('tasks', { t: t, kind: 'chore', emoji: '', date: it.date || today, time: it.time || '09:00', ad: false, p: pid, stars: 0, rem: '0', rep: '', pri: '', desc: it.text && it.text !== t ? it.text : '', color: it.color || '', done: false, via: 'voice', at: Date.now() + k }); n++; }
+      else if (it.type === 'event') { var tm = it.time || '09:00', d = it.date || today; put('events', { t: t, date: d, end: d, time: tm, etime: hmPlus(tm, it.type === 'reminder' ? 15 : 60), ad: it.type === 'event' && !it.time, ps: [pid], rem: it.type === 'reminder' ? '0' : '', ann: false, rep: '', desc: it.text && it.text !== t ? it.text : '', via: 'voice', at: Date.now() + k }); n++; }
       else if (it.type === 'list') { var L = it.list || (listsCfg()[0] || {}).id || 'grocery'; (it.items && it.items.length ? it.items : [t]).forEach(function (x, j) { put('lists', { t: x, list: L, at: Date.now() + k * 50 + j }); n++; }); }
       else if (it.type === 'idea') { put('ideas', { t: t, text: it.text || '', color: it.color || '', p: pid, at: Date.now() + k }); n++; }
       else if (it.type === 'note') { put('notes', { t: it.text || t, color: NCOL[S.data.notes.length % NCOL.length], at: Date.now() + k }); n++; }
@@ -2424,8 +2425,8 @@
   function nzLoad() { if (!N.msgs) { N.msgs = LS.get(nzKey(), []) || []; N.speak = LS.get('nzspeak', true); } return N.msgs; }
   function nzSave() { LS.set(nzKey(), N.msgs.slice(-40)); }
   function nzMd(s) { return esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>'); }
-  var NZ_ICON = { task: '✅', event: '📅', reminder: '⏰', list: '🛒', idea: '💡', note: '📝', bill: '💵', bill_paid: '✔️💵', task_done: '☑️' };
-  var NZ_NAME = { task: 'Task', event: 'Event', reminder: 'Reminder', list: 'List', idea: 'Idea', note: 'Note', bill: 'New bill', bill_paid: 'Mark paid', task_done: 'Complete task' };
+  var NZ_ICON = { task: '✅', event: '📅', reminder: '✅⏰', list: '🛒', idea: '💡', note: '📝', bill: '💵', bill_paid: '✔️💵', task_done: '☑️' };
+  var NZ_NAME = { task: 'Task', event: 'Calendar event', reminder: 'Task with reminder', list: 'List', idea: 'Idea', note: 'Note', bill: 'New bill', bill_paid: 'Mark paid', task_done: 'Complete task' };
   function nzActLine(a) {
     var bits = [];
     if (a.date) { var d = parseKey(a.date); bits.push(WD[d.getDay()] + ' ' + MON[d.getMonth()] + ' ' + d.getDate()); }
@@ -2434,6 +2435,8 @@
     if (a.count) bits.push(a.count + ' payments');
     if (a.type === 'list') bits.push((a.items && a.items.length ? a.items.join(', ') : '') + ' → ' + ((listsCfg().filter(function (l) { return l.id === a.list; })[0] || listsCfg()[0]).name));
     if (a.rep) bits.push('repeats ' + a.rep);
+    var who = a.ps && a.ps.length ? a.ps : (a.p ? [a.p] : []);
+    if (who.length && (a.type === 'task' || a.type === 'reminder' || a.type === 'event')) bits.push(who.map(function (x) { return P(x).name; }).join(' & '));
     return bits.join(' · ');
   }
   function nzApply(a) {
@@ -2441,6 +2444,12 @@
     if (a.type === 'bill') {
       var cat = BCAT.some(function (c) { return c[0] === a.cat; }) ? a.cat : (/toll|road|car|gas|fuel/i.test(t) ? 'car' : a.scope === 'business' ? 'business' : 'other');
       put('bills', { t: t, amount: +a.amount || 0, cat: cat, start: a.date || today, freq: a.freq || 'monthly', count: a.freq === 'once' ? 1 : (+a.count || 0), prepaid: 0, added: today, autopay: !!a.autopay, remind: '3', url: '', cancel: '', gm: '', scope: a.scope || '', payer: '', note: a.text || '', paid: {} });
+      return true;
+    }
+    if (a.type === 'task' || a.type === 'reminder') {
+      var who = (a.ps && a.ps.length ? a.ps : [pid]).filter(function (x) { return S.cfg.people.some(function (p) { return p.id === x; }); });
+      if (!who.length) who = [pid];
+      who.forEach(function (w, k) { put('tasks', { t: t, kind: 'chore', emoji: '', date: a.date || today, time: a.time || '09:00', ad: !a.time, p: w, stars: 0, rem: a.time ? '0' : '', rep: a.rep || '', pri: '', desc: a.text && a.text !== t ? a.text : '', color: a.color || '', done: false, via: 'nezer', at: Date.now() + k }); });
       return true;
     }
     if (a.type === 'task_done') { var x = find('tasks', a.id); if (!x) return false; if (x.rep) { x.dd = x.dd || {}; x.dd[a.date || today] = 1; } else x.done = true; put('tasks', x); return true; }
