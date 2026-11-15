@@ -2633,18 +2633,29 @@
     }, { drawer: true, wide: true, nofocus: true });
   };
   A.ringconnect = function () {
-    openModal(head('Connect Ring') + '<p class="muted" style="line-height:1.5">Ring has no official app connection, so you make a one-time key on your Mac:<br>1. Open <b>Terminal</b> and paste:<br><code>npx -p ring-client-api ring-auth-cli</code><br>2. Enter your Ring email, password and the 2-step code. They go only to Ring.<br>3. Copy the long <b>refreshToken</b> it prints and paste it below.</p><label>Ring key</label><textarea name="tok" rows="3" placeholder="eyJydCI6…"></textarea><p class="verr" id="ringerr"></p><div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">Connect</button></div>', function (act) {
-      if (act !== 'ok') return false;
-      var tok = (val('tok') || '').replace(/^["'\s]+|["'\s]+$/g, ''), er = document.getElementById('ringerr');
-      if (tok.length < 20) { er.textContent = 'Paste the refreshToken'; return false; }
-      er.textContent = 'Connecting…';
-      var hw = 'c2-' + uid() + uid();
-      sbFetch('/rest/v1/rpc/ring_connect', { method: 'POST', json: { p_household: S.hid, p_token: tok, p_hardware_id: hw } })
-        .then(function () { return sbFetch('/functions/v1/ring', { method: 'POST', json: { action: 'test', household_id: S.hid } }); })
-        .then(function (r) { closeModal(); RV.st = null; RV.at = 0; toast('Ring connected: ' + (r.devices || []).map(function (d) { return d.name; }).join(', ')); ringLoad(true); render(); })
-        .catch(function (e) { er.textContent = e.message || 'Failed'; });
-      return false;
-    });
+    var st = { hw: '', email: '', pw: '', need: false, prompt: '' };
+    function draw(msg) {
+      openModal(head('Connect Ring') + (st.need
+        ? '<p class="muted" style="line-height:1.5">Enter the 6-digit code Ring sent' + (st.prompt ? ' via ' + esc(st.prompt) : '') + '.</p><label>Code</label><input type="text" name="rc" inputmode="numeric" autocomplete="one-time-code" maxlength="8">'
+        : '<p class="muted" style="line-height:1.5">Sign in with your Ring account. The password goes straight to Ring and is not saved — C2 keeps only a login key, which you can remove any time.</p><label>Ring email</label><input type="email" name="re" autocomplete="username" value="' + esc(st.email) + '"><label>Ring password</label><input type="password" name="rp" autocomplete="current-password">')
+        + '<p class="verr" id="ringerr">' + esc(msg || '') + '</p><div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">' + (st.need ? 'Verify' : 'Sign in') + '</button></div>', function (act) {
+        if (act !== 'ok') return false;
+        var er = document.getElementById('ringerr'), body = { action: 'login', household_id: S.hid, hw: st.hw };
+        if (st.need) { body.code = (val('rc') || '').replace(/\D/g, ''); if (body.code.length < 4) { er.textContent = 'Enter the code'; return false; } }
+        else { st.email = val('re'); st.pw = M.querySelector('[name=rp]').value; if (!st.email || !st.pw) { er.textContent = 'Enter email and password'; return false; } }
+        body.email = st.email; body.password = st.pw;
+        er.textContent = st.need ? 'Checking the code…' : 'Signing in to Ring…';
+        sbFetch('/functions/v1/ring', { method: 'POST', json: body }).then(function (r) {
+          if (r.need2fa) { st.hw = r.hw; st.need = true; if (r.prompt) st.prompt = r.prompt; draw(r.bad ? 'Wrong or expired code — try again' : ''); return; }
+          st.pw = ''; closeModal(); RV.st = null; RV.at = 0;
+          toast('Ring connected: ' + (r.devices || []).map(function (d) { return d.name; }).join(', '));
+          ringLoad(true); render();
+        }).catch(function (e) { er.textContent = e.message || 'Failed'; });
+        return false;
+      });
+      M._onCancel = function () { st.pw = ''; };
+    }
+    draw('');
   };
 
   root.addEventListener('click', function (ev) {
