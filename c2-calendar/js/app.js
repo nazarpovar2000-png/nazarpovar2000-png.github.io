@@ -418,6 +418,7 @@
     if (S.cfg.weather) h += '<span class="wx">' + I.sun + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</span>';
     h += '<span class="sp"></span>';
     if (S.view === 'ncam' && !S.sub) h += '<a class="ico" href="https://nezercam.com/login" target="_blank" rel="noopener" title="Open NezerCam in a new window" style="color:inherit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>';
+    if (S.hid || DEMO) h += '<button class="ico micico" data-a="voice" title="Voice: tasks, ideas, diary">' + MIC + '</button>';
     if (myAccts().length) { var un = unreadTotal(); h += '<button class="ico mailico" data-a="sub" data-v="mail">' + TI.mail + (un ? '<b class="bdg">' + (un > 99 ? '99+' : un) + '</b>' : '') + '</button>'; }
     if (onHome) h += '<button class="ico" data-a="settings">' + I.gear + '</button>';
     h += '<span class="ico">' + I.wifi + '</span></div>';
@@ -468,7 +469,7 @@
   function taskRow(t, d) {
     d = d || S.taskDay;
     var p = P(t.p), done = isDone(t, d), pr = { high: '#e5484d', medium: '#f5a524', low: '#3a6cf0' }[t.pri];
-    return '<div class="ti' + (done ? ' done' : '') + (S.fxId === t.id ? ' pulse' : '') + '" style="background:' + hexA(p.color, done ? .22 : .12) + '"><div class="tx" data-a="edtask" data-v="' + t.id + '"><b>' + (t.emoji ? t.emoji + ' ' : '') + esc(t.t) + '</b><small>' + (pr ? '<span style="color:' + pr + '">⚑ </span>' : '') + (t.ad || !t.time ? 'All day' : fmtTime(t.time)) + (t.rep ? ' · ' + t.rep : '') + '</small></div>' + (t.tm ? '<button class="tmr" data-a="tasktimer" data-v="' + t.tm + '">' + FI.clock + '</button>' : '') + (+t.stars ? '<span class="st">★' + (+t.stars) + '</span>' : '') + '<button class="ck" style="color:' + p.color + (done ? ';background:' + p.color : '') + '" data-a="tgtask" data-v="' + t.id + '|' + key(d) + '">' + (done ? '<span style="color:#fff;display:flex">' + I.check + '</span>' : '') + '</button></div>';
+    return '<div class="ti' + (done ? ' done' : '') + (S.fxId === t.id ? ' pulse' : '') + '" style="background:' + hexA(p.color, done ? .22 : .12) + '">' + (t.color && VCOL[t.color] ? '<span class="tcol" style="background:' + VCOL[t.color] + '"></span>' : '') + '<div class="tx" data-a="edtask" data-v="' + t.id + '"><b>' + (t.emoji ? t.emoji + ' ' : '') + esc(t.t) + '</b><small>' + (pr ? '<span style="color:' + pr + '">⚑ </span>' : '') + (t.ad || !t.time ? 'All day' : fmtTime(t.time)) + (t.rep ? ' · ' + t.rep : '') + '</small></div>' + (t.tm ? '<button class="tmr" data-a="tasktimer" data-v="' + t.tm + '">' + FI.clock + '</button>' : '') + (+t.stars ? '<span class="st">★' + (+t.stars) + '</span>' : '') + '<button class="ck" style="color:' + p.color + (done ? ';background:' + p.color : '') + '" data-a="tgtask" data-v="' + t.id + '|' + key(d) + '">' + (done ? '<span style="color:#fff;display:flex">' + I.check + '</span>' : '') + '</button></div>';
   }
   function renderHome() {
     var evs = eventsOn(S.sel);
@@ -1437,10 +1438,10 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer, ideas: renderIdeas, diary: renderDiary }[v] || renderCalendar)();
       h += tabbar();
     }
-    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
+    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['ideas', 'Ideas'], ['diary', 'Diary'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
     if (S.sleeping) { var d = now(); h += '<div class="sleep" data-a="wake"><b>' + (S.cfg.h24 ? pad(d.getHours()) : ((d.getHours() % 12) || 12)) + ':' + pad(d.getMinutes()) + '</b><span>' + WDL[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate() + '</span></div>'; }
     if (S.dbNote) h += '<div class="dbnote">' + esc(S.dbNote) + '</div>';
     else if (S.gNote && (v === 'calendar' || v === 'home')) h += '<div class="dbnote" data-a="settings">' + esc(S.gNote) + '</div>';
@@ -1460,12 +1461,13 @@
     opt = opt || {};
     var type = opt.drawer ? (opt.wide ? 'drawer wide' : 'drawer') : 'center';
     var still = S.modalOpen && M._type === type;
-    closeTok++;
+    closeTok++; M._onCancel = null;
     M.innerHTML = '<div class="dlg">' + html + '</div>'; M.className = 'on ' + type + (still ? ' still' : ''); M._type = type; S.modalOpen = true; M._ok = onOk;
     var f = M.querySelector('input[type=text],textarea'); if (f && !still && !opt.nofocus && !('ontouchstart' in window)) setTimeout(function () { f.focus(); }, 280);
   }
   function closeModal() {
-    M._cleanHook = null;
+    M._cleanHook = null; M._onCancel = null;
+    if (VS) voiceClose();
     if (!S.modalOpen) return;
     S.modalOpen = false; M._ok = null; var tok = ++closeTok; M.classList.add('out');
     setTimeout(function () { if (tok === closeTok && !S.modalOpen) { M.className = ''; M.innerHTML = ''; } }, 210);
@@ -1576,7 +1578,7 @@
       var n = val('t'), ps = pplVal(); if (!n) { toast('Enter a title'); return false; } if (!ps.length) { toast('Select a profile'); return false; }
       var kindB = M.querySelector('.seg2 .on'), kind = kindB ? kindB.getAttribute('data-kind') : 'chore';
       askNotify(val('rem'));
-      var base = { t: n, kind: kind, emoji: val('emoji'), date: togOn('hasdate') ? (val('date') || dk) : '', time: val('time'), ad: !togOn('timed'), tm: togOn('tm') ? (+val('tmin') || 15) : 0, rem: val('rem'), rep: repVal(), pri: val('pri'), stars: +val('stars') || 0, desc: val('desc') };
+      var base = { t: n, kind: kind, color: t.color || '', emoji: val('emoji'), date: togOn('hasdate') ? (val('date') || dk) : '', time: val('time'), ad: !togOn('timed'), tm: togOn('tm') ? (+val('tmin') || 15) : 0, rem: val('rem'), rep: repVal(), pri: val('pri'), stars: +val('stars') || 0, desc: val('desc') };
       if (!base.date) base.rep = '';
       ps.forEach(function (pid, i) {
         var o = JSON.parse(JSON.stringify(base)); o.p = pid;
@@ -1748,7 +1750,7 @@
       if (t.hasAttribute('data-col')) { var cs = t.parentNode.querySelectorAll('button'); for (var j = 0; j < cs.length; j++) cs[j].className = ''; t.className = 'on'; return; }
       if (t.hasAttribute('data-m')) {
         var act = t.getAttribute('data-m');
-        if (act === 'cancel') { closeModal(); render(); return; }
+        if (act === 'cancel') { var oc = M._onCancel; closeModal(); render(); if (oc) oc(); return; }
         var ok = M._ok ? M._ok(act) : true;
         if (ok) { closeModal(); render(); }
         return;
@@ -1924,6 +1926,482 @@
     switchfam: function () { choose('Family', (S.households || []).map(function (h) { return [h.id, esc(h.name)]; }).concat([['new', '+ Create another family']]), S.hid, function (id) { if (id === 'new') { S.hid = null; render(); return; } (S.households || []).forEach(function (h) { if (h.id === id) openHousehold(h); }); }); },
     renfam: function () { var n = prompt('Family name', S.hh ? S.hh.name : ''); if (!n) return; sbFetch('/rest/v1/households?id=eq.' + S.hid, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, json: { name: n } }).then(function () { S.hh.name = n; render(); }).catch(function () { toast('Failed'); }); }
   };
+  /* ================= VOICE CAPTURE · IDEAS · DIARY (end-to-end encrypted) ================= */
+  var VCOL = { blue: '#3a6cf0', red: '#E5525C', green: '#16A394', yellow: '#F5B400' };
+  var VCN = { blue: 'Work', red: 'Money', green: 'Home', yellow: 'Other' };
+  var MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>';
+  TI.ideas = '<svg viewBox="0 0 32 32"><path d="M16 3a9 9 0 0 0-5 16.5V23h10v-3.5A9 9 0 0 0 16 3z" fill="#FFC21A"/><rect x="11.5" y="24.5" width="9" height="2.6" rx="1.3" fill="#8a94a6"/><rect x="13" y="28" width="6" height="2" rx="1" fill="#8a94a6"/><path d="M13 13.5l3 3 3-3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  TI.diary = '<svg viewBox="0 0 32 32"><rect x="6" y="3" width="20" height="26" rx="3" fill="#8B5CF6"/><rect x="6" y="3" width="4" height="26" rx="2" fill="#6d3fe0"/><rect x="13" y="15" width="9" height="7.5" rx="1.6" fill="#fff"/><path d="M14.8 15v-2a2.7 2.7 0 0 1 5.4 0v2" fill="none" stroke="#fff" stroke-width="1.8"/></svg>';
+  TABN.ideas = 'Ideas'; TABN.diary = 'Diary';
+  if (COLLS.indexOf('ideas') < 0) { COLLS.push('ideas'); S.data.ideas = []; }
+  function mePid() {
+    var ps = S.cfg.people, em = (S.auth && S.auth.user && S.auth.user.email || '').toLowerCase().split('@')[0];
+    if (S.cfg.mePid && S.cfg.mePid[myId()]) return S.cfg.mePid[myId()];
+    for (var i = 0; i < ps.length; i++) if (em && em.indexOf(String(ps[i].name).toLowerCase()) >= 0) return ps[i].id;
+    return ps[0] ? ps[0].id : 'me';
+  }
+  function ab2b64(buf) { var a = new Uint8Array(buf), s = '', i; for (i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+  function b642u8(b) { var s = atob(b), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+
+  /* ---- recorder: raw PCM → 16 kHz mono WAV (works on old WebViews, every model accepts WAV) ---- */
+  var VR = { rec: null };
+  function recStart(onLevel) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.reject({ name: 'NoSupport' });
+    return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then(function (stream) {
+      var C = window.AudioContext || window.webkitAudioContext, ctx = new C();
+      var src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1), r = { stream: stream, ctx: ctx, src: src, proc: proc, bufs: [], n: 0, rate: ctx.sampleRate };
+      proc.onaudioprocess = function (e) {
+        var d = e.inputBuffer.getChannelData(0); r.bufs.push(new Float32Array(d)); r.n += d.length;
+        var s = 0; for (var i = 0; i < d.length; i += 8) s += d[i] * d[i]; onLevel(Math.sqrt(s / (d.length / 8)));
+      };
+      src.connect(proc); proc.connect(ctx.destination);
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      VR.rec = r;
+    });
+  }
+  function recStop(discard) {
+    var r = VR.rec; VR.rec = null; if (!r) return null;
+    try { r.proc.onaudioprocess = null; r.proc.disconnect(); r.src.disconnect(); } catch (e) {}
+    try { r.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+    try { r.ctx.close(); } catch (e) {}
+    if (discard) return null;
+    var total = r.n, out = 16000, ratio = r.rate / out, len = Math.floor(total / ratio), all = new Float32Array(total), o = 0, i, j;
+    r.bufs.forEach(function (b) { all.set(b, o); o += b.length; });
+    var buf = new ArrayBuffer(44 + len * 2), dv = new DataView(buf), peak = 0;
+    function ws(off, str) { for (var k = 0; k < str.length; k++) dv.setUint8(off + k, str.charCodeAt(k)); }
+    ws(0, 'RIFF'); dv.setUint32(4, 36 + len * 2, true); ws(8, 'WAVE'); ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, out, true); dv.setUint32(28, out * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true); ws(36, 'data'); dv.setUint32(40, len * 2, true);
+    for (i = 0; i < len; i++) {
+      var a = Math.floor(i * ratio), z = Math.min(total, Math.floor((i + 1) * ratio)), s = 0, c = 0;
+      for (j = a; j < z; j++) { s += all[j]; c++; }
+      var v = c ? s / c : 0; v = v > 1 ? 1 : v < -1 ? -1 : v; if (Math.abs(v) > peak) peak = Math.abs(v);
+      dv.setInt16(44 + i * 2, v < 0 ? v * 0x8000 : v * 0x7fff, true);
+    }
+    return { b64: ab2b64(buf), secs: total / r.rate, peak: peak };
+  }
+  function micErr(e) {
+    var n = e && e.name;
+    if (n === 'NotAllowedError' || n === 'PermissionDeniedError' || n === 'SecurityError') return IN_APP ? 'Microphone access is blocked. Update the C2 app on the tablet (version 5 or newer).' : 'Microphone access is blocked. Allow the microphone for this site in your browser settings.';
+    if (n === 'NotFoundError' || n === 'DevicesNotFoundError') return 'No microphone found on this device.';
+    if (n === 'NoSupport') return 'This browser cannot record audio.';
+    return 'Could not start the microphone' + (e && e.message ? ': ' + e.message : '') + '.';
+  }
+
+  /* ---- voice dialog ---- */
+  var VS = null, vTick = null;
+  var VTYPES = [['task', '✅ Task'], ['event', '📅 Event'], ['reminder', '⏰ Reminder'], ['list', '🛒 List'], ['idea', '💡 Idea'], ['diary', '🔒 Diary'], ['note', '📝 Note'], ['bill_paid', '💵 Bill paid']];
+  var VMODES = [['auto', 'Auto'], ['task', 'Task'], ['idea', 'Idea'], ['diary', 'Diary 🔒']];
+  function voiceOpen(mode, pid) {
+    if (VR.rec) return;
+    VS = { phase: 'rec', mode: mode || 'auto', pid: pid || '', t0: Date.now() };
+    voiceRender();
+    recStart(function (lv) { var b = document.getElementById('vlev'); if (b) b.style.transform = 'scale(' + (1 + Math.min(1, lv * 7) * .55).toFixed(3) + ')'; })
+      .then(function () { if (!VS || VS.phase !== 'rec') { recStop(true); return; } VS.t0 = Date.now(); clearInterval(vTick); vTick = setInterval(voiceTick, 250); })
+      .catch(function (e) { if (!VS) return; VS.phase = 'err'; VS.err = micErr(e); voiceRender(); });
+  }
+  function voiceTick() {
+    if (!VS || VS.phase !== 'rec' || !VR.rec) { clearInterval(vTick); return; }
+    var s = Math.floor((Date.now() - VS.t0) / 1000), e = document.getElementById('vtime');
+    if (e) e.textContent = Math.floor(s / 60) + ':' + pad(s % 60) + ' / 1:30';
+    if (s >= 90) voiceStop();
+  }
+  function voiceStop() {
+    clearInterval(vTick);
+    var w = recStop(false);
+    if (!w || w.secs < 0.8) { VS.phase = 'err'; VS.err = 'Too short — speak a little longer.'; voiceRender(); return; }
+    if (w.peak < 0.004) { VS.phase = 'err'; VS.err = 'I heard only silence. Check that the microphone is not covered and speak closer.'; voiceRender(); return; }
+    VS.phase = 'think'; voiceRender();
+    var n = now(), tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+    sbFetch('/functions/v1/voice', { method: 'POST', json: {
+      action: 'capture', household_id: S.hid, audio: w.b64, format: 'wav', mode: VS.mode, tz: tz || S.cfg.tz || '',
+      now: key(n) + 'T' + pad(n.getHours()) + ':' + pad(n.getMinutes()), weekday: WDL[n.getDay()], me: VS.pid || mePid(),
+      people: S.cfg.people.map(function (p) { return { id: p.id, name: p.name }; }), lists: listsCfg().map(function (l) { return { id: l.id, name: l.name }; }),
+      bills: S.data.bills.map(function (b) { return { id: b.id, t: b.t }; })
+    } }).then(function (r) {
+      if (!VS) return;
+      var items = (r && r.items) || [];
+      if (VS.pid) items.forEach(function (it) { if (it.type === 'diary') it.p = VS.pid; });
+      VS.res = { transcript: r.transcript || '', items: items }; VS.phase = items.length ? 'review' : 'err';
+      if (!items.length) VS.err = 'Nothing recognized. Try again.';
+      voiceRender();
+    }).catch(function (e) { if (!VS) return; VS.phase = 'err'; VS.err = (e && e.status === 503) ? 'Voice is not set up yet (OpenRouter key missing).' : (e && e.message) || 'Network error'; voiceRender(); });
+  }
+  function voiceClose() { clearInterval(vTick); recStop(true); VS = null; }
+  function vField(it, i) {
+    var h = '', ty = it.type;
+    h += '<input type="text" name="vti' + i + '" value="' + esc(it.title) + '" placeholder="Title">';
+    if (ty === 'task' || ty === 'event' || ty === 'reminder') h += '<div class="vtw"><input type="date" name="vd' + i + '" value="' + esc(it.date || key(sod(now()))) + '"><input type="time" name="vh' + i + '" value="' + esc(it.time || '') + '"></div>';
+    if (ty === 'list') h += '<div class="vtw"><select name="vl' + i + '">' + listsCfg().map(function (l) { return '<option value="' + l.id + '"' + (l.id === it.list ? ' selected' : '') + '>' + esc(l.name) + '</option>'; }).join('') + '</select></div><input type="text" name="vx' + i + '" value="' + esc((it.items && it.items.length ? it.items : [it.title]).join(', ')) + '" placeholder="Items, comma separated">';
+    if (ty === 'idea' || ty === 'diary' || ty === 'note') h += '<textarea name="vtx' + i + '" placeholder="Text">' + esc(it.text || it.title) + '</textarea>';
+    if (ty === 'task' || ty === 'idea') h += '<div class="vcols">' + ['', 'blue', 'red', 'green', 'yellow'].map(function (c) { return '<button type="button" data-m="vcol:' + i + ':' + c + '" class="' + ((it.color || '') === c ? 'on' : '') + '" style="background:' + (VCOL[c] || 'transparent') + '">' + (c ? '' : '∅') + '</button>'; }).join('') + '</div>';
+    if (ty === 'bill_paid') h += '<div class="vtw"><select name="vb' + i + '"><option value="">— pick a bill —</option>' + S.data.bills.map(function (b) { return '<option value="' + b.id + '"' + (b.id === it.bill ? ' selected' : '') + '>' + esc(b.t) + '</option>'; }).join('') + '</select><input type="number" step="0.01" name="va' + i + '" value="' + (it.amount != null ? it.amount : '') + '" placeholder="Amount"></div>';
+    h += '<select name="vp' + i + '" class="vpp">' + S.cfg.people.map(function (p) { return '<option value="' + p.id + '"' + (p.id === it.p ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + '</select>';
+    return h;
+  }
+  function voiceRender() {
+    if (!VS) return;
+    var h = '';
+    if (VS.phase === 'rec') {
+      h = head(VS.mode === 'diary' ? '🔒 Diary — listening…' : 'Listening…')
+        + '<div class="vmic"><span id="vlev" class="vring"></span><span class="vdot">' + MIC + '</span></div><div id="vtime" class="vtime">0:00 / 1:30</div>'
+        + (VS.pid ? '' : '<div class="vmodes">' + VMODES.map(function (m) { return '<button type="button" data-m="vmode:' + m[0] + '" class="' + (VS.mode === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>')
+        + '<p class="vhint muted">' + (VS.mode === 'diary' ? 'Tell how your day went — it is saved only after your PIN.' : 'Say anything: “remind me tomorrow at 9 to call Mike”, “buy milk and bread”, “idea: discount for bathrooms”.') + '</p>'
+        + '<div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="vstop">Done</button></div>';
+    } else if (VS.phase === 'think') {
+      h = head('Understanding…') + '<div class="vthink"><span></span><span></span><span></span></div><p class="vhint muted">Turning your voice into items…</p>';
+    } else if (VS.phase === 'err') {
+      h = head('Voice') + '<p class="verr">' + esc(VS.err) + '</p><div class="btns"><button class="no" data-m="cancel">Close</button><button class="ok" data-m="vagain">Try again</button></div>';
+    } else {
+      var its = VS.res.items;
+      h = head('Got it — check and save') + (VS.res.transcript ? '<p class="vtr">“' + esc(VS.res.transcript) + '”</p>' : '')
+        + '<div class="vits">' + its.map(function (it, i) {
+          return '<div class="vit"><div class="vrow"><select name="vt' + i + '">' + VTYPES.map(function (t) { return '<option value="' + t[0] + '"' + (t[0] === it.type ? ' selected' : '') + '>' + t[1] + '</option>'; }).join('') + '</select><button type="button" class="vrm" data-m="vrm:' + i + '">' + I.x + '</button></div>' + vField(it, i) + '</div>';
+        }).join('') + '</div>'
+        + '<div class="btns"><button class="no" data-m="vagain">' + MIC.replace('<svg', '<svg style="width:1rem;height:1rem;vertical-align:-.15rem;margin-right:.3rem"') + 'Again</button><button class="ok" data-m="vsave">Save ' + (its.length > 1 ? 'all ' + its.length : '') + '</button></div>';
+    }
+    openModal(h, voiceAct, { nofocus: true });
+    M._cleanHook = function (t) { var m = /^vt(\d+)$/.exec(t.name || ''); if (!m || !VS || !VS.res) return false; voiceCollect(); VS.res.items[+m[1]].type = t.value; voiceRender(); return true; };
+  }
+  function voiceCollect() {
+    if (!VS || !VS.res) return;
+    VS.res.items.forEach(function (it, i) {
+      function g(n) { var e = M.querySelector('[name="' + n + i + '"]'); return e ? e.value.trim() : null; }
+      var v;
+      if ((v = g('vti')) !== null) it.title = v;
+      if ((v = g('vd')) !== null) it.date = v;
+      if ((v = g('vh')) !== null) it.time = v;
+      if ((v = g('vl')) !== null) it.list = v;
+      if ((v = g('vx')) !== null) it.items = v.split(/\s*[,;\n]\s*/).filter(Boolean);
+      if ((v = g('vtx')) !== null) it.text = v;
+      if ((v = g('vb')) !== null) it.bill = v;
+      if ((v = g('va')) !== null) it.amount = v === '' ? null : +v;
+      if ((v = g('vp')) !== null) it.p = v;
+    });
+  }
+  function voiceAct(act) {
+    var p = act.split(':');
+    if (p[0] === 'vmode') { VS.mode = p[1]; var bs = M.querySelectorAll('.vmodes button'); for (var i = 0; i < bs.length; i++) bs[i].className = bs[i].getAttribute('data-m') === act ? 'on' : ''; return false; }
+    if (act === 'vstop') { voiceStop(); return false; }
+    if (act === 'vagain') { var md = VS.mode, pd = VS.pid; voiceClose(); voiceOpen(md, pd); return false; }
+    if (p[0] === 'vrm') { voiceCollect(); VS.res.items.splice(+p[1], 1); if (!VS.res.items.length) { voiceClose(); return true; } voiceRender(); return false; }
+    if (p[0] === 'vcol') { voiceCollect(); VS.res.items[+p[1]].color = p[2] || ''; voiceRender(); return false; }
+    if (act === 'vsave') { voiceCollect(); var items = VS.res.items; voiceClose(); setTimeout(function () { voiceSave(items); }, 0); return true; }
+    return false;
+  }
+  function hmPlus(hm, mins) { var p = (hm || '09:00').split(':'), t = (+p[0] * 60 + +p[1] + mins) % 1440; return pad(Math.floor(t / 60)) + ':' + pad(t % 60); }
+  function voiceSave(items) {
+    var n = 0, diary = [], today = key(sod(now()));
+    items.forEach(function (it, k) {
+      var pid = it.p || mePid(), t = it.title || (it.text || '').slice(0, 80);
+      if (it.type === 'task') { put('tasks', { t: t, kind: 'chore', emoji: '', date: it.date || today, time: it.time || '09:00', ad: !it.time, p: pid, stars: 0, rem: it.time ? '0' : '', rep: '', pri: '', desc: it.text && it.text !== t ? it.text : '', color: it.color || '', done: false, via: 'voice', at: Date.now() + k }); n++; }
+      else if (it.type === 'event' || it.type === 'reminder') { var tm = it.time || '09:00', d = it.date || today; put('events', { t: t, date: d, end: d, time: tm, etime: hmPlus(tm, it.type === 'reminder' ? 15 : 60), ad: it.type === 'event' && !it.time, ps: [pid], rem: it.type === 'reminder' ? '0' : '', ann: false, rep: '', desc: it.text && it.text !== t ? it.text : '', via: 'voice', at: Date.now() + k }); n++; }
+      else if (it.type === 'list') { var L = it.list || (listsCfg()[0] || {}).id || 'grocery'; (it.items && it.items.length ? it.items : [t]).forEach(function (x, j) { put('lists', { t: x, list: L, at: Date.now() + k * 50 + j }); n++; }); }
+      else if (it.type === 'idea') { put('ideas', { t: t, text: it.text || '', color: it.color || '', p: pid, at: Date.now() + k }); n++; }
+      else if (it.type === 'note') { put('notes', { t: it.text || t, color: NCOL[S.data.notes.length % NCOL.length], at: Date.now() + k }); n++; }
+      else if (it.type === 'bill_paid') {
+        var b = it.bill && find('bills', it.bill), o = b && bNext(b);
+        if (b && o) { b.paid = b.paid || {}; b.paid[o.k] = { amt: it.amount != null ? it.amount : +b.amount, at: Date.now(), src: 'voice' }; put('bills', b); n++; }
+        else { put('notes', { t: 'Paid: ' + t + (it.amount != null ? ' ' + money(it.amount) : ''), color: NCOL[0], at: Date.now() + k }); n++; }
+      }
+      else if (it.type === 'diary') diary.push({ pid: pid, e: { id: uid(), kind: 'diary', t: t, text: it.text || t, date: it.date || today, at: Date.now() + k, via: 'voice' } });
+    });
+    if (n) toast('Saved ' + n + ' item' + (n > 1 ? 's' : ''));
+    if (diary.length) vSaveQueued(diary);
+  }
+
+  /* ---- vault: per-profile diary, AES-GCM with a key that only the PIN (+ server half) unlocks ---- */
+  var V = { st: null, keys: {}, plain: {}, rows: {}, act: Date.now(), inAt: 0, loading: false, since: null };
+  var CS = window.crypto && window.crypto.subtle;
+  var TE = window.TextEncoder ? new TextEncoder() : null, TD = window.TextDecoder ? new TextDecoder() : null;
+  function rnd(n) { var a = new Uint8Array(n); window.crypto.getRandomValues(a); return a; }
+  function rpc(name, args) { return sbFetch('/rest/v1/rpc/' + name, { method: 'POST', json: args }); }
+  function kek(secret, salt) {
+    return CS.importKey('raw', TE.encode(secret), 'PBKDF2', false, ['deriveKey']).then(function (k) {
+      return CS.deriveKey({ name: 'PBKDF2', salt: b642u8(salt), iterations: 150000, hash: 'SHA-256' }, k, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    });
+  }
+  function seal(k, bytes) { var iv = rnd(12); return CS.encrypt({ name: 'AES-GCM', iv: iv }, k, bytes).then(function (ct) { return { iv: ab2b64(iv), ct: ab2b64(ct) }; }); }
+  function unseal(k, iv, ct) { return CS.decrypt({ name: 'AES-GCM', iv: b642u8(iv) }, k, b642u8(ct)); }
+  function dkImport(raw) { return CS.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
+  function wrapStr(w) { return w.iv + '.' + w.ct; }
+  function recCode() { var al = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = rnd(20), s = ''; for (var i = 0; i < 20; i++) { s += al[r[i] % 32]; if (i % 4 === 3 && i < 19) s += '-'; } return s; }
+  function normCode(c) { return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+  function vReady() { return !!(CS && TE && TD); }
+  function vStatus() {
+    if (DEMO || !S.hid) { V.st = V.st || {}; return Promise.resolve(); }
+    return rpc('vault_status', { p_household: S.hid }).then(function (r) { V.st = r || {}; render(); }).catch(function () { V.st = V.st || {}; render(); });
+  }
+  function vLoad() {
+    if (DEMO || !S.hid || V.loading) return Promise.resolve();
+    V.loading = true; V.lastLoad = Date.now();
+    var q = '/rest/v1/vault_items?select=pid,id,kind,iv,ct,deleted,updated_at&household_id=eq.' + S.hid + '&order=updated_at.asc&limit=2000' + (V.since ? '&updated_at=gt.' + encodeURIComponent(V.since) : '');
+    return sbFetch(q).then(function (rows) {
+      var touched = {};
+      (rows || []).forEach(function (r) { V.rows[r.pid + '|' + r.id] = r; V.since = r.updated_at; touched[r.pid] = 1; });
+      V.loadedOnce = true;
+      return Promise.all(Object.keys(V.keys).filter(function (p) { return touched[p] || !V.plain[p] || !V.plain[p].length; }).map(vDecrypt));
+    }).catch(function () {}).then(function () { V.loading = false; render(); });
+  }
+  function vDecrypt(pid) {
+    var k = V.keys[pid]; if (!k) return Promise.resolve();
+    var rows = Object.keys(V.rows).map(function (x) { return V.rows[x]; }).filter(function (r) { return r.pid === pid && !r.deleted && r.ct; });
+    return Promise.all(rows.map(function (r) {
+      return unseal(k, r.iv, r.ct).then(function (b) { var o = JSON.parse(TD.decode(b)); o.id = r.id; o.kind = r.kind; return o; }).catch(function () { return null; });
+    })).then(function (xs) {
+      if (!V.keys[pid]) return;
+      var have = {}; xs.forEach(function (x) { if (x) have[x.id] = 1; });
+      V.plain[pid] = xs.filter(Boolean).concat((V.plain[pid] || []).filter(function (x) { return !have[x.id] && !V.rows[pid + '|' + x.id]; }));
+    });
+  }
+  function vUse(pid, raw) { return dkImport(raw).then(function (k) { V.keys[pid] = k; V.act = Date.now(); V.inAt = Date.now(); V.plain[pid] = V.plain[pid] || []; if (V.st && V.st[pid]) V.st[pid].locked_until = null; return vDecrypt(pid); }); }
+  function vSetup(pid, pin) {
+    var dk = rnd(32), code = recCode(), rs = ab2b64(rnd(16));
+    return rpc('vault_init', { p_household: S.hid, p_pid: pid, p_pin: pin }).then(function (r) {
+      return Promise.all([kek(pin + '|' + r.server_half, r.salt), kek(normCode(code), rs)]);
+    }).then(function (ks) { return Promise.all([seal(ks[0], dk), seal(ks[1], dk)]); }).then(function (w) {
+      return rpc('vault_finish', { p_household: S.hid, p_pid: pid, p_pin: pin, p_wrapped: wrapStr(w[0]), p_rec_code: normCode(code), p_rec_salt: rs, p_rec_wrapped: wrapStr(w[1]) });
+    }).then(function () { V.st = V.st || {}; V.st[pid] = { set: true }; return vUse(pid, dk); }).then(function () { return code; });
+  }
+  function vFailMsg(r) {
+    if (r.locked_until) { var m = Math.max(1, Math.ceil((new Date(r.locked_until).getTime() - Date.now()) / 60000)); return 'Too many wrong tries. Locked for ' + m + ' min.'; }
+    if (r.unset) return 'No PIN yet.';
+    return 'Wrong code' + (r.left != null ? ' — ' + r.left + ' tr' + (r.left === 1 ? 'y' : 'ies') + ' left' : '');
+  }
+  function vUnlock(pid, pin) {
+    return rpc('vault_unlock', { p_household: S.hid, p_pid: pid, p_kind: 'pin', p_secret: pin }).then(function (r) {
+      if (!r || !r.ok) { if (r && r.locked_until) { V.st[pid] = V.st[pid] || {}; V.st[pid].locked_until = r.locked_until; } throw new Error(vFailMsg(r || {})); }
+      var w = r.wrapped.split('.');
+      return kek(pin + '|' + r.server_half, r.salt).then(function (k) { return unseal(k, w[0], w[1]); }).then(function (raw) { return vUse(pid, raw); });
+    });
+  }
+  function vRecover(pid, code, newPin) {
+    var c = normCode(code), raw, srv;
+    return rpc('vault_unlock', { p_household: S.hid, p_pid: pid, p_kind: 'rec', p_secret: c }).then(function (r) {
+      if (!r || !r.ok) throw new Error(vFailMsg(r || {}));
+      srv = r; var w = r.rec_wrapped.split('.');
+      return kek(c, r.rec_salt).then(function (k) { return unseal(k, w[0], w[1]); });
+    }).then(function (b) { raw = new Uint8Array(b); return kek(newPin + '|' + srv.server_half, srv.salt); })
+      .then(function (k) { return seal(k, raw); })
+      .then(function (w) { return rpc('vault_set_pin', { p_household: S.hid, p_pid: pid, p_kind: 'rec', p_secret: c, p_new_pin: newPin, p_wrapped: wrapStr(w) }); })
+      .then(function (r) { if (!r || !r.ok) throw new Error(vFailMsg(r || {})); return vUse(pid, raw); });
+  }
+  function vChangePin(pid, oldPin, newPin) {
+    var raw, srv;
+    return rpc('vault_unlock', { p_household: S.hid, p_pid: pid, p_kind: 'pin', p_secret: oldPin }).then(function (r) {
+      if (!r || !r.ok) throw new Error(vFailMsg(r || {}));
+      srv = r; var w = r.wrapped.split('.');
+      return kek(oldPin + '|' + r.server_half, r.salt).then(function (k) { return unseal(k, w[0], w[1]); });
+    }).then(function (b) { raw = new Uint8Array(b); return kek(newPin + '|' + srv.server_half, srv.salt); })
+      .then(function (k) { return seal(k, raw); })
+      .then(function (w) { return rpc('vault_set_pin', { p_household: S.hid, p_pid: pid, p_kind: 'pin', p_secret: oldPin, p_new_pin: newPin, p_wrapped: wrapStr(w) }); })
+      .then(function (r) { if (!r || !r.ok) throw new Error(vFailMsg(r || {})); });
+  }
+  function vPut(pid, e) {
+    var k = V.keys[pid]; if (!k) return Promise.reject(new Error('locked'));
+    if (!e.id) e.id = uid(); if (!e.at) e.at = Date.now();
+    var kind = e.kind || 'diary', o = {}; Object.keys(e).forEach(function (x) { if (x !== 'id' && x !== 'kind') o[x] = e[x]; });
+    var arr = V.plain[pid] = (V.plain[pid] || []).filter(function (x) { return x.id !== e.id; }); e.kind = kind; arr.push(e); render();
+    if (DEMO) return Promise.resolve();
+    return seal(k, TE.encode(JSON.stringify(o))).then(function (w) {
+      return sbFetch('/rest/v1/vault_items?on_conflict=household_id,pid,id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, json: { household_id: S.hid, pid: pid, id: e.id, kind: kind, iv: w.iv, ct: w.ct, deleted: false } });
+    }).catch(function () { toast('Diary entry not saved — check connection'); });
+  }
+  function vDel(pid, id) {
+    V.plain[pid] = (V.plain[pid] || []).filter(function (x) { return x.id !== id; }); render();
+    if (DEMO) return;
+    sbFetch('/rest/v1/vault_items?household_id=eq.' + S.hid + '&pid=eq.' + encodeURIComponent(pid) + '&id=eq.' + encodeURIComponent(id), { method: 'PATCH', headers: { Prefer: 'return=minimal' }, json: { deleted: true, iv: '', ct: '' } }).catch(function () { toast('Not deleted — check connection'); });
+  }
+  function vLockAll() { if (!Object.keys(V.keys).length) return; V.keys = {}; V.plain = {}; S.dpin = ''; if (S.sub === 'diary') render(); }
+  var vQueue = [];
+  function vSaveQueued(list) {
+    vQueue = vQueue.concat(list);
+    (function next() {
+      if (!vQueue.length) return;
+      var pid = vQueue[0].pid;
+      function flush() { var mine = vQueue.filter(function (x) { return x.pid === pid; }); vQueue = vQueue.filter(function (x) { return x.pid !== pid; }); mine.forEach(function (x) { vPut(pid, x.e); }); toast('Saved to ' + P(pid).name + '’s diary 🔒'); V.inAt = Date.now(); setTimeout(next, 300); }
+      if (V.keys[pid]) { flush(); return; }
+      var go3 = function () { pinDialog(pid, 'Save to ' + esc(P(pid).name) + '’s diary', flush, function () { vQueue = vQueue.filter(function (x) { return x.pid !== pid; }); toast('Diary entry discarded'); next(); }); };
+      if (V.st === null) vStatus().then(go3); else go3();
+    })();
+  }
+  function pinInput(name, ph) { return '<input type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="8" name="' + name + '" class="pinin" placeholder="' + (ph || '••••') + '">'; }
+  /* modal PIN prompt (creates the PIN the first time) */
+  function pinDialog(pid, title, onOpen, onCancel) {
+    var st = V.st && V.st[pid];
+    if (!vReady()) { toast('This browser cannot encrypt'); if (onCancel) onCancel(); return; }
+    if (!st || !st.set) { setupDialog(pid, onOpen, onCancel); return; }
+    openModal(head(title) + '<p class="muted" style="margin-bottom:.6rem">Enter ' + esc(P(pid).name) + '’s diary PIN.</p>' + pinInput('pin') + '<p class="verr" id="pinerr"></p><div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">Unlock</button></div>', function (act) {
+      if (act !== 'ok') return false;
+      var pin = val('pin'), er = document.getElementById('pinerr'); if (!/^\d{4,8}$/.test(pin)) { er.textContent = 'PIN is 4–8 digits'; return false; }
+      er.textContent = 'Checking…';
+      vUnlock(pid, pin).then(function () { closeModal(); render(); if (onOpen) onOpen(); }).catch(function (e) { er.textContent = e.message; var i = M.querySelector('[name=pin]'); if (i) { i.value = ''; i.focus(); } });
+      return false;
+    });
+    M._onCancel = onCancel || null;
+  }
+  function setupDialog(pid, onOpen, onCancel) {
+    openModal(head('Create a diary PIN') + '<p class="muted" style="line-height:1.45;margin-bottom:.8rem">' + esc(P(pid).name) + '’s diary is encrypted on this device. Nobody — not family, not the server — can read it without this PIN. Use 4–8 digits.</p><label>New PIN</label>' + pinInput('p1') + '<label>Repeat PIN</label>' + pinInput('p2') + '<p class="verr" id="pinerr"></p><div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">Create</button></div>', function (act) {
+      if (act !== 'ok') return false;
+      var a = val('p1'), b = val('p2'), er = document.getElementById('pinerr');
+      if (!/^\d{4,8}$/.test(a)) { er.textContent = 'PIN must be 4–8 digits'; return false; }
+      if (a !== b) { er.textContent = 'PINs do not match'; return false; }
+      if (/^(\d)\1+$/.test(a) || '0123456789'.indexOf(a) >= 0 || '9876543210'.indexOf(a) >= 0) { er.textContent = 'Too easy to guess — pick another'; return false; }
+      er.textContent = 'Creating…';
+      vSetup(pid, a).then(function (code) { recDialog(code, onOpen); }).catch(function (e) { er.textContent = e.message || 'Failed'; });
+      return false;
+    });
+    M._onCancel = onCancel || null;
+  }
+  function recDialog(code, after) {
+    openModal('<h3>Write down your recovery code</h3><p class="muted" style="line-height:1.45">If you forget the PIN, this code is the only way to open the diary. Keep it on paper, not on this tablet.</p><div class="reccode">' + code + '</div><div class="btns"><button class="ok" data-m="ok">I wrote it down</button></div>', function (act) { if (act === 'ok') { setTimeout(function () { if (after) after(); }, 50); return true; } return false; });
+  }
+  function forgotDialog(pid) {
+    openModal(head('Forgot PIN') + '<p class="muted" style="line-height:1.45;margin-bottom:.4rem">Enter the recovery code you wrote down when the diary was created, then choose a new PIN.</p><label>Recovery code</label><input type="text" name="rc" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:.06em"><label>New PIN</label>' + pinInput('p1') + '<label>Repeat PIN</label>' + pinInput('p2') + '<p class="verr" id="pinerr"></p>'
+      + (isOwner() ? '<button class="linkbtn danger" data-m="erase">Lost the code too? Erase this diary…</button>' : '')
+      + '<div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">Reset PIN</button></div>', function (act) {
+      var er = document.getElementById('pinerr');
+      if (act === 'erase') {
+        if (!confirmBox('Erase ALL of ' + P(pid).name + '’s diary entries forever? This cannot be undone.') || !confirmBox('Really erase? The entries cannot be recovered.')) return false;
+        rpc('vault_erase', { p_household: S.hid, p_pid: pid }).then(function () { V.st[pid] = { set: false }; Object.keys(V.rows).forEach(function (k) { if (k.indexOf(pid + '|') === 0) delete V.rows[k]; }); delete V.keys[pid]; delete V.plain[pid]; closeModal(); toast('Diary erased'); render(); }).catch(function (e) { er.textContent = e.message; });
+        return false;
+      }
+      if (act !== 'ok') return false;
+      var c = normCode(val('rc')), a = val('p1'), b = val('p2');
+      if (c.length !== 20) { er.textContent = 'The code has 20 letters/digits'; return false; }
+      if (!/^\d{4,8}$/.test(a)) { er.textContent = 'PIN must be 4–8 digits'; return false; }
+      if (a !== b) { er.textContent = 'PINs do not match'; return false; }
+      er.textContent = 'Checking…';
+      vRecover(pid, c, a).then(function () { closeModal(); toast('New PIN set'); render(); }).catch(function (e) { er.textContent = e.message || 'Failed'; });
+      return false;
+    });
+  }
+  function changePinDialog(pid) {
+    openModal(head('Change PIN') + '<label>Current PIN</label>' + pinInput('p0') + '<label>New PIN</label>' + pinInput('p1') + '<label>Repeat new PIN</label>' + pinInput('p2') + '<p class="verr" id="pinerr"></p><div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">Change</button></div>', function (act) {
+      if (act !== 'ok') return false;
+      var o = val('p0'), a = val('p1'), b = val('p2'), er = document.getElementById('pinerr');
+      if (!/^\d{4,8}$/.test(a)) { er.textContent = 'PIN must be 4–8 digits'; return false; }
+      if (a !== b) { er.textContent = 'PINs do not match'; return false; }
+      er.textContent = 'Saving…';
+      vChangePin(pid, o, a).then(function () { closeModal(); toast('PIN changed'); }).catch(function (e) { er.textContent = e.message || 'Failed'; });
+      return false;
+    });
+  }
+  var MOODS = ['', '😀', '🙂', '😐', '😕', '😢', '😡', '😴'];
+  function entryDialog(pid, e) {
+    var isNew = !e; e = e || { kind: 'diary', t: '', text: '', date: key(sod(now())), mood: '' };
+    openModal(dhead((isNew ? 'New entry' : 'Edit entry') + ' 🔒') + '<div class="db"><div class="f"><i>' + FI.cal + '</i><div class="col2"><small>Date</small><input type="date" name="date" value="' + esc(e.date || key(sod(now()))) + '"></div></div>' + fTitle(e.t, 'Title (optional)')
+      + fSel(FI.smile, 'Mood', 'mood', MOODS.map(function (m) { return [m, m || 'None']; }), e.mood || '')
+      + '<div class="f top"><i>' + FI.desc + '</i><textarea name="text" class="dtext" placeholder="Write freely…">' + esc(e.text || '') + '</textarea></div>'
+      + '<p class="muted" style="font-size:.8rem;margin:.2rem .3rem 1rem">🔒 Encrypted on this device before it is saved.</p></div>' + dfoot(!isNew), function (act) {
+      if (act === 'del') { if (!confirmBox('Delete this entry?')) return false; vDel(pid, e.id); return true; }
+      if (act !== 'ok') return false;
+      var tx = val('text'), t = val('t'); if (!tx && !t) { toast('Write something'); return false; }
+      if (!V.keys[pid]) { toast('Diary locked — unlock again'); return true; }
+      var o = JSON.parse(JSON.stringify(e)); o.t = t; o.text = tx; o.date = val('date') || o.date; o.mood = val('mood'); if (!isNew) o.edited = Date.now();
+      vPut(pid, o); return true;
+    }, { drawer: true });
+  }
+
+  /* ---- Diary page ---- */
+  function renderDiary() {
+    var pid = S.dpid || mePid(), st = V.st && V.st[pid], open = !!V.keys[pid], person = P(pid);
+    if (V.st === null && !V.stLoading) { V.stLoading = true; setTimeout(function () { vStatus().then(function () { V.stLoading = false; }); }, 0); }
+    if (open && !V.loading && !V.loadedOnce && !DEMO) setTimeout(vLoad, 0);
+    var h = hdr(false) + '<div class="page-h"><h2>Diary</h2>' + (open ? '<button class="pill" data-a="dpinchg">Change PIN</button><button class="pill lockb" data-a="dlock">🔒 Lock</button>' : '') + '</div>';
+    h += '<div class="dpp">' + S.cfg.people.map(function (p) { return '<button class="' + (p.id === pid ? 'on' : '') + '" data-a="dpick" data-v="' + p.id + '"><span class="av" style="background:' + p.color + '">' + esc(p.initial) + '</span>' + esc(p.name) + (V.keys[p.id] ? ' 🔓' : '') + '</button>'; }).join('') + '</div>';
+    h += '<div class="body"><div class="scroll">';
+    if (!vReady()) h += '<div class="dlk"><p>This browser cannot encrypt the diary.</p></div>';
+    else if (V.st === null) h += '<div class="dlk"><p class="muted">Loading…</p></div>';
+    else if (!open && (!st || !st.set)) {
+      h += '<div class="dlk"><div class="dlico">' + TI.diary + '</div><h4>' + esc(person.name) + '’s private diary</h4><p class="muted">Encrypted with a PIN that only ' + esc(person.name) + ' knows. Family members see nothing.</p><button class="bigb" data-a="dsetup">Create PIN</button></div>';
+    } else if (!open) {
+      var pin = S.dpin || '', lk = st.locked_until && new Date(st.locked_until).getTime() > Date.now();
+      h += '<div class="dlk"><div class="dlico">' + TI.diary + '</div><h4>' + esc(person.name) + '’s diary is locked</h4>'
+        + '<div class="dots">' + [0, 1, 2, 3, 4, 5, 6, 7].slice(0, Math.max(4, pin.length)).map(function (x, i) { return '<i class="' + (i < pin.length ? 'on' : '') + '"></i>'; }).join('') + '</div>'
+        + '<p class="verr">' + esc(S.dpinErr || (lk ? vFailMsg({ locked_until: st.locked_until }) : '')) + '</p>'
+        + '<div class="pad">' + ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'bk', '0', 'ok'].map(function (k) { return '<button data-a="dkey" data-v="' + k + '" class="' + (k === 'ok' ? 'okk' : k === 'bk' ? 'bkk' : '') + '">' + (k === 'bk' ? '⌫' : k === 'ok' ? '✓' : k) + '</button>'; }).join('') + '</div>'
+        + '<button class="linkbtn" data-a="dforgot">Forgot PIN?</button></div>';
+    } else {
+      var xs = (V.plain[pid] || []).slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || '') || b.at - a.at; });
+      if (!xs.length) h += '<div style="height:70%;display:flex">' + empty('No entries yet. Tap + to write or speak.', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+      else {
+        var last = '';
+        h += '<div class="dlist">' + xs.map(function (e) {
+          var d = e.date ? parseKey(e.date) : new Date(e.at), sec = '';
+          var mk = MONL[d.getMonth()] + ' ' + d.getFullYear(); if (mk !== last) { sec = '<h5>' + mk + '</h5>'; last = mk; }
+          return sec + '<div class="dent" data-a="dedit" data-v="' + esc(e.id) + '"><div class="dd"><b>' + d.getDate() + '</b><small>' + WD[d.getDay()] + '</small></div><div class="dx">' + (e.kind === 'idea' ? '<span class="dk">💡 Idea</span>' : '') + (e.t ? '<b>' + (e.mood ? e.mood + ' ' : '') + esc(e.t) + '</b>' : (e.mood ? '<b>' + e.mood + '</b>' : '')) + '<p>' + esc((e.text || '').slice(0, 260)) + '</p>' + (e.via === 'voice' ? '<small>🎤 voice</small>' : '') + '</div></div>';
+        }).join('') + '</div>';
+      }
+      h += '<div style="height:6rem"></div>';
+    }
+    h += '</div>' + (open ? fab('', [['dwrite', '✍️ Write'], ['dspeak', '🎤 Speak']]) : '') + '</div>';
+    return h;
+  }
+
+  /* ---- Ideas page ---- */
+  function ideaDialog(x) {
+    x = x || { t: '', text: '', color: '', p: mePid() };
+    openModal(dhead(x.id ? 'Edit idea' : 'New idea') + '<div class="db">' + fTitle(x.t, 'Idea') + fDesc(x.text, 'text', 'Details')
+      + '<div class="f"><i>' + FI.flag + '</i><span>Color</span><div class="colors">' + ['', 'blue', 'red', 'green', 'yellow'].map(function (c) { return '<button type="button" data-col="' + c + '" class="' + ((x.color || '') === c ? 'on' : '') + '" style="background:' + (VCOL[c] || '#e4e8f0') + '" title="' + (VCN[c] || 'None') + '"></button>'; }).join('') + '</div></div>'
+      + fProfile(x.p || mePid(), false, 'Whose idea') + fTog(FI.title, '🔒 Move to private diary', 'priv', false) + '</div>' + dfoot(!!x.id), function (act) {
+      if (act === 'del') { del('ideas', x.id); return true; }
+      if (act !== 'ok') return false;
+      var t = val('t'); if (!t) { toast('Enter the idea'); return false; }
+      var on = M.querySelector('.colors .on'), pid = pplVal()[0] || mePid();
+      var o = { id: x.id, t: t, text: val('text'), color: on ? on.getAttribute('data-col') : '', p: pid, at: x.at };
+      if (togOn('priv')) {
+        var go2 = function () { vPut(pid, { kind: 'idea', t: o.t, text: o.text, date: key(sod(now())), at: Date.now() }); if (x.id) del('ideas', x.id); toast('Moved to ' + P(pid).name + '’s diary 🔒'); };
+        if (V.keys[pid]) { go2(); return true; }
+        setTimeout(function () { var g4 = function () { pinDialog(pid, 'Unlock ' + esc(P(pid).name) + '’s diary', go2); }; if (V.st === null) vStatus().then(g4); else g4(); }, 250); return true;
+      }
+      put('ideas', o); return true;
+    }, { drawer: true });
+  }
+  function renderIdeas() {
+    var f = S.ifil || 'all', xs = S.data.ideas.filter(function (x) { return f === 'all' || (x.color || '') === f; }).sort(function (a, b) { return b.at - a.at; });
+    var h = hdr(false) + '<div class="page-h"><h2>Ideas</h2></div><div class="tb ifil">' + [['all', 'All']].concat(Object.keys(VCN).map(function (c) { return [c, VCN[c]]; })).map(function (c) { return '<button class="pill' + (f === c[0] ? ' on' : '') + '" data-a="ifil" data-v="' + c[0] + '">' + (VCOL[c[0]] ? '<i class="cdot" style="background:' + VCOL[c[0]] + '"></i>' : '') + c[1] + '</button>'; }).join('') + '</div><div class="body"><div class="scroll">';
+    h += xs.length ? '<div class="igrid">' + xs.map(function (x) { var p = P(x.p); return '<div class="idea" data-a="edidea" data-v="' + x.id + '" style="border-top-color:' + (VCOL[x.color] || '#d5dbe7') + '"><b>' + esc(x.t) + '</b>' + (x.text && x.text !== x.t ? '<p>' + esc(x.text.slice(0, 220)) + '</p>' : '') + '<small><span class="av" style="background:' + p.color + '">' + esc(p.initial) + '</span>' + fmtDate(new Date(x.at)) + '</small></div>'; }).join('') + '</div>'
+      : '<div style="height:80%;display:flex">' + empty(f === 'all' ? 'No ideas yet. Tap the mic and just say it.' : 'Nothing in ' + VCN[f], 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    return h + '</div>' + fab('', [['addidea', '✍️ Write'], ['videa', '🎤 Speak']]) + '</div>';
+  }
+
+  /* ---- actions ---- */
+  A.voice = function () { if (!S.hid && !DEMO) return; voiceOpen(S.sub === 'diary' ? 'diary' : S.sub === 'ideas' ? 'idea' : 'auto', S.sub === 'diary' ? (S.dpid || mePid()) : ''); };
+  A.videa = function () { voiceOpen('idea', ''); };
+  A.addidea = function () { ideaDialog(null); };
+  A.edidea = function (id) { ideaDialog(find('ideas', id)); };
+  A.ifil = function (v) { S.ifil = v; S.fx = 'n'; };
+  A.dpick = function (v) { S.dpid = v; S.dpin = ''; S.dpinErr = ''; S.fx = 'n'; };
+  A.dsetup = function () { setupDialog(S.dpid || mePid(), function () { render(); }); };
+  A.dforgot = function () { forgotDialog(S.dpid || mePid()); };
+  A.dlock = function () { vLockAll(); toast('Diary locked'); };
+  A.dpinchg = function () { changePinDialog(S.dpid || mePid()); };
+  A.dwrite = function () { entryDialog(S.dpid || mePid(), null); };
+  A.dspeak = function () { voiceOpen('diary', S.dpid || mePid()); };
+  A.dedit = function (id) { var pid = S.dpid || mePid(); entryDialog(pid, (V.plain[pid] || []).filter(function (e) { return e.id === id; })[0]); };
+  A.dkey = function (k) {
+    var pid = S.dpid || mePid(); S.dpin = S.dpin || ''; S.dpinErr = '';
+    if (k === 'bk') S.dpin = S.dpin.slice(0, -1);
+    else if (k === 'ok') {
+      if (S.dpin.length < 4) { S.dpinErr = 'PIN is 4–8 digits'; render(); return; }
+      var pin = S.dpin; S.dpin = ''; S.dpinErr = 'Checking…'; render();
+      vUnlock(pid, pin).then(function () { S.dpinErr = ''; S.fx = 'v'; vLoad(); render(); }).catch(function (e) { S.dpinErr = e.message; render(); });
+      return;
+    } else if (S.dpin.length < 8) S.dpin += k;
+  };
+  A.vtest = function (json) { VS = { phase: 'review', mode: 'auto', pid: '', res: JSON.parse(json) }; voiceRender(); };
+  /* auto-lock: 2 min idle, 15 s after leaving the Diary, or when the screen turns off */
+  function vTouch() { V.act = Date.now(); }
+  root.addEventListener('touchstart', vTouch, true); root.addEventListener('mousedown', vTouch, true);
+  M.addEventListener('touchstart', vTouch, true); M.addEventListener('mousedown', vTouch, true); M.addEventListener('keydown', vTouch, true);
+  setInterval(function () {
+    if (!Object.keys(V.keys).length) return;
+    if (S.sub === 'diary') V.inAt = Date.now();
+    if (Date.now() - V.act > 120000 || (S.sub !== 'diary' && Date.now() - V.inAt > 15000 && !vQueue.length)) { if (S.modalOpen && M.querySelector('.dtext')) closeModal(); vLockAll(); }
+    else if (S.sub === 'diary' && !V.loading && Date.now() - (V.lastLoad || 0) > 15000) vLoad();
+  }, 3000);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { if (S.modalOpen && M.querySelector('.dtext')) closeModal(); vLockAll(); } });
+
   root.addEventListener('click', function (ev) {
     var t = ev.target;
     while (t && t !== root) {
@@ -2011,5 +2489,5 @@
   setInterval(function () { if (!document.hidden) sync(); }, 15000);
   setInterval(function () { if (!document.hidden) { gUnread(); gEvents(true); if (S.view === 'calls') clLoad(true); } }, 120000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { sync(); resolvePhotos(); } });
-  window.__c2 = { S: S, render: render, A: A };
+  window.__c2 = { S: S, render: render, A: A, V: V, voiceOpen: voiceOpen };
 })();
