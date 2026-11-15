@@ -800,3 +800,6 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .nztime{font-variant-numeric:tabular-nums;margin-right:.7rem}
 .nzrec .muted{font-size:.85rem}
 .dlg code{background:#f0f3f9;border-radius:.3rem;padding:0 .25rem;font-size:.85em}
+.clock{min-width:0;overflow:hidden}
+.hrow.bot .photo{min-width:0}
+.brief .bl{min-width:0}
