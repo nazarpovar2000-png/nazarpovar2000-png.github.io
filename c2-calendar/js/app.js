@@ -679,6 +679,9 @@
   }
   function tg(on, act, v) { return '<button class="tg' + (on ? ' on' : '') + '" data-a="' + act + '" data-v="' + (v || '') + '"></button>'; }
   function rad(cur, val, act, label) { return '<button class="rad' + (cur === val ? ' on' : '') + '" data-a="' + act + '" data-v="' + val + '"><i></i>' + (label || val) + '</button>'; }
+  function brGet() { try { return JSON.parse(Android.brightness()); } catch (e) { return { mode: 'auto', level: .6, bias: 0, lux: -1, cur: -1 }; } }
+  function brInfo(B) { return (B.sensor === false ? 'No light sensor' : 'Light sensor: ' + (B.lux < 0 ? '…' : B.lux + ' lux')) + ' · screen ' + (B.cur < 0 ? 'system' : Math.round(B.cur * 100) + '%'); }
+  setInterval(function () { var e = document.getElementById('brinfo'); if (e && window.Android && Android.brightness) e.textContent = brInfo(brGet()); }, 1000);
   function renderSettings() {
     var c = S.cfg, side = [['general', 'General'], ['calendar', 'Calendar'], ['google', 'Google'], ['photos', 'Photos'], ['tasks', 'Tasks'], ['wifi', 'Wi-Fi'], ['notif', 'Notification'], ['users', 'User Mgmt'], ['help', 'Help'], ['about', 'About']];
     var h = '<div class="hdr" style="height:3.6rem;background:var(--card2);border-bottom:1px solid var(--line)"><button class="back" style="background:rgba(58,108,240,.1);color:var(--acc)" data-a="go" data-v="home">' + I.back + '</button><span class="sp"></span><b style="font-weight:500;font-size:1.15rem">Settings</b><span class="sp"></span><span style="width:3.2rem"></span></div><div class="body"><div class="set"><div class="side">';
@@ -691,6 +694,14 @@
       h += '<div class="row"><span>Use 24-hour format</span>' + tg(c.h24, 'cfgtg', 'h24') + '</div>';
       h += '<div class="row"><span>Change Calendar Name</span><input type="text" data-c="name" value="' + esc(c.name) + '"></div>';
       h += '<div class="row"><span>Date format</span><select data-c="dateFmt">' + ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'].map(function (f) { return '<option' + (c.dateFmt === f ? ' selected' : '') + '>' + f + '</option>'; }).join('') + '</select></div>';
+      if (window.Android && Android.brightness) {
+        var B = brGet();
+        h += '<h3>Screen brightness</h3>';
+        h += '<div class="row"><span>Brightness</span>' + rad(B.mode, 'auto', 'bmode', 'Auto (light sensor)') + rad(B.mode, 'manual', 'bmode', 'Manual') + '</div>';
+        if (B.mode === 'manual') h += '<div class="row"><span>Level</span><input type="range" class="brr" data-br="level" min="2" max="100" value="' + Math.round(B.level * 100) + '"><span class="v brv" style="width:3rem;text-align:right">' + Math.round(B.level * 100) + '%</span></div>';
+        else h += '<div class="row"><span>Auto: darker ↔ brighter</span><input type="range" class="brr" data-br="bias" min="-30" max="30" value="' + Math.round(B.bias * 100) + '"><span class="v brv" style="width:3rem;text-align:right">' + (B.bias > 0 ? '+' : '') + Math.round(B.bias * 100) + '</span></div>';
+        h += '<div class="row"><span class="muted" id="brinfo">' + brInfo(B) + '</span></div>';
+      }
       h += '<h3>Show</h3>';
       h += '<div class="row"><span>Font Size</span>' + rad(c.font, 'small', 'cfgfont', 'Small') + rad(c.font, 'medium', 'cfgfont', 'Medium') + rad(c.font, 'large', 'cfgfont', 'Large') + '</div>';
       h += '<div class="row"><span>Show weather information</span>' + tg(c.weather, 'cfgtg', 'weather') + '</div>';
@@ -1881,6 +1892,7 @@
     treset: function () { S.timer.run = false; S.timer.left = S.timer.total; render(); },
     tadd: function () { var T = S.timer; if (T.run) T.end += 60000; else T.left += 60; T.total += 60; render(); },
     stab: function (v) { S.setTab = v; S.gFlash = null; if (v === 'google') { G.cals = {}; loadGAccts(); } render(); },
+    bmode: function (v) { Android.brightnessSet(v, -1, -2); render(); },
     cfgtg: function (k) { S.cfg[k] = !S.cfg[k]; saveCfg(); },
     cfgtg2: function (k) { S.cfg[k] = S.cfg[k] === false; saveCfg(); },
     cfgfont: function (v) { S.cfg.font = v; saveCfg(); },
@@ -2694,6 +2706,13 @@
     if (ev.key === 'Enter' && ev.target.id === 'mq') { mailState().q = ev.target.value.trim(); mailLoad(false); return; }
     if (ev.key !== 'Enter' || !ev.target.id) return;
     if (ev.target.id === 'au-fam') A.mkfam(); else if (ev.target.id.indexOf('au-') === 0) A.authgo();
+  });
+  root.addEventListener('input', function (ev) {
+    var br = ev.target.getAttribute && ev.target.getAttribute('data-br');
+    if (!br || !window.Android || !Android.brightnessSet) return;
+    var x = +ev.target.value / 100, lab = ev.target.parentNode.querySelector('.brv');
+    if (br === 'level') { Android.brightnessSet('manual', x, -2); if (lab) lab.textContent = Math.round(x * 100) + '%'; }
+    else { Android.brightnessSet('', -1, x); if (lab) lab.textContent = (x > 0 ? '+' : '') + Math.round(x * 100); }
   });
   root.addEventListener('change', function (ev) {
     var gp = ev.target.getAttribute && ev.target.getAttribute('data-gp');
