@@ -485,7 +485,9 @@
     h += '<div class="hcolL hcard">' + miniCal() + '<div class="sched"><h4>' + MON[S.sel.getMonth()] + ' ' + S.sel.getDate() + ', ' + S.sel.getFullYear() + '</h4>' + (evs.length ? '<div class="lst">' + evs.map(evRow).join('') + '</div>' : empty('No schedule', 's', true).replace('class="empty sm"', 'class="empty sm" style="flex:1"')) + '</div></div>';
     h += '<div class="hcolR"><div class="hcard white" style="flex:1;display:flex;flex-direction:column;margin-bottom:1rem"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.tasks.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>Tasks</b><button data-a="hp" class="av m" style="width:1.9rem;height:1.9rem;font-size:1rem;background:' + hp.color + ';border:2px solid #fff;box-shadow:0 0 0 2px ' + hexA(hp.color, .35) + '">' + esc(hp.initial) + '</button></div><div class="wbody">' + (tks.length ? tks.map(function (t) { return taskRow(t, S.sel); }).join('') : empty('Nothing to do today', 1, true)) + '</div></div>';
     h += '<div class="hcard white" style="flex:1;display:flex;flex-direction:column"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.lists.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>' + esc(hl.name) + '</b><button class="sw" data-a="hl">' + I.swap + '</button></div><div class="wbody">' + (list.length ? list.map(listRow).join('') : empty('No checklist to complete today', 1, true)) + '</div></div></div>';
-    h += '</div><div class="hrow bot"><div class="photo" data-a="go" data-v="photos">' + (ph && photoSrc(ph) ? '<img src="' + photoSrc(ph) + '" alt="">' : '<div class="ph">' + I.mountain + '</div>') + '</div>';
+    ringLoad(false);
+    if (RV.ev && RV.url) h += '</div><div class="hrow bot"><div class="photo ringslot" data-a="ringopen"></div>';
+    else h += '</div><div class="hrow bot"><div class="photo" data-a="go" data-v="photos">' + (ph && photoSrc(ph) ? '<img src="' + photoSrc(ph) + '" alt="">' : '<div class="ph">' + I.mountain + '</div>') + (RV.st && !RV.st.connected && isOwner() ? '<button class="ringcon" data-a="ringconnect">🔔 Connect Ring</button>' : '') + '</div>';
     var brief = dgHtml();
     h += '<div class="clock' + (brief ? ' withbrief' : '') + '"><div class="l1">' + WD[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate() + (S.cfg.h24 ? '' : (hh >= 12 ? ' PM' : ' AM')) + '</div><div class="l2"><span class="t">' + tdisp + '</span>' + (S.cfg.weather ? '<div class="w"><span>' + I.sun + '</span>' + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</div>' : '') + '</div>' + brief + '</div>';
     h += '</div></div></div>';
@@ -1453,7 +1455,7 @@
     var sc = root.querySelector('.scroll'), st = sc ? sc.scrollTop : 0, keep = !S.fx || S.fx === 'd' || S.fx === 'p' || S.fx === 'c';
     root.innerHTML = h; lastHtml = h; S.fxId = null;
     var sc2 = root.querySelector('.scroll'); if (sc2 && st && keep) sc2.scrollTop = st;
-    placeNcam();
+    placeNcam(); placeRing();
     if (S.fx) { var cls = 'fx' + S.fx; S.fx = null; root.classList.remove('fxv', 'fxn', 'fxd', 'fxp', 'fxc'); void root.offsetWidth; root.classList.add(cls); clearTimeout(fxT); fxT = setTimeout(function () { root.classList.remove(cls); }, 500); }
   }
 
@@ -2581,6 +2583,70 @@
   setInterval(function () { if (!document.hidden && (S.sub || S.view) === 'home') dgLoad(false); }, 60000);
 
 
+
+  /* ---------- RING: latest doorbell / camera clip on the home screen ---------- */
+  var RV = { st: null, stAt: 0, ev: null, url: '', urlAt: 0, box: null, busy: false, at: 0 };
+  function ringLoad(force) {
+    if (DEMO || !S.hid || RV.busy || (!force && Date.now() - RV.at < 45000)) return;
+    RV.busy = true; RV.at = Date.now();
+    var stP = RV.st && Date.now() - RV.stAt < 10 * 60000 ? Promise.resolve(RV.st) : sbFetch('/rest/v1/rpc/ring_status', { method: 'POST', json: { p_household: S.hid } }).then(function (s) { RV.stAt = Date.now(); return s; });
+    stP.then(function (st) {
+      var had = !!RV.st; RV.st = st;
+      if (!st || !st.connected) { RV.ev = null; if (!had) render(); return; }
+      return sbFetch('/rest/v1/ring_events?select=*&household_id=eq.' + S.hid + '&clip_path=not.is.null&order=at.desc&limit=12').then(function (rows) {
+        RV.list = rows || [];
+        var ev = RV.list[0];
+        if (!ev) return;
+        if (RV.ev && ev.ding_id === RV.ev.ding_id && RV.url && Date.now() - RV.urlAt < 50 * 60000) return;
+        return ringSign(ev.clip_path).then(function (u) { var first = !RV.url; RV.ev = ev; RV.url = u; RV.urlAt = Date.now(); ringBox(); if (first && (S.sub || S.view) === 'home' && !S.modalOpen) render(); });
+      });
+    }).catch(function () {}).then(function () { RV.busy = false; placeRing(); });
+  }
+  function ringSign(path) { return sbFetch('/storage/v1/object/sign/ring/' + path.split('/').map(encodeURIComponent).join('/'), { method: 'POST', json: { expiresIn: 3600 } }).then(function (r) { return SB_URL + '/storage/v1' + (r.signedURL || r.signedUrl); }); }
+  function ringLabel(ev) {
+    var d = new Date(ev.at), today = sod(now()).getTime() === sod(d).getTime();
+    return (ev.kind === 'ding' ? '🔔 Звонок в дверь' : ev.person ? '🚶 Человек' : '🚶 Движение') + ' · ' + esc(ev.device_name) + ' · ' + (today ? '' : MON[d.getMonth()] + ' ' + d.getDate() + ', ') + fmtTime(pad(d.getHours()) + ':' + pad(d.getMinutes()));
+  }
+  function ringBox() {
+    if (!RV.box) {
+      RV.box = document.createElement('div'); RV.box.className = 'ringbox';
+      RV.box.innerHTML = '<video muted loop playsinline autoplay preload="auto"></video><div class="rlab"></div>';
+    }
+    var v = RV.box.firstChild; if (v.getAttribute('src') !== RV.url) { v.setAttribute('src', RV.url); }
+    RV.box.lastChild.innerHTML = RV.ev ? ringLabel(RV.ev) : '';
+    RV.box.classList.toggle('fresh', !!RV.ev && Date.now() - new Date(RV.ev.at).getTime() < 15 * 60000);
+  }
+  function placeRing() {
+    var slot = root.querySelector('.ringslot');
+    if (!slot || !RV.box) return;
+    if (RV.box.parentNode !== slot) slot.appendChild(RV.box);
+    var v = RV.box.firstChild; if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+  }
+  setInterval(function () { if (!document.hidden && (S.sub || S.view) === 'home') ringLoad(false); }, 30000);
+  A.ringopen = function () {
+    var xs = RV.list || [];
+    openModal(dhead('Ring') + '<div class="db"><video class="ringbig" controls autoplay playsinline src="' + esc(RV.url) + '"></video><div class="rlist">' + xs.map(function (e, i) { return '<button class="' + (RV.ev && e.ding_id === RV.ev.ding_id ? 'on' : '') + '" data-m="rv:' + i + '">' + ringLabel(e) + '</button>'; }).join('') + '</div></div>', function (act) {
+      if (act.indexOf('rv:') !== 0) return false;
+      var e = xs[+act.slice(3)]; if (!e) return false;
+      ringSign(e.clip_path).then(function (u) { var v = M.querySelector('.ringbig'); if (v) { v.src = u; v.play(); } var bs = M.querySelectorAll('.rlist button'); for (var i = 0; i < bs.length; i++) bs[i].className = bs[i].getAttribute('data-m') === act ? 'on' : ''; });
+      return false;
+    }, { drawer: true, wide: true, nofocus: true });
+  };
+  A.ringconnect = function () {
+    openModal(head('Connect Ring') + '<p class="muted" style="line-height:1.5">Ring has no official app connection, so you make a one-time key on your Mac:<br>1. Open <b>Terminal</b> and paste:<br><code>npx -p ring-client-api ring-auth-cli</code><br>2. Enter your Ring email, password and the 2-step code. They go only to Ring.<br>3. Copy the long <b>refreshToken</b> it prints and paste it below.</p><label>Ring key</label><textarea name="tok" rows="3" placeholder="eyJydCI6…"></textarea><p class="verr" id="ringerr"></p><div class="btns"><button class="no" data-m="cancel">Cancel</button><button class="ok" data-m="ok">Connect</button></div>', function (act) {
+      if (act !== 'ok') return false;
+      var tok = (val('tok') || '').replace(/^["'\s]+|["'\s]+$/g, ''), er = document.getElementById('ringerr');
+      if (tok.length < 20) { er.textContent = 'Paste the refreshToken'; return false; }
+      er.textContent = 'Connecting…';
+      var hw = 'c2-' + uid() + uid();
+      sbFetch('/rest/v1/rpc/ring_connect', { method: 'POST', json: { p_household: S.hid, p_token: tok, p_hardware_id: hw } })
+        .then(function () { return sbFetch('/functions/v1/ring', { method: 'POST', json: { action: 'test', household_id: S.hid } }); })
+        .then(function (r) { closeModal(); RV.st = null; RV.at = 0; toast('Ring connected: ' + (r.devices || []).map(function (d) { return d.name; }).join(', ')); ringLoad(true); render(); })
+        .catch(function (e) { er.textContent = e.message || 'Failed'; });
+      return false;
+    });
+  };
+
   root.addEventListener('click', function (ev) {
     var t = ev.target;
     while (t && t !== root) {
@@ -2668,5 +2734,5 @@
   setInterval(function () { if (!document.hidden) sync(); }, 15000);
   setInterval(function () { if (!document.hidden) { gUnread(); gEvents(true); if (S.view === 'calls') clLoad(true); } }, 120000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { sync(); resolvePhotos(); } });
-  window.__c2 = { S: S, render: render, A: A, V: V, voiceOpen: voiceOpen };
+  window.__c2 = { S: S, render: render, A: A, V: V, RV: RV, ringBox: ringBox, voiceOpen: voiceOpen };
 })();
