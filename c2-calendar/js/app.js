@@ -430,6 +430,7 @@
     if (order.indexOf('ncam') < 0 && !S.cfg.hideNcam) order.push('ncam');
     if (order.indexOf('bills') < 0) { var ai = order.indexOf('anniv'); order.splice(ai >= 0 ? ai + 1 : order.length, 0, 'bills'); }
     if (order.indexOf('calls') < 0) order.push('calls');
+    if (order.indexOf('nezer') < 0) order.splice(order.indexOf('home') + 1, 0, 'nezer');
     order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam) && !(t === 'calls' && !isOwner()); });
     order.push('more');
     var cur = S.sub ? 'more' : S.view;
@@ -485,7 +486,8 @@
     h += '<div class="hcolR"><div class="hcard white" style="flex:1;display:flex;flex-direction:column;margin-bottom:1rem"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.tasks.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>Tasks</b><button data-a="hp" class="av m" style="width:1.9rem;height:1.9rem;font-size:1rem;background:' + hp.color + ';border:2px solid #fff;box-shadow:0 0 0 2px ' + hexA(hp.color, .35) + '">' + esc(hp.initial) + '</button></div><div class="wbody">' + (tks.length ? tks.map(function (t) { return taskRow(t, S.sel); }).join('') : empty('Nothing to do today', 1, true)) + '</div></div>';
     h += '<div class="hcard white" style="flex:1;display:flex;flex-direction:column"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.lists.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>' + esc(hl.name) + '</b><button class="sw" data-a="hl">' + I.swap + '</button></div><div class="wbody">' + (list.length ? list.map(listRow).join('') : empty('No checklist to complete today', 1, true)) + '</div></div></div>';
     h += '</div><div class="hrow bot"><div class="photo" data-a="go" data-v="photos">' + (ph && photoSrc(ph) ? '<img src="' + photoSrc(ph) + '" alt="">' : '<div class="ph">' + I.mountain + '</div>') + '</div>';
-    h += '<div class="clock"><div class="l1">' + WD[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate() + (S.cfg.h24 ? '' : (hh >= 12 ? ' PM' : ' AM')) + '</div><div class="l2"><span class="t">' + tdisp + '</span>' + (S.cfg.weather ? '<div class="w"><span>' + I.sun + '</span>' + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</div>' : '') + '</div></div>';
+    var brief = dgHtml();
+    h += '<div class="clock' + (brief ? ' withbrief' : '') + '"><div class="l1">' + WD[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate() + (S.cfg.h24 ? '' : (hh >= 12 ? ' PM' : ' AM')) + '</div><div class="l2"><span class="t">' + tdisp + '</span>' + (S.cfg.weather ? '<div class="w"><span>' + I.sun + '</span>' + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</div>' : '') + '</div>' + brief + '</div>';
     h += '</div></div></div>';
     return h;
   }
@@ -1439,10 +1441,10 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer, ideas: renderIdeas, diary: renderDiary }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer, ideas: renderIdeas, diary: renderDiary, nezer: renderNezer }[v] || renderCalendar)();
       h += tabbar();
     }
-    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['ideas', 'Ideas'], ['diary', 'Diary'], ['notes', 'Notes'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
+    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['ideas', 'Ideas & Notes'], ['diary', 'Diary'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
     if (S.sleeping) { var d = now(); h += '<div class="sleep" data-a="wake"><b>' + (S.cfg.h24 ? pad(d.getHours()) : ((d.getHours() % 12) || 12)) + ':' + pad(d.getMinutes()) + '</b><span>' + WDL[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate() + '</span></div>'; }
     if (S.dbNote) h += '<div class="dbnote">' + esc(S.dbNote) + '</div>';
     else if (S.gNote && (v === 'calendar' || v === 'home')) h += '<div class="dbnote" data-a="settings">' + esc(S.gNote) + '</div>';
@@ -1802,7 +1804,7 @@
     noop: function () {},
     dial: function () { S.dial = !S.dial; S.fx = 'd'; render(); },
     edev: function (id) { evDialog(find('events', id)); },
-    sub: function (v) { if (v === 'stock') { S.more = false; render(); try { Android.launch('com.fujia.calendar', 'com.fujia.calendar.ui.DeviceMainActivity'); } catch (e) { toast('E-calendar not available'); } return; } S.more = false; if (v === 'sleep') { S.sleeping = true; S.wakeUntil = 0; render(); return; } S.sub = v; S.fx = 'v'; render(); },
+    sub: function (v) { if (v === 'stock') { S.more = false; render(); try { Android.launch('com.fujia.calendar', 'com.fujia.calendar.ui.DeviceMainActivity'); } catch (e) { toast('E-calendar not available'); } return; } S.more = false; if (v === 'notes') { v = 'ideas'; S.ifil = 'notes'; } if (v === 'sleep') { S.sleeping = true; S.wakeUntil = 0; render(); return; } S.sub = v; S.fx = 'v'; render(); },
     settings: function () { S.sub = 'settings'; S.fx = 'v'; render(); },
     wake: function () { S.sleeping = false; S.wakeUntil = Date.now() + 60000; render(); },
     sync: function () { sync().then(function () { toast('Synced'); }); loadMembers(); },
@@ -2358,12 +2360,22 @@
       put('ideas', o); return true;
     }, { drawer: true });
   }
+  function ifilBar(f) {
+    return '<div class="tb ifil">' + [['all', '💡 Ideas'], ['notes', '📝 Notes']].concat(Object.keys(VCN).map(function (c) { return [c, VCN[c]]; })).map(function (c) { return '<button class="pill' + (f === c[0] ? ' on' : '') + '" data-a="ifil" data-v="' + c[0] + '">' + (VCOL[c[0]] ? '<i class="cdot" style="background:' + VCOL[c[0]] + '"></i>' : '') + c[1] + '</button>'; }).join('') + '</div>';
+  }
   function renderIdeas() {
     var f = S.ifil || 'all', xs = S.data.ideas.filter(function (x) { return f === 'all' || (x.color || '') === f; }).sort(function (a, b) { return b.at - a.at; });
-    var h = hdr(false) + '<div class="page-h"><h2>Ideas</h2></div><div class="tb ifil">' + [['all', 'All']].concat(Object.keys(VCN).map(function (c) { return [c, VCN[c]]; })).map(function (c) { return '<button class="pill' + (f === c[0] ? ' on' : '') + '" data-a="ifil" data-v="' + c[0] + '">' + (VCOL[c[0]] ? '<i class="cdot" style="background:' + VCOL[c[0]] + '"></i>' : '') + c[1] + '</button>'; }).join('') + '</div><div class="body"><div class="scroll">';
+    var IFAB = fab('', [['addnote', '📝 Note'], ['addidea', '💡 Idea'], ['videa', '🎤 Nezer']]);
+    if (f === 'notes') {
+      var ns = S.data.notes.slice().sort(function (a, b) { return b.at - a.at; });
+      var hn = hdr(false) + '<div class="page-h"><h2>Ideas & Notes</h2></div>' + ifilBar(f) + '<div class="body"><div class="scroll">';
+      hn += ns.length ? '<div class="ngrid">' + ns.map(function (n) { return '<div class="note" style="background:' + (n.color || NCOL[0]) + '" data-a="ednote" data-v="' + n.id + '">' + esc(n.t) + '<small>' + fmtDate(new Date(n.at)) + '</small></div>'; }).join('') + '</div>' : '<div style="height:80%;display:flex">' + empty('No notes yet', 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+      return hn + '</div>' + IFAB + '</div>';
+    }
+    var h = hdr(false) + '<div class="page-h"><h2>Ideas & Notes</h2></div>' + ifilBar(f) + '<div class="body"><div class="scroll">';
     h += xs.length ? '<div class="igrid">' + xs.map(function (x) { var p = P(x.p); return '<div class="idea" data-a="edidea" data-v="' + x.id + '" style="border-top-color:' + (VCOL[x.color] || '#d5dbe7') + '"><b>' + esc(x.t) + '</b>' + (x.text && x.text !== x.t ? '<p>' + esc(x.text.slice(0, 220)) + '</p>' : '') + '<small><span class="av" style="background:' + p.color + '">' + esc(p.initial) + '</span>' + fmtDate(new Date(x.at)) + '</small></div>'; }).join('') + '</div>'
       : '<div style="height:80%;display:flex">' + empty(f === 'all' ? 'No ideas yet. Tap the mic and just say it.' : 'Nothing in ' + VCN[f], 1).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
-    return h + '</div>' + fab('', [['addidea', '✍️ Write'], ['videa', '🎤 Speak']]) + '</div>';
+    return h + '</div>' + IFAB + '</div>';
   }
 
   /* ---- actions ---- */
@@ -2402,6 +2414,163 @@
     else if (S.sub === 'diary' && !V.loading && Date.now() - (V.lastLoad || 0) > 15000) vLoad();
   }, 3000);
   document.addEventListener('visibilitychange', function () { if (document.hidden) { if (S.modalOpen && M.querySelector('.dtext')) closeModal(); vLockAll(); } });
+
+  /* ================= NEZER — the agent · home briefing · Ideas & Notes ================= */
+  TI.nezer = '<svg viewBox="0 0 32 32"><defs><linearGradient id="nzg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a46ee"/><stop offset="1" stop-color="#4cc0ee"/></linearGradient></defs><circle cx="16" cy="16" r="13" fill="url(#nzg)"/><path d="M10.5 21.5v-11l11 11v-11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  TABN.nezer = 'Nezer'; TABN.ideas = 'Ideas & Notes';
+  if (TABS.indexOf('nezer') < 0) TABS.splice(1, 0, 'nezer');
+  var N = { msgs: null, busy: false, rec: false, t0: 0, speak: null, audio: null };
+  function nzKey() { return 'nz.' + (myId() || 'demo'); }
+  function nzLoad() { if (!N.msgs) { N.msgs = LS.get(nzKey(), []) || []; N.speak = LS.get('nzspeak', true); } return N.msgs; }
+  function nzSave() { LS.set(nzKey(), N.msgs.slice(-40)); }
+  function nzMd(s) { return esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>'); }
+  var NZ_ICON = { task: '✅', event: '📅', reminder: '⏰', list: '🛒', idea: '💡', note: '📝', bill: '💵', bill_paid: '✔️💵', task_done: '☑️' };
+  var NZ_NAME = { task: 'Task', event: 'Event', reminder: 'Reminder', list: 'List', idea: 'Idea', note: 'Note', bill: 'New bill', bill_paid: 'Mark paid', task_done: 'Complete task' };
+  function nzActLine(a) {
+    var bits = [];
+    if (a.date) { var d = parseKey(a.date); bits.push(WD[d.getDay()] + ' ' + MON[d.getMonth()] + ' ' + d.getDate()); }
+    if (a.time) bits.push(fmtTime(a.time));
+    if (a.amount != null) bits.push(money(a.amount) + (a.freq && a.freq !== 'once' ? ' / ' + a.freq : ''));
+    if (a.count) bits.push(a.count + ' payments');
+    if (a.type === 'list') bits.push((a.items && a.items.length ? a.items.join(', ') : '') + ' → ' + ((listsCfg().filter(function (l) { return l.id === a.list; })[0] || listsCfg()[0]).name));
+    if (a.rep) bits.push('repeats ' + a.rep);
+    return bits.join(' · ');
+  }
+  function nzApply(a) {
+    var today = key(sod(now())), pid = a.p && S.cfg.people.some(function (p) { return p.id === a.p; }) ? a.p : mePid(), t = a.title || (a.text || '').slice(0, 80);
+    if (a.type === 'bill') {
+      var cat = BCAT.some(function (c) { return c[0] === a.cat; }) ? a.cat : (/toll|road|car|gas|fuel/i.test(t) ? 'car' : a.scope === 'business' ? 'business' : 'other');
+      put('bills', { t: t, amount: +a.amount || 0, cat: cat, start: a.date || today, freq: a.freq || 'monthly', count: a.freq === 'once' ? 1 : (+a.count || 0), prepaid: 0, added: today, autopay: !!a.autopay, remind: '3', url: '', cancel: '', gm: '', scope: a.scope || '', payer: '', note: a.text || '', paid: {} });
+      return true;
+    }
+    if (a.type === 'task_done') { var x = find('tasks', a.id); if (!x) return false; if (x.rep) { x.dd = x.dd || {}; x.dd[a.date || today] = 1; } else x.done = true; put('tasks', x); return true; }
+    if (a.type === 'event' && a.time) { put('events', { t: t, date: a.date || today, end: a.date || today, time: a.time, etime: a.end_time || hmPlus(a.time, 60), ad: false, ps: [pid], rem: '15', ann: false, rep: a.rep || '', desc: a.text || '', via: 'nezer' }); return true; }
+    voiceSave([{ type: a.type, title: t, text: a.text || '', date: a.date || '', time: a.time || '', p: pid, color: a.color || '', list: a.list || '', items: a.items || [], bill: a.bill || '', amount: a.amount != null ? a.amount : null }]);
+    return true;
+  }
+  function nzSpeakText(s) { return String(s || '').replace(/\*\*/g, '').replace(/[#*_`>]/g, '').replace(/https?:\/\/\S+/g, '').slice(0, 1200); }
+  function nzSpeak(text) {
+    if (!text) return;
+    try { if (N.audio) { N.audio.pause(); N.audio = null; } if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+    var plain = nzSpeakText(text), ru = /[а-яё]/i.test(plain);
+    var vs = []; try { vs = window.speechSynthesis ? speechSynthesis.getVoices() : []; } catch (e) {}
+    var v = vs.filter(function (x) { return ru ? /^ru/i.test(x.lang) : /^en/i.test(x.lang); })[0];
+    if (v && !IN_APP) { var u = new SpeechSynthesisUtterance(plain); u.voice = v; u.lang = v.lang; u.rate = 1.05; speechSynthesis.speak(u); return; }
+    if (DEMO) return;
+    ensureFresh(false).then(function () {
+      return fetch(SB_URL + '/functions/v1/nezer', { method: 'POST', headers: { apikey: SB_KEY, Authorization: 'Bearer ' + S.auth.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'tts', household_id: S.hid, text: plain }) });
+    }).then(function (r) { if (!r.ok) throw new Error('tts'); return r.blob(); }).then(function (b) {
+      var a = new Audio(URL.createObjectURL(b)); N.audio = a; a.play().catch(function () {});
+    }).catch(function () {});
+  }
+  function nzSend(text, audio) {
+    nzLoad();
+    if (N.busy) return;
+    var voice = !!audio;
+    if (text) N.msgs.push({ role: 'user', content: text, at: Date.now() });
+    N.busy = true; nzSave(); render(); nzScroll();
+    var hist = N.msgs.filter(function (m) { return !m.err; }).slice(-13, text ? -1 : undefined).map(function (m) { return { role: m.role, content: m.content }; });
+    if (DEMO) { setTimeout(function () { N.busy = false; N.msgs.push({ role: 'assistant', content: 'Demo mode — sign in to talk to Nezer.', at: Date.now() }); render(); nzScroll(); }, 600); return; }
+    sbFetch('/functions/v1/nezer', { method: 'POST', json: { action: 'chat', household_id: S.hid, text: text || '', audio: audio || undefined, voice: voice, me: mePid(), history: hist } }).then(function (r) {
+      N.busy = false;
+      if (audio) { if (!r.heard) { N.msgs.push({ role: 'assistant', content: 'Не расслышал — попробуй ещё раз.', err: 1, at: Date.now() }); nzSave(); render(); nzScroll(); return; } N.msgs.push({ role: 'user', content: r.heard, voice: 1, at: Date.now() }); }
+      var m = { role: 'assistant', content: r.reply || (r.actions && r.actions.length ? 'Подготовил — проверь:' : '…'), acts: (r.actions || []).map(function (a) { return { a: a, st: '' }; }), at: Date.now() };
+      N.msgs.push(m); nzSave(); render(); nzScroll();
+      if (voice || N.speak) nzSpeak(m.content);
+    }).catch(function (e) { N.busy = false; N.msgs.push({ role: 'assistant', content: '⚠ ' + ((e && e.status === 503) ? 'Nezer is not set up yet.' : (e && e.message) || 'Network error'), err: 1, at: Date.now() }); nzSave(); render(); nzScroll(); });
+  }
+  function nzScroll() { setTimeout(function () { var s = root.querySelector('.nzlog'); if (s) s.scrollTop = s.scrollHeight; }, 30); }
+  function nzMicStart() {
+    if (N.rec || VR.rec) return;
+    N.rec = true; N.t0 = Date.now(); render();
+    recStart(function (lv) { var b = document.getElementById('nzlev'); if (b) b.style.transform = 'scale(' + (1 + Math.min(1, lv * 7) * .6).toFixed(3) + ')'; })
+      .then(function () { N.t0 = Date.now(); clearInterval(N.tick); N.tick = setInterval(function () { var e = document.getElementById('nztime'); var s = Math.floor((Date.now() - N.t0) / 1000); if (e) e.textContent = Math.floor(s / 60) + ':' + pad(s % 60); if (s >= 90) nzMicStop(); }, 250); })
+      .catch(function (e) { N.rec = false; nzLoad(); N.msgs.push({ role: 'assistant', content: '⚠ ' + micErr(e), err: 1, at: Date.now() }); render(); nzScroll(); });
+  }
+  function nzMicStop(cancel) {
+    clearInterval(N.tick); N.rec = false;
+    var w = recStop(!!cancel); render();
+    if (cancel || !w) return;
+    if (w.secs < 0.8) { toast('Too short'); return; }
+    if (w.peak < 0.004) { nzLoad(); N.msgs.push({ role: 'assistant', content: '⚠ ' + (IN_APP ? 'The tablet microphone gives no sound — plug in a USB microphone, or talk to Nezer from your phone.' : 'I heard only silence — check the microphone.'), err: 1, at: Date.now() }); render(); nzScroll(); return; }
+    nzSend('', w.b64);
+  }
+  var NZ_SUG = ['Что нового за сегодня?', 'Кто мне звонил?', 'Есть новые заявки на estimate?', 'Что у меня на завтра?', 'Какие счета скоро платить?'];
+  function renderNezer() {
+    var ms = nzLoad();
+    var h = hdr(false) + '<div class="page-h"><h2>Nezer</h2><button class="pill' + (N.speak ? ' on' : '') + '" data-a="nzspk">' + (N.speak ? '🔊 Voice on' : '🔈 Voice off') + '</button><button class="pill" data-a="nzmenu">' + I.dots.replace('<svg', '<svg style="width:1rem;height:1rem;margin:0"') + '</button></div>';
+    h += '<div class="body nzbody"><div class="nzlog scroll">';
+    if (!ms.length) h += '<div class="nzhello"><div class="nzlogo">' + TI.nezer + '</div><h4>Hey, I’m Nezer</h4><p class="muted">I see your calendar, tasks, bills, mail and calls. Ask anything or tell me what to add.</p><div class="nzsug">' + NZ_SUG.map(function (s) { return '<button data-a="nzsug" data-v="' + esc(s) + '">' + esc(s) + '</button>'; }).join('') + '</div></div>';
+    ms.forEach(function (m, i) {
+      h += '<div class="nzm ' + m.role + (m.err ? ' err' : '') + '"><div class="nzb">' + (m.voice ? '<small>🎤</small> ' : '') + nzMd(m.content) + (m.role === 'assistant' && !m.err ? '<button class="nzplay" data-a="nzplay" data-v="' + i + '">' + I.play + '</button>' : '') + '</div>';
+      if (m.acts && m.acts.length) {
+        h += '<div class="nzacts">' + m.acts.map(function (x, j) {
+          var a = x.a;
+          return '<div class="nzact' + (x.st ? ' ' + x.st : '') + '"><span class="ic">' + (NZ_ICON[a.type] || '•') + '</span><div class="tx"><small>' + (NZ_NAME[a.type] || a.type) + '</small><b>' + esc(a.title || '') + '</b><em>' + esc(nzActLine(a)) + '</em></div>' + (x.st === 'ok' ? '<span class="st">✓ Saved</span>' : x.st === 'no' ? '<span class="st">Skipped</span>' : '<button class="no" data-a="nzact" data-v="' + i + ':' + j + ':no">' + I.x + '</button><button class="yes" data-a="nzact" data-v="' + i + ':' + j + ':ok">Save</button>') + '</div>';
+        }).join('') + (m.acts.filter(function (x) { return !x.st; }).length > 1 ? '<button class="nzall" data-a="nzall" data-v="' + i + '">Save all</button>' : '') + '</div>';
+      }
+      h += '</div>';
+    });
+    if (N.busy) h += '<div class="nzm assistant"><div class="nzb"><span class="nzdots"><i></i><i></i><i></i></span></div></div>';
+    h += '<div style="height:1rem"></div></div>';
+    h += '<div class="nzbar">' + (N.rec
+      ? '<button class="nzx" data-a="nzmicx">' + I.x + '</button><div class="nzrec"><span id="nzlev" class="nzring"></span><span class="nzdot">' + MIC + '</span><span id="nztime" class="nztime">0:00</span><span class="muted">Listening… tap ✓ when done</span></div><button class="nzgo" data-a="nzmic">' + I.check + '</button>'
+      : '<button class="nzmic" data-a="nzmic">' + MIC + '</button><textarea id="nzin" rows="1" placeholder="Ask Nezer or tell it what to add…"></textarea><button class="nzgo" data-a="nzsend">' + I.up + '</button>') + '</div>';
+    h += '</div>';
+    return h;
+  }
+  A.nzsend = function () { var e = document.getElementById('nzin'), v = e ? e.value.trim() : ''; if (!v) return; e.value = ''; nzSend(v); };
+  A.nzsug = function (v) { nzSend(v); };
+  A.nzmic = function () { if (N.rec) nzMicStop(false); else nzMicStart(); };
+  A.nzmicx = function () { nzMicStop(true); };
+  A.nzspk = function () { N.speak = !N.speak; LS.set('nzspeak', N.speak); if (!N.speak) { try { if (N.audio) N.audio.pause(); speechSynthesis.cancel(); } catch (e) {} } };
+  A.nzplay = function (i) { var m = N.msgs[+i]; if (m) nzSpeak(m.content); };
+  A.nzact = function (v) { var p = v.split(':'), m = N.msgs[+p[0]], x = m && m.acts && m.acts[+p[1]]; if (!x || x.st) return; if (p[2] === 'ok') { x.st = nzApply(x.a) ? 'ok' : 'no'; if (x.st === 'ok') toast('Saved'); } else x.st = 'no'; nzSave(); };
+  A.nzall = function (i) { var m = N.msgs[+i]; if (!m) return; var n = 0; m.acts.forEach(function (x) { if (!x.st) { x.st = nzApply(x.a) ? 'ok' : 'no'; if (x.st === 'ok') n++; } }); nzSave(); toast('Saved ' + n); };
+  A.nzmenu = function () { choose('Nezer', [['siri', '🎙 Use with Siri on iPhone'], ['clear', '🗑 Clear conversation']], null, function (o) { if (o === 'clear') { N.msgs = []; nzSave(); } else if (o === 'siri') setTimeout(siriDialog, 0); }); };
+  A.voice = function () { if (!S.hid && !DEMO) return; if (S.sub === 'diary') { voiceOpen('diary', S.dpid || mePid()); return; } go('nezer'); nzMicStart(); };
+  A.videa = function () { go('nezer'); nzMicStart(); };
+  root.addEventListener('keydown', function (ev) { if (ev.target.id === 'nzin' && ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); A.nzsend(); } });
+  function siriDialog() {
+    openModal(head('Nezer in Siri') + '<p class="muted" style="line-height:1.45">Make a personal key, then build a Shortcut on the iPhone:<br>1. <b>Dictate Text</b><br>2. <b>Get Contents of URL</b> — POST to the address below, header <code>x-nezer-token</code> = your key, JSON body <code>text</code> = Dictated Text<br>3. <b>Get Dictionary Value</b> “reply” → <b>Speak Text</b><br>Name the Shortcut “Nezer” and say “Hey Siri, Nezer”.</p><label>Address</label><input type="text" readonly value="' + SB_URL + '/functions/v1/nezer"><label>Key</label><input type="text" readonly name="tok" placeholder="Tap “Create key”"><p class="verr" id="tokerr"></p><div class="btns"><button class="no" data-m="cancel">Close</button><button class="ok" data-m="ok">Create key</button></div>', function (act) {
+      if (act !== 'ok') return false;
+      var er = document.getElementById('tokerr'); er.textContent = 'Creating…';
+      sbFetch('/functions/v1/nezer', { method: 'POST', json: { action: 'token', household_id: S.hid, me: mePid() } }).then(function (r) { var i = M.querySelector('[name=tok]'); i.value = r.token; i.select(); er.textContent = 'Copy the key now — it is shown once. Creating a new key disables the old one.'; }).catch(function (e) { er.textContent = e.message; });
+      return false;
+    });
+  }
+
+  /* ---- home briefing (under the clock) ---- */
+  var DG = { lines: null, at: 0, busy: false };
+  function dgLoad(force) {
+    if (DEMO || !S.hid || DG.busy || (!force && Date.now() - DG.at < 5 * 60000)) return;
+    DG.busy = true;
+    sbFetch('/functions/v1/nezer', { method: 'POST', json: { action: 'digest', household_id: S.hid } }).then(function (r) { DG.lines = r.lines || []; DG.at = Date.now(); }).catch(function () { DG.at = Date.now() - 4 * 60000; }).then(function () { DG.busy = false; if ((S.sub || S.view) === 'home' && !S.modalOpen) render(); });
+  }
+  function dgLocal() {
+    var out = [], t = sod(now()), soon = addD(t, 3);
+    var due = []; S.data.bills.forEach(function (b) { bOcc(b, addD(t, -3), soon).forEach(function (o) { if (!bPaid(b, o.k) && !b.autopay) due.push(o); }); });
+    due.sort(function (a, b) { return a.d - b.d; });
+    if (due.length) { var o = due[0], dd = Math.round((o.d - t) / 864e5); out.push({ k: 'bills', icon: '💵', view: 'bills', text: o.b.t + ' ' + money(o.b.amount) + (dd < 0 ? ' — просрочен' : dd === 0 ? ' — сегодня' : dd === 1 ? ' — завтра' : ' — через ' + dd + ' дн.') + (due.length > 1 ? ' · ещё ' + (due.length - 1) : ''), hot: dd <= 0 }); }
+    var tk = S.data.tasks.filter(function (x) { return occurs(x, t) && !isDone(x, t); }).length, ev = eventsOn(t).filter(function (e) { return e.ad || !e.time || e.time >= pad(now().getHours()) + ':' + pad(now().getMinutes()); });
+    if (tk || ev.length) out.push({ k: 'today', icon: '📋', view: 'calendar', text: (ev.length ? 'Дальше: ' + ev[0].t + (ev[0].time && !ev[0].ad ? ' в ' + fmtTime(ev[0].time) : '') : 'Событий больше нет') + (tk ? ' · задач: ' + tk : '') });
+    return out;
+  }
+  function dgHtml() {
+    dgLoad(false);
+    var ls = (DG.lines || []).concat(dgLocal());
+    ls.sort(function (a, b) { return (b.hot ? 1 : 0) - (a.hot ? 1 : 0); });
+    if (!ls.length) return DG.lines === null && !DEMO ? '<div class="brief"><div class="bl muted2">Nezer is checking calls & mail…</div></div>' : '';
+    return '<div class="brief">' + ls.slice(0, 5).map(function (l, i) { return '<div class="bl' + (l.hot ? ' hot' : '') + '" data-a="dgo" data-v="' + i + '"><span class="bi">' + l.icon + '</span><span class="bt">' + esc(l.text) + (l.sub ? '<small>' + esc(l.sub) + '</small>' : '') + '</span></div>'; }).join('') + '</div>';
+  }
+  A.dgo = function (i) {
+    var ls = (DG.lines || []).concat(dgLocal()); ls.sort(function (a, b) { return (b.hot ? 1 : 0) - (a.hot ? 1 : 0); });
+    var l = ls[+i]; if (!l) return;
+    if (l.view === 'mail') { S.sub = 'mail'; S.fx = 'v'; if (l.mid) { var st = mailState(); if (l.acct) st.a = l.acct; setTimeout(function () { mailView(l.mid); }, 60); } return; }
+    go(l.view);
+  };
+  setInterval(function () { if (!document.hidden && (S.sub || S.view) === 'home') dgLoad(false); }, 60000);
+
 
   root.addEventListener('click', function (ev) {
     var t = ev.target;

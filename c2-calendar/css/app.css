@@ -739,3 +739,64 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .dent .dx small{display:block;font-size:.72rem;color:var(--muted);margin-top:.3rem}
 .dent .dk{display:inline-block;font-size:.72rem;background:#fff4cc;color:#8a6400;border-radius:.5rem;padding:.05rem .4rem;margin-bottom:.25rem}
 .dlg textarea.dtext{min-height:14rem;line-height:1.5}
+
+/* ---- home briefing under the clock ---- */
+.clock.withbrief{justify-content:flex-start;padding:1rem .9rem .8rem}
+.clock.withbrief .t{font-size:3.6rem}
+#app.narrow .clock.withbrief .t{font-size:2.6rem}
+.brief{align-self:stretch;margin-top:.7rem;overflow:hidden}
+.brief .bl{display:flex;align-items:flex-start;background:rgba(255,255,255,.16);border-radius:.6rem;padding:.35rem .55rem;margin-top:.3rem;font-size:.82rem;line-height:1.3;text-align:left;animation:blin .4s ease-out both}
+.brief .bl.hot{background:rgba(255,255,255,.95);color:#2a2f45}
+.brief .bl:nth-child(2){animation-delay:.05s}.brief .bl:nth-child(3){animation-delay:.1s}.brief .bl:nth-child(4){animation-delay:.15s}.brief .bl:nth-child(5){animation-delay:.2s}
+.brief .bi{flex:none;width:1.4rem}
+.brief .bt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.brief .bt small{display:block;opacity:.75;font-size:.72rem;margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brief .muted2{opacity:.75}
+@keyframes blin{from{opacity:0;transform:translateY(.3rem)}to{opacity:1;transform:none}}
+
+/* ---- Nezer chat ---- */
+.page-h .pill.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.nzbody{display:flex;flex-direction:column}
+.nzlog{position:relative;flex:1;min-height:0;padding:.2rem 1.4rem}
+.nzhello{text-align:center;padding:2rem 1rem}
+.nzlogo svg{width:4.2rem;height:4.2rem}
+.nzhello h4{font-size:1.4rem;font-weight:500;margin:.6rem 0 .3rem}
+.nzhello p{line-height:1.45;max-width:28rem;margin:0 auto}
+.nzsug{display:flex;flex-wrap:wrap;justify-content:center;margin-top:1.2rem}
+.nzsug button{background:var(--card2);border:1px solid var(--line);border-radius:1.2rem;padding:.45rem .9rem;margin:.25rem;font-size:.9rem}
+.nzm{display:flex;flex-direction:column;margin:.5rem 0;animation:blin .25s ease-out both}
+.nzm.user{align-items:flex-end}
+.nzb{position:relative;max-width:82%;padding:.65rem .9rem;border-radius:1.1rem;line-height:1.45;font-size:1rem;word-break:break-word}
+.nzm.user .nzb{background:var(--acc);color:#fff;border-bottom-right-radius:.3rem}
+.nzm.assistant .nzb{background:var(--card2);border-bottom-left-radius:.3rem;box-shadow:0 .1rem .4rem rgba(40,60,110,.07);padding-right:2.4rem}
+.nzm.err .nzb{color:#d33a43}
+.nzplay{position:absolute;right:.5rem;bottom:.45rem;width:1.5rem;height:1.5rem;border-radius:50%;background:#eef2fa;color:var(--acc);display:flex;align-items:center;justify-content:center}
+.nzplay svg{width:.7rem;height:.7rem}
+.nzdots i{display:inline-block;width:.45rem;height:.45rem;border-radius:50%;background:#9aa3b5;margin:0 .12rem;animation:vbounce 1s infinite ease-in-out}
+.nzdots i:nth-child(2){animation-delay:.15s}.nzdots i:nth-child(3){animation-delay:.3s}
+.nzacts{max-width:88%;margin-top:.4rem}
+.nzact{display:flex;align-items:center;background:var(--card2);border:1px solid var(--line);border-radius:.9rem;padding:.55rem .6rem;margin-bottom:.4rem}
+.nzact .ic{font-size:1.3rem;width:2rem;text-align:center;flex:none}
+.nzact .tx{flex:1;min-width:0}
+.nzact small{display:block;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.nzact b{display:block;font-weight:500;font-size:.98rem}
+.nzact em{display:block;font-style:normal;font-size:.8rem;color:var(--muted)}
+.nzact .no{width:2rem;height:2rem;color:#9aa3b5;flex:none}.nzact .no svg{width:.9rem;height:.9rem}
+.nzact .yes{background:var(--acc);color:#fff;border-radius:1rem;padding:.35rem .9rem;font-size:.88rem;flex:none}
+.nzact.ok{border-color:#16a394;background:rgba(22,163,148,.07)}.nzact.no{opacity:.5}
+.nzact .st{font-size:.85rem;color:#16a394;flex:none;padding:0 .4rem}.nzact.no .st{color:var(--muted)}
+.nzall{background:none;color:var(--acc);font-size:.9rem;padding:.2rem .4rem}
+.nzbar{flex:none;display:flex;align-items:flex-end;padding:.6rem 1.2rem .8rem;border-top:1px solid var(--line);background:var(--bg)}
+.nzbar textarea{flex:1;resize:none;border:1px solid var(--line);background:var(--card2);border-radius:1.3rem;padding:.65rem 1rem;font-size:1rem;max-height:7rem;min-height:2.7rem;outline:none}
+.nzmic,.nzgo,.nzx{flex:none;width:2.7rem;height:2.7rem;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.nzmic{background:#eef2fa;color:var(--acc);margin-right:.5rem}
+.nzgo{background:var(--acc);color:#fff;margin-left:.5rem}
+.nzx{background:#eef2fa;color:#9aa3b5;margin-right:.5rem}
+.nzmic svg,.nzgo svg,.nzx svg{width:1.25rem;height:1.25rem}
+.nzrec{flex:1;display:flex;align-items:center;height:2.7rem;background:var(--card2);border-radius:1.3rem;padding:0 .8rem;position:relative}
+.nzring{position:absolute;left:.35rem;width:2rem;height:2rem;border-radius:50%;background:rgba(229,82,92,.25);transition:transform .12s}
+.nzdot{position:relative;width:2rem;height:2rem;border-radius:50%;background:#E5525C;color:#fff;display:flex;align-items:center;justify-content:center;margin-right:.6rem}
+.nzdot svg{width:1rem;height:1rem}
+.nztime{font-variant-numeric:tabular-nums;margin-right:.7rem}
+.nzrec .muted{font-size:.85rem}
+.dlg code{background:#f0f3f9;border-radius:.3rem;padding:0 .25rem;font-size:.85em}
