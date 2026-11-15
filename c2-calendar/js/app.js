@@ -935,7 +935,7 @@
   function clOpen(i) {
     var c = CL.items[+i]; if (!c) return;
     var w = clWho(c), d = c.start ? new Date(c.start) : null;
-    var audio = c.recUrl ? '<audio controls preload="none" src="' + esc(c.recUrl) + '"></audio>' : (c.rec && c.rec.length ? '<button class="abtn clplay" data-m="tw:' + c.rec[0].sid + '" style="max-width:16rem">▶ Load recording</button><div class="claud"></div>' : '<div class="muted" style="font-size:.9rem">No recording</div>');
+    var audio = c.vid && c.recUrl ? '<button class="abtn clplay" data-m="va:' + c.vid + '" style="max-width:16rem">▶ Play recording</button><div class="claud"></div>' : (c.rec && c.rec.length ? '<button class="abtn clplay" data-m="tw:' + c.rec[0].sid + '" style="max-width:16rem">▶ Play recording</button><div class="claud"></div>' : '<div class="muted" style="font-size:.9rem">No recording</div>');
     var tr = '';
     if (c.msgs && c.msgs.length) tr = c.msgs.map(function (m) { return '<div class="bub ' + m.who + '"><small>' + (m.who === 'ai' ? 'AI assistant' : 'Caller') + '</small>' + esc(m.text) + '</div>'; }).join('');
     else if (c.transcript) tr = '<div class="mtext">' + esc(c.transcript) + '</div>';
@@ -944,14 +944,15 @@
       + '<div class="clsec">' + audio + '</div>'
       + (c.summary ? '<h5 class="clh">Summary</h5><div class="clsec">' + esc(c.summary) + '</div>' : '')
       + '<h5 class="clh">Transcript</h5><div class="clsec cltr">' + tr + '</div></div>', function (act) {
-      if (act.indexOf('tw:') === 0) {
+      if (act.indexOf('tw:') === 0 || act.indexOf('va:') === 0) {
+        var isV = act.indexOf('va:') === 0;
         var btn = M.querySelector('.clplay'); if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
         ensureFresh(false).then(function () {
-          return fetch(SB_URL + '/functions/v1/calls', { method: 'POST', headers: { apikey: SB_KEY, Authorization: 'Bearer ' + S.auth.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'audio', household_id: S.hid, sid: act.slice(3) }) });
+          return fetch(SB_URL + '/functions/v1/calls', { method: 'POST', headers: { apikey: SB_KEY, Authorization: 'Bearer ' + S.auth.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify(isV ? { action: 'vaudio', household_id: S.hid, id: act.slice(3) } : { action: 'audio', household_id: S.hid, sid: act.slice(3) }) });
         }).then(function (r) { if (!r.ok) throw new Error('Recording ' + r.status); return r.blob(); }).then(function (b) {
           if (CL.audio) URL.revokeObjectURL(CL.audio); CL.audio = URL.createObjectURL(b);
           var box = M.querySelector('.claud'); if (box) box.innerHTML = '<audio controls autoplay src="' + CL.audio + '"></audio>'; if (btn) btn.style.display = 'none';
-        }).catch(function (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = '▶ Load recording'; } });
+        }).catch(function (e) { toast(e.message); if (btn) { btn.disabled = false; btn.textContent = '▶ Play recording'; } });
       }
       return false;
     }, { drawer: true, wide: true, nofocus: true });
