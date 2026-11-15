@@ -2009,7 +2009,7 @@
     clearInterval(vTick);
     var w = recStop(false);
     if (!w || w.secs < 0.8) { VS.phase = 'err'; VS.err = 'Too short — speak a little longer.'; voiceRender(); return; }
-    if (w.peak < 0.004) { VS.phase = 'err'; VS.err = 'I heard only silence. Check that the microphone is not covered and speak closer.'; voiceRender(); return; }
+    if (w.peak < 0.004) { VS.phase = 'err'; VS.err = IN_APP ? 'The tablet microphone gives no sound — this C-2 has no working built-in mic. Use the mic in C2 on your phone, or plug a USB / Bluetooth microphone into the tablet.' : 'I heard only silence. Check that the microphone is not covered and speak closer.'; voiceRender(); return; }
     VS.phase = 'think'; voiceRender();
     var n = now(), tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
     sbFetch('/functions/v1/voice', { method: 'POST', json: {
