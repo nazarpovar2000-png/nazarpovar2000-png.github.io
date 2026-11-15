@@ -2585,50 +2585,73 @@
 
 
   /* ---------- RING: latest doorbell / camera clip on the home screen ---------- */
-  var RV = { st: null, stAt: 0, ev: null, url: '', urlAt: 0, box: null, busy: false, at: 0 };
+  var RV = { st: null, stAt: 0, ev: null, url: '', urlAt: 0, mkind: '', box: null, busy: false, at: 0, seen: null, list: [] };
+  var RSIGN = {};
+  function ringMedia(e) { return e.clip_path ? { path: e.clip_path, kind: 'video' } : e.snap_path ? { path: e.snap_path, kind: 'img' } : null; }
+  function ringSign(path) {
+    var c = RSIGN[path]; if (c && Date.now() - c.at < 50 * 60000) return Promise.resolve(c.url);
+    return sbFetch('/storage/v1/object/sign/ring/' + path.split('/').map(encodeURIComponent).join('/'), { method: 'POST', json: { expiresIn: 3600 } }).then(function (r) { var u = SB_URL + '/storage/v1' + (r.signedURL || r.signedUrl); RSIGN[path] = { url: u, at: Date.now() }; return u; });
+  }
   function ringLoad(force) {
-    if (DEMO || !S.hid || RV.busy || (!force && Date.now() - RV.at < 45000)) return;
+    if (DEMO || !S.hid || RV.busy || (!force && Date.now() - RV.at < 4500)) return;
     RV.busy = true; RV.at = Date.now();
     var stP = RV.st && Date.now() - RV.stAt < 10 * 60000 ? Promise.resolve(RV.st) : sbFetch('/rest/v1/rpc/ring_status', { method: 'POST', json: { p_household: S.hid } }).then(function (s) { RV.stAt = Date.now(); return s; });
     stP.then(function (st) {
       var had = !!RV.st; RV.st = st;
-      if (!st || !st.connected) { RV.ev = null; if (!had) render(); return; }
-      return sbFetch('/rest/v1/ring_events?select=*&household_id=eq.' + S.hid + '&clip_path=not.is.null&order=at.desc&limit=12').then(function (rows) {
+      if (!st || !st.connected) { RV.ev = null; if (!had && (S.sub || S.view) === 'home') render(); return; }
+      return sbFetch('/rest/v1/ring_events?select=*&household_id=eq.' + S.hid + '&or=(clip_path.not.is.null,snap_path.not.is.null)&order=at.desc&limit=12').then(function (rows) {
         RV.list = rows || [];
-        var ev = RV.list[0];
-        if (!ev) return;
-        if (RV.ev && ev.ding_id === RV.ev.ding_id && RV.url && Date.now() - RV.urlAt < 50 * 60000) return;
-        return ringSign(ev.clip_path).then(function (u) { var first = !RV.url; RV.ev = ev; RV.url = u; RV.urlAt = Date.now(); ringBox(); if (first && (S.sub || S.view) === 'home' && !S.modalOpen) render(); });
+        var ev = RV.list[0]; if (!ev) return;
+        var newest = RV.seen !== null && ev.ding_id !== RV.seen && Date.now() - new Date(ev.at).getTime() < 3 * 60000;
+        RV.seen = ev.ding_id;
+        var m = ringMedia(ev);
+        if (RV.ev && ev.ding_id === RV.ev.ding_id && m.path === RV.path && RV.url && Date.now() - RV.urlAt < 50 * 60000) return;
+        return ringSign(m.path).then(function (u) {
+          var first = !RV.url; RV.ev = ev; RV.url = u; RV.path = m.path; RV.mkind = m.kind; RV.urlAt = Date.now(); ringBox();
+          if (first && (S.sub || S.view) === 'home' && !S.modalOpen) render();
+          if (newest) ringAlert(ev, u, m.kind);
+        });
       });
     }).catch(function () {}).then(function () { RV.busy = false; placeRing(); });
   }
-  function ringSign(path) { return sbFetch('/storage/v1/object/sign/ring/' + path.split('/').map(encodeURIComponent).join('/'), { method: 'POST', json: { expiresIn: 3600 } }).then(function (r) { return SB_URL + '/storage/v1' + (r.signedURL || r.signedUrl); }); }
   function ringLabel(ev) {
     var d = new Date(ev.at), today = sod(now()).getTime() === sod(d).getTime();
     return (ev.kind === 'ding' ? '🔔 Звонок в дверь' : ev.person ? '🚶 Человек' : '🚶 Движение') + ' · ' + esc(ev.device_name) + ' · ' + (today ? '' : MON[d.getMonth()] + ' ' + d.getDate() + ', ') + fmtTime(pad(d.getHours()) + ':' + pad(d.getMinutes()));
   }
   function ringBox() {
-    if (!RV.box) {
-      RV.box = document.createElement('div'); RV.box.className = 'ringbox';
-      RV.box.innerHTML = '<video muted loop playsinline autoplay preload="auto"></video><div class="rlab"></div>';
-    }
-    var v = RV.box.firstChild; if (v.getAttribute('src') !== RV.url) { v.setAttribute('src', RV.url); }
-    RV.box.lastChild.innerHTML = RV.ev ? ringLabel(RV.ev) : '';
+    if (!RV.box) { RV.box = document.createElement('div'); RV.box.className = 'ringbox'; RV.box.innerHTML = '<div class="rmed"></div><div class="rlab"></div>'; }
+    var med = RV.box.firstChild, cur = med.firstChild;
+    if (RV.mkind === 'video') {
+      if (!cur || cur.tagName !== 'VIDEO') { med.innerHTML = '<video muted loop playsinline autoplay preload="auto"></video>'; cur = med.firstChild; }
+    } else if (!cur || cur.tagName !== 'IMG') { med.innerHTML = '<img alt="">'; cur = med.firstChild; }
+    if (cur.getAttribute('src') !== RV.url) cur.setAttribute('src', RV.url);
+    RV.box.lastChild.innerHTML = RV.ev ? ringLabel(RV.ev) + (RV.mkind === 'img' ? ' · <i>видео скоро</i>' : '') : '';
     RV.box.classList.toggle('fresh', !!RV.ev && Date.now() - new Date(RV.ev.at).getTime() < 15 * 60000);
   }
   function placeRing() {
     var slot = root.querySelector('.ringslot');
     if (!slot || !RV.box) return;
     if (RV.box.parentNode !== slot) slot.appendChild(RV.box);
-    var v = RV.box.firstChild; if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+    var v = RV.box.querySelector('video'); if (v && v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); }
   }
-  setInterval(function () { if (!document.hidden && (S.sub || S.view) === 'home') ringLoad(false); }, 30000);
+  /* pop up on any screen the moment a new doorbell press / person shows up */
+  function ringAlert(ev, url, kind) {
+    if ((S.sub || S.view) === 'home' || (ev.kind !== 'ding' && !ev.person)) return;
+    var old = document.getElementById('ringpop'); if (old) old.parentNode.removeChild(old);
+    var d = document.createElement('div'); d.id = 'ringpop';
+    d.innerHTML = (kind === 'video' ? '<video muted autoplay loop playsinline src="' + esc(url) + '"></video>' : '<img src="' + esc(url) + '" alt="">') + '<div class="rplab">' + ringLabel(ev) + '</div><button class="rpx">' + I.x + '</button>';
+    d.onclick = function (e) { var x = e.target.closest ? e.target.closest('.rpx') : null; d.parentNode && d.parentNode.removeChild(d); if (!x) { go('home'); } };
+    document.body.appendChild(d);
+    setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 45000);
+  }
+  setInterval(function () { if (!document.hidden) ringLoad(false); }, 5000);
   A.ringopen = function () {
     var xs = RV.list || [];
-    openModal(dhead('Ring') + '<div class="db"><video class="ringbig" controls autoplay playsinline src="' + esc(RV.url) + '"></video><div class="rlist">' + xs.map(function (e, i) { return '<button class="' + (RV.ev && e.ding_id === RV.ev.ding_id ? 'on' : '') + '" data-m="rv:' + i + '">' + ringLabel(e) + '</button>'; }).join('') + '</div></div>', function (act) {
+    function med(kind, u) { return kind === 'video' ? '<video class="ringbig" controls autoplay playsinline src="' + esc(u) + '"></video>' : '<img class="ringbig" src="' + esc(u) + '" alt="">'; }
+    openModal(dhead('Ring') + '<div class="db"><div class="rbig">' + med(RV.mkind, RV.url) + '</div><div class="rlist">' + xs.map(function (e, i) { var m = ringMedia(e); return '<button class="' + (RV.ev && e.ding_id === RV.ev.ding_id ? 'on' : '') + '" data-m="rv:' + i + '">' + ringLabel(e) + (m.kind === 'img' ? ' · 📷' : ' · 🎬') + '</button>'; }).join('') + '</div></div>', function (act) {
       if (act.indexOf('rv:') !== 0) return false;
-      var e = xs[+act.slice(3)]; if (!e) return false;
-      ringSign(e.clip_path).then(function (u) { var v = M.querySelector('.ringbig'); if (v) { v.src = u; v.play(); } var bs = M.querySelectorAll('.rlist button'); for (var i = 0; i < bs.length; i++) bs[i].className = bs[i].getAttribute('data-m') === act ? 'on' : ''; });
+      var e = xs[+act.slice(3)]; if (!e) return false; var m = ringMedia(e);
+      ringSign(m.path).then(function (u) { var b = M.querySelector('.rbig'); if (b) b.innerHTML = med(m.kind, u); var bs = M.querySelectorAll('.rlist button'); for (var i = 0; i < bs.length; i++) bs[i].className = bs[i].getAttribute('data-m') === act ? 'on' : ''; });
       return false;
     }, { drawer: true, wide: true, nofocus: true });
   };
@@ -2745,5 +2768,5 @@
   setInterval(function () { if (!document.hidden) sync(); }, 15000);
   setInterval(function () { if (!document.hidden) { gUnread(); gEvents(true); if (S.view === 'calls') clLoad(true); } }, 120000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { sync(); resolvePhotos(); } });
-  window.__c2 = { S: S, render: render, A: A, V: V, RV: RV, ringBox: ringBox, voiceOpen: voiceOpen };
+  window.__c2 = { S: S, render: render, A: A, V: V, RV: RV, ringBox: ringBox, ringAlert: ringAlert, voiceOpen: voiceOpen };
 })();
