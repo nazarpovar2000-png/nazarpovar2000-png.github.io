@@ -830,12 +830,12 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 /* messages */
 .smbdg{background:#34c759;color:#fff;border-radius:1rem;min-width:1.4rem;height:1.4rem;padding:0 .4rem;font-size:.78rem;display:flex;align-items:center;justify-content:center;align-self:center;margin-left:.5rem;font-weight:600}
 .smtop{display:flex;align-items:center;padding:.5rem 1rem;border-bottom:1px solid var(--line);background:var(--card)}
-.smtop .back{margin-right:.6rem}.smtop .av{margin-right:.7rem}
+.smtop .back{width:2.4rem;height:2.4rem;border-radius:50%;background:rgba(58,108,240,.1);color:var(--acc);border:0;display:flex;align-items:center;justify-content:center;margin-right:.7rem;flex:none}.smtop .back svg{width:1.1rem;height:1.1rem}.smtop .av{margin-right:.7rem}
 .smtop b{display:block;font-weight:600;font-size:1.05rem}.smtop em{font-style:normal;color:var(--muted);font-size:.82rem}
 .smthread{display:flex;flex-direction:column;min-height:0}
-.smmsgs{flex:1;min-height:0;padding:.8rem 1rem 1rem;display:flex;flex-direction:column}
-.smday{align-self:center;color:var(--muted);font-size:.78rem;margin:.9rem 0 .4rem}
-.smb{max-width:76%;padding:.5rem .8rem .35rem;border-radius:1.1rem;margin:.12rem 0;line-height:1.35;font-size:.98rem;word-wrap:break-word;white-space:normal}
+.smmsgs{position:relative;flex:1;min-height:0;padding:.8rem 1rem 1rem;display:flex;flex-direction:column}.smmsgs>:first-child{margin-top:auto}
+.smday{flex:none;align-self:center;color:var(--muted);font-size:.78rem;margin:.9rem 0 .4rem}
+.smb{flex:none;max-width:76%;padding:.5rem .8rem .35rem;border-radius:1.1rem;margin:.12rem 0;line-height:1.35;font-size:.98rem;word-wrap:break-word;white-space:normal}
 .smb.them{align-self:flex-start;background:var(--card2);border:1px solid var(--line);border-bottom-left-radius:.35rem}
 .smb.me{align-self:flex-end;background:#0a84ff;color:#fff;border-bottom-right-radius:.35rem}
 .smb.me.sms{background:#34c759}
