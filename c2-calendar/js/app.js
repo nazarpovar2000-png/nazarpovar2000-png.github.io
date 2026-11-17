@@ -1454,10 +1454,10 @@
     else if (v === 'home') h = renderHome();
     else if (v === 'settings') h = renderSettings();
     else {
-      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer, ideas: renderIdeas, diary: renderDiary, nezer: renderNezer }[v] || renderCalendar)();
+      h = ({ calendar: renderCalendar, tasks: renderTasks, rewards: renderRewards, meals: renderMeals, photos: renderPhotos, lists: renderLists, anniv: renderAnniv, ncam: renderNcam, calls: renderCalls, bills: renderBills, mail: renderMail, notes: renderNotes, recipes: renderRecipes, timer: renderTimer, ideas: renderIdeas, diary: renderDiary, nezer: renderNezer, sms: renderSms }[v] || renderCalendar)();
       h += tabbar();
     }
-    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['ideas', 'Ideas & Notes'], ['diary', 'Diary'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
+    if (S.more) h += '<div class="shade dim" data-a="more"><div class="pop" data-a="noop"><h3>More</h3><button class="x" data-a="more">' + I.x + '</button><div class="its">' + (window.Android && Android.launch ? [['stock', 'E-calendar']] : []).concat([['mail', 'Mail'], ['sms', 'Messages'], ['ideas', 'Ideas & Notes'], ['diary', 'Diary'], ['recipes', 'Recipes'], ['timer', 'Timer'], ['sleep', 'Sleep'], ['settings', 'Settings']]).map(function (m) { var u = m[0] === 'mail' ? unreadTotal() : m[0] === 'sms' ? SM.unread : 0; return '<button class="it" data-a="sub" data-v="' + m[0] + '"><div>' + TI[m[0]] + (u ? '<b class="bdg">' + (u > 99 ? '99+' : u) + '</b>' : '') + '</div>' + m[1] + '</button>'; }).join('') + '</div><button class="eo" data-a="order">Edit order</button></div></div>';
     if (S.sleeping) { var d = now(); h += '<div class="sleep" data-a="wake"><b>' + (S.cfg.h24 ? pad(d.getHours()) : ((d.getHours() % 12) || 12)) + ':' + pad(d.getMinutes()) + '</b><span>' + WDL[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate() + '</span></div>'; }
     if (S.dbNote) h += '<div class="dbnote">' + esc(S.dbNote) + '</div>';
     else if (S.gNote && (v === 'calendar' || v === 'home')) h += '<div class="dbnote" data-a="settings">' + esc(S.gNote) + '</div>';
@@ -1466,7 +1466,7 @@
     var sc = root.querySelector('.scroll'), st = sc ? sc.scrollTop : 0, keep = !S.fx || S.fx === 'd' || S.fx === 'p' || S.fx === 'c';
     root.innerHTML = h; lastHtml = h; S.fxId = null;
     var sc2 = root.querySelector('.scroll'); if (sc2 && st && keep) sc2.scrollTop = st;
-    placeNcam(); placeRing();
+    placeNcam(); placeRing(); placeSms();
     if (S.fx) { var cls = 'fx' + S.fx; S.fx = null; root.classList.remove('fxv', 'fxn', 'fxd', 'fxp', 'fxc'); void root.offsetWidth; root.classList.add(cls); clearTimeout(fxT); fxT = setTimeout(function () { root.classList.remove(cls); }, 500); }
   }
 
@@ -1817,6 +1817,8 @@
     noop: function () {},
     dial: function () { S.dial = !S.dial; S.fx = 'd'; render(); },
     edev: function (id) { evDialog(find('events', id)); },
+    smopen: function (v) { smOpen(v); },
+    smback: function () { SM.chat = null; SM.msgs = null; render(); smLoad(true); },
     sub: function (v) { if (v === 'stock') { S.more = false; render(); try { Android.launch('com.fujia.calendar', 'com.fujia.calendar.ui.DeviceMainActivity'); } catch (e) { toast('E-calendar not available'); } return; } S.more = false; if (v === 'notes') { v = 'ideas'; S.ifil = 'notes'; } if (v === 'sleep') { S.sleeping = true; S.wakeUntil = 0; render(); return; } S.sub = v; S.fx = 'v'; render(); },
     settings: function () { S.sub = 'settings'; S.fx = 'v'; render(); },
     wake: function () { S.sleeping = false; S.wakeUntil = Date.now() + 60000; render(); },
@@ -2640,6 +2642,126 @@
     RV.box.lastChild.innerHTML = RV.ev ? ringLabel(RV.ev) + (RV.mkind === 'img' ? ' · <i>видео скоро</i>' : '') : '';
     RV.box.classList.toggle('fresh', !!RV.ev && Date.now() - new Date(RV.ev.at).getTime() < 15 * 60000);
   }
+  /* ---------- MESSAGES (SMS / iMessage through the iMac) ---------- */
+  var SM = { threads: null, st: null, chat: null, name: '', handle: '', msgs: null, outbox: [], sug: null, sugErr: '', sugBusy: false, at: 0, tAt: 0, err: '', comp: null, stick: true, unread: 0 };
+  TI.sms = '<svg viewBox="0 0 32 32"><rect x="3" y="5" width="26" height="19" rx="6" fill="#34c759"/><path d="M9 24l-1 5 6-5z" fill="#34c759"/><circle cx="10.5" cy="14.5" r="1.8" fill="#fff"/><circle cx="16" cy="14.5" r="1.8" fill="#fff"/><circle cx="21.5" cy="14.5" r="1.8" fill="#fff"/></svg>';
+  function smCall(action, b) { b = b || {}; b.action = action; b.household_id = S.hid; return sbFetch('/functions/v1/sms', { method: 'POST', json: b }); }
+  function smTime(iso) { var d = new Date(iso), t = now(); if (same(d, t)) return fmtTime(pad(d.getHours()) + ':' + pad(d.getMinutes())); var y = new Date(t); y.setDate(y.getDate() - 1); if (same(d, y)) return 'Yesterday'; if (t - d < 6 * 864e5) return WDL[d.getDay()].slice(0, 3); return MON[d.getMonth()] + ' ' + d.getDate(); }
+  function smLoad(force) {
+    if (DEMO || !S.hid || (SM.busyT && !force)) return;
+    SM.busyT = true;
+    Promise.all([smCall('threads', { limit: 80 }), SM.st ? Promise.resolve(SM.st) : smCall('status')]).then(function (r) {
+      SM.threads = r[0].threads || []; SM.st = r[1]; SM.err = ''; SM.tAt = Date.now();
+      SM.unread = SM.threads.reduce(function (n, t) { return n + (t.unread || 0); }, 0);
+    }).catch(function (e) { SM.err = e.message; if (!SM.threads) SM.threads = []; }).then(function () { SM.busyT = false; if ((S.sub || S.view) === 'sms') render(); });
+  }
+  function smThread(scroll) {
+    var chat = SM.chat; if (!chat) return;
+    smCall('thread', { chat: chat }).then(function (r) {
+      if (SM.chat !== chat) return;
+      var before = SM.msgs ? SM.msgs.length + '|' + (SM.msgs.length ? SM.msgs[SM.msgs.length - 1].guid : '') : '', after = r.msgs.length + '|' + (r.msgs.length ? r.msgs[r.msgs.length - 1].guid : '');
+      var lastIn = r.msgs.filter(function (m) { return !m.me; }).pop(), oldIn = SM.msgs ? SM.msgs.filter(function (m) { return !m.me; }).pop() : null;
+      SM.msgs = r.msgs; SM.outbox = r.outbox || [];
+      if (scroll || before !== after) SM.stick = true;
+      if (lastIn && (!oldIn || oldIn.guid !== lastIn.guid) && SM.msgs.length && !SM.msgs[SM.msgs.length - 1].me) smSuggest();
+      if (!SM.sug && !SM.sugBusy) { SM.sug = []; smChips(); }
+      render();
+    }).catch(function (e) { SM.err = e.message; render(); });
+  }
+  function smSuggest(hint) {
+    if (!SM.chat) return;
+    var chat = SM.chat; SM.sugBusy = true; SM.sugErr = ''; smChips();
+    smCall('suggest', { chat: chat, hint: hint || '' }).then(function (r) { if (SM.chat === chat) SM.sug = r.replies || []; })
+      .catch(function (e) { if (SM.chat === chat) { SM.sug = []; SM.sugErr = /credit|402|afford/i.test(e.message) ? 'Suggestions are off: OpenRouter credits ran out.' : 'Could not get suggestions.'; } })
+      .then(function () { SM.sugBusy = false; smChips(); });
+  }
+  function smOpen(chat) {
+    var t = (SM.threads || []).filter(function (x) { return x.chat === chat; })[0] || {};
+    SM.chat = chat; SM.name = t.name || ''; SM.handle = t.handle || ''; SM.group = !!t.group; SM.msgs = null; SM.outbox = []; SM.sug = null; SM.sugErr = ''; SM.stick = true;
+    if (SM.comp) SM.comp.querySelector('textarea').value = '';
+    if (t.unread) { t.unread = 0; SM.unread = (SM.threads || []).reduce(function (n, x) { return n + (x.unread || 0); }, 0); }
+    smCall('read', { chat: chat }).catch(function () {});
+    smChips(); render(); smThread(true);
+  }
+  function smComposer() {
+    if (SM.comp) return SM.comp;
+    var c = document.createElement('div'); c.className = 'smcomp';
+    c.innerHTML = '<div class="smchips"></div><div class="smrow"><textarea rows="1" placeholder="Write your own reply…"></textarea><button class="smsend" aria-label="Send"><svg viewBox="0 0 24 24"><path d="M3.4 20.4l17.5-7.5c.8-.4.8-1.5 0-1.8L3.4 3.6c-.7-.3-1.4.2-1.4.9v4.6c0 .5.4.9.9 1l10.1 1.9-10.1 1.9c-.5.1-.9.5-.9 1v4.6c0 .7.7 1.2 1.4.9z" fill="currentColor"/></svg></button></div>';
+    var ta = c.querySelector('textarea');
+    ta.addEventListener('input', function () { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; });
+    c.querySelector('.smsend').addEventListener('click', function () { smSend(ta.value); });
+    c.querySelector('.smchips').addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('button') : null; if (!b) return;
+      if (b.getAttribute('data-re')) { smSuggest(); return; }
+      var i = +b.getAttribute('data-i'); if (!SM.sug || !SM.sug[i]) return;
+      ta.value = SM.sug[i]; ta.dispatchEvent(new Event('input')); ta.focus();
+      try { ta.setSelectionRange(ta.value.length, ta.value.length); } catch (e) {}
+    });
+    SM.comp = c; return c;
+  }
+  function smChips() {
+    var c = smComposer(), box = c.querySelector('.smchips'), h = '';
+    if (SM.sugBusy) h = '<span class="smhint">✨ Thinking of replies…</span>';
+    else if (SM.sug && SM.sug.length) h = SM.sug.map(function (s, i) { return '<button class="smchip" data-i="' + i + '">' + esc(s) + '</button>'; }).join('') + '<button class="smchip re" data-re="1" title="Other options">↻</button>';
+    else if (SM.sugErr) h = '<span class="smhint">' + esc(SM.sugErr) + '</span><button class="smchip re" data-re="1">↻</button>';
+    else if (SM.sug) h = '<button class="smchip re" data-re="1">✨ Suggest replies</button>';
+    box.innerHTML = h;
+  }
+  function smSend(text) {
+    text = String(text || '').trim(); if (!text || !SM.chat) return;
+    var ta = smComposer().querySelector('textarea'), chat = SM.chat;
+    ta.value = ''; ta.style.height = 'auto';
+    var tmp = { id: 'tmp' + Date.now(), text: text, status: 'pending' };
+    SM.outbox.push(tmp); SM.stick = true; SM.sug = []; smChips(); render();
+    smCall('send', { chat: chat, handle: SM.handle, text: text }).then(function (r) { tmp.id = r.id; setTimeout(function () { if (SM.chat === chat) smThread(); }, 4000); })
+      .catch(function (e) { tmp.status = 'error'; tmp.err = e.message; render(); });
+  }
+  function renderSms() {
+    var h = hdr(false);
+    if (DEMO) return h + '<div class="page-h"><h2>Messages</h2></div><div class="body">' + empty('Not available in demo', 2) + '</div>';
+    if (SM.chat) {
+      h += '<div class="smtop"><button class="back" data-a="smback">' + I.back + '</button><span class="av m" style="background:' + avColor(SM.name || SM.chat) + '">' + esc((SM.name.replace(/[^\wА-Яа-яЁёІіЇїЄє]/g, '').charAt(0) || '#').toUpperCase()) + '</span><div><b>' + esc(SM.name) + '</b>' + (SM.handle && !SM.group && SM.handle !== SM.name ? '<em>' + esc(SM.handle) + '</em>' : '') + '</div></div>';
+      h += '<div class="body smthread"><div class="scroll smmsgs">';
+      if (SM.msgs === null) h += '<div class="mload">Loading…</div>';
+      else {
+        var lastDay = '';
+        SM.msgs.forEach(function (m) {
+          var d = new Date(m.at), dk = d.toDateString();
+          if (dk !== lastDay) { lastDay = dk; h += '<div class="smday">' + (same(d, now()) ? 'Today' : WDL[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate()) + '</div>'; }
+          h += '<div class="smb ' + (m.me ? 'me' : 'them') + (m.svc === 'SMS' ? ' sms' : '') + '">' + (SM.group && !m.me ? '<i>' + esc(m.from) + '</i>' : '') + (m.text ? esc(m.text).replace(/\n/g, '<br>') : '') + (m.att ? '<span class="smatt">📎 attachment</span>' : '') + '<u>' + fmtTime(pad(d.getHours()) + ':' + pad(d.getMinutes())) + '</u></div>';
+        });
+        SM.outbox.forEach(function (o) { h += '<div class="smb me out' + (o.status === 'error' ? ' bad' : '') + '">' + esc(o.text) + '<u>' + (o.status === 'error' ? '⚠ Not sent' + (o.err ? ': ' + esc(o.err).slice(0, 80) : '') : 'Sending via iMac…') + '</u></div>'; });
+      }
+      h += '</div><div class="smslot"></div></div>';
+      return h;
+    }
+    if (!SM.threads && !SM.busyT) setTimeout(function () { smLoad(true); }, 0);
+    h += '<div class="page-h"><h2>Messages</h2></div><div class="body"><div class="scroll mlist">';
+    var st = SM.st;
+    if (SM.err) h += '<div class="amsg" style="margin:.5rem 1.4rem">' + esc(SM.err) + '</div>';
+    if (st && (!st.seen_at || Date.now() - new Date(st.seen_at) > 15 * 60e3)) h += '<div class="amsg" style="margin:.5rem 0 .8rem;line-height:1.45">' + (st.seen_at ? '⚠ The iMac has not checked in since ' + esc(smTime(st.seen_at)) + ' — is it on and is C2 Messages running?' : 'Waiting for the iMac. On the iMac open <b>Desktop → c2-firmware → messages</b> and double-click <b>Install C2 Messages</b>.') + '</div>';
+    if (SM.threads === null) h += '<div class="mload">Loading…</div>';
+    else if (!SM.threads.length) h += '<div style="height:60%;display:flex">' + empty('No messages yet', 2).replace('class="empty"', 'class="empty" style="flex:1"') + '</div>';
+    else h += SM.threads.map(function (t, i) {
+      return '<div class="mrow' + (t.unread ? ' unread' : '') + '" data-a="smopen" data-v="' + esc(t.chat) + '" style="animation-delay:' + Math.min(i, 12) * 20 + 'ms"><span class="av m" style="background:' + avColor(t.name || t.chat) + '">' + esc((String(t.name).replace(/[^\wА-Яа-яЁёІіЇїЄє]/g, '').charAt(0) || '#').toUpperCase()) + '</span><div class="mt"><div class="m1"><b>' + esc(t.name) + '</b><em>' + smTime(t.at) + '</em></div><div class="m3">' + (t.me ? 'You: ' : '') + esc(t.text || '📎 attachment') + '</div></div>' + (t.unread ? '<b class="smbdg">' + t.unread + '</b>' : '') + '</div>';
+    }).join('');
+    h += '<div style="height:6rem"></div></div></div>';
+    return h;
+  }
+  function placeSms() {
+    var slot = root.querySelector('.smslot');
+    if (!slot) return;
+    var c = smComposer(); if (c.parentNode !== slot) slot.appendChild(c);
+    var sc = root.querySelector('.smmsgs');
+    if (sc && SM.stick) { sc.scrollTop = sc.scrollHeight; SM.stick = false; }
+  }
+  setInterval(function () {
+    if (DEMO || !S.hid || !S.auth || document.hidden) return;
+    var v = S.sub || S.view;
+    if (v === 'sms' && SM.chat) { var sc = root.querySelector('.smmsgs'); smThread(false); }
+    else if (v === 'sms' ? Date.now() - SM.tAt > 10e3 : Date.now() - SM.tAt > 90e3) smLoad(false);
+  }, 6000);
+
   function placeRing() {
     var slot = root.querySelector('.ringslot');
     if (!slot || !RV.box) return;
