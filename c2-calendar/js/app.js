@@ -2650,7 +2650,7 @@
   function smLoad(force) {
     if (DEMO || !S.hid || (SM.busyT && !force)) return;
     SM.busyT = true;
-    Promise.all([smCall('threads', { limit: 80 }), SM.st ? Promise.resolve(SM.st) : smCall('status')]).then(function (r) {
+    Promise.all([smCall('threads', { limit: 80 }), smCall('status')]).then(function (r) {
       SM.threads = r[0].threads || []; SM.st = r[1]; SM.err = ''; SM.tAt = Date.now();
       SM.unread = SM.threads.reduce(function (n, t) { return n + (t.unread || 0); }, 0);
     }).catch(function (e) { SM.err = e.message; if (!SM.threads) SM.threads = []; }).then(function () { SM.busyT = false; if ((S.sub || S.view) === 'sms') render(); });
