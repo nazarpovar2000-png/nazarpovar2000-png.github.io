@@ -868,3 +868,4 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .hrow.bot .clock.nocl{flex:37;justify-content:flex-start;padding:.7rem .7rem .6rem;overflow-y:auto}
 .clock.nocl .brief{margin-top:0}
 .clock.nocl .brief .bl:first-child{margin-top:0}
+.clock.nocl .brief .bt{-webkit-line-clamp:4}.clock.nocl .brief .bl{font-size:.88rem;padding:.45rem .6rem}
