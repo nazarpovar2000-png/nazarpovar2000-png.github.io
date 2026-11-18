@@ -273,6 +273,34 @@ $("l-ru").onclick = () => setLang("ru");
 
 window.addEventListener("hashchange", () => { readHash(); render(); });
 readHash(); render();
+
+// Visit log (owner's own visits are skipped: open the page once with ?owner=1 on each of your devices)
+(function logVisit(){
+  try {
+    const params = new URLSearchParams(location.search);
+    if (params.get("owner") === "1"){ localStorage.setItem("closetOwner", "1"); history.replaceState(null, "", location.pathname + location.hash); }
+    if (params.get("owner") === "0"){ localStorage.removeItem("closetOwner"); history.replaceState(null, "", location.pathname + location.hash); }
+    if (localStorage.getItem("closetOwner") === "1") return;
+  } catch (e) {}
+  let vid = "";
+  try { vid = localStorage.getItem("closetVisitor") || ""; if (!vid){ vid = Math.random().toString(36).slice(2, 12); localStorage.setItem("closetVisitor", vid); } } catch (e) {}
+  const m = location.hash.match(/^#closet([12])-([abc])$/);
+  const row = {
+    page: "closets",
+    variant: m ? ("closet" + m[1] + "-" + m[2]) : null,
+    visitor_id: vid || null,
+    device: navigator.userAgent.slice(0, 300),
+    referrer: (document.referrer || "").slice(0, 300) || null,
+    lang: (navigator.language || "").slice(0, 20),
+    tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "").slice(0, 60),
+    screen: (screen.width + "x" + screen.height).slice(0, 20)
+  };
+  fetch("https://lbamryztsbmmprhcfsdg.supabase.co/rest/v1/closet_page_views", {
+    method: "POST", keepalive: true,
+    headers: { "apikey": "sb_publishable_BxrxaE95_p7IXEEfwZmYhA_G9mDDQ_H", "Content-Type": "application/json", "Prefer": "return=minimal" },
+    body: JSON.stringify(row)
+  }).catch(() => {});
+})();
 </script>
 </body>
 </html>
