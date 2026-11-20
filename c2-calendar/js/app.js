@@ -554,9 +554,9 @@
     var d = S.taskDay, h = hdr(false);
     h += '<div class="tb"><button class="pill" data-a="taskmore">More' + I.dn + '</button>' + navPill(WDL[d.getDay()] + ', ' + MONL[d.getMonth()] + ' ' + d.getDate(), 'tnav') + '</div><div class="body"><div class="pcols">';
     S.cfg.people.forEach(function (p) {
-      var ts = tasksOn(d, p.id), done = ts.filter(function (x) { return isDone(x, d); }).length;
+      var ts = tasksOn(d, p.id), all = S.data.tasks.filter(function (x) { return x.p === p.id && occurs(x, d); }), done = all.filter(function (x) { return isDone(x, d); }).length;
       h += '<div class="pcol"><div class="ph"><span class="av l" style="background:' + p.color + '">' + esc(p.initial) + '</span><b>' + esc(p.name) + '</b><span class="star">' + I.star + starsOf(p.id) + '</span></div>';
-      h += '<div class="prog"><span class="b"><i style="width:' + (ts.length ? done / ts.length * 100 : 0) + '%;background:' + p.color + '"></i></span>' + done + '/' + ts.length + '</div>';
+      h += '<div class="prog"><span class="b"><i style="width:' + (all.length ? done / all.length * 100 : 0) + '%;background:' + p.color + '"></i></span>' + done + '/' + all.length + '</div>';
       h += '<div class="bd">' + (ts.length ? ts.map(function (t) { return taskRow(t, d); }).join('') : empty('Nothing to do today', p.id === (S.cfg.people[0] || {}).id ? 1 : 2)) + '</div></div>';
     });
     h += '</div>' + fab('', DIAL_ET) + '</div>';
