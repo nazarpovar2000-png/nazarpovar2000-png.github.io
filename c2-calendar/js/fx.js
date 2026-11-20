@@ -187,7 +187,7 @@
       ctx.textAlign = 'center';
       ctx.font = '700 ' + Math.max(22, H * 0.04) + 'px system-ui,sans-serif';
       ctx.fillStyle = 'rgba(255,42,42,' + (0.6 + 0.4 * (0.5 + 0.5 * Math.sin(now / 350))).toFixed(2) + ')';
-      ctx.fillText('Актив аларм', cx, H * 0.2);
+      ctx.fillText('Alarm active', cx, H * 0.2);
       ctx.font = Math.max(18, H * 0.03) + 'px system-ui,sans-serif';
       ctx.fillStyle = 'rgba(255,90,90,0.45)';
       ctx.fillText('Касанитесь экрана, чтобы ввести код', cx, H * 0.92);
