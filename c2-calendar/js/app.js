@@ -710,6 +710,7 @@
         else h += '<div class="row"><span>Auto: darker ↔ brighter</span><input type="range" class="brr" data-br="bias" min="-30" max="30" value="' + Math.round(B.bias * 100) + '"><span class="v brv" style="width:3rem;text-align:right">' + (B.bias > 0 ? '+' : '') + Math.round(B.bias * 100) + '</span></div>';
         h += '<div class="row"><span class="muted" id="brinfo">' + brInfo(B) + '</span></div>';
       }
+      if (window.Android && Android.sentryOn) h += '<h3>Alarm</h3><div class="row" data-a="sentry"><span style="color:var(--acc)">Alarm: red eye lock screen</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
       h += '<h3>Show</h3>';
       h += '<div class="row"><span>Font Size</span>' + rad(c.font, 'small', 'cfgfont', 'Small') + rad(c.font, 'medium', 'cfgfont', 'Medium') + rad(c.font, 'large', 'cfgfont', 'Large') + '</div>';
       h += '<div class="row"><span>Show weather information</span>' + tg(c.weather, 'cfgtg', 'weather') + '</div>';
@@ -1910,6 +1911,7 @@
     treset: function () { S.timer.run = false; S.timer.left = S.timer.total; render(); },
     tadd: function () { var T = S.timer; if (T.run) T.end += 60000; else T.left += 60; T.total += 60; render(); },
     stab: function (v) { S.setTab = v; S.gFlash = null; if (v === 'google') { G.cals = {}; loadGAccts(); } render(); },
+    sentry: function () { if (window.Android && Android.sentryOn) Android.sentryOn(); },
     bmode: function (v) { Android.brightnessSet(v, -1, -2); render(); },
     cfgtg: function (k) { S.cfg[k] = !S.cfg[k]; saveCfg(); },
     cfgtg2: function (k) { S.cfg[k] = S.cfg[k] === false; saveCfg(); },
