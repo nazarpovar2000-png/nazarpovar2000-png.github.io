@@ -1848,8 +1848,14 @@
     taskmore: function () { choose('Tasks', [['today', 'Go to today'], ['clear', 'Clear completed (this day)']], null, function (o) { if (o === 'today') S.taskDay = sod(now()); else tasksOn(S.taskDay).forEach(function (t) { if (t.done) delTaskTree(t.id); }); render(); }); },
     tgtask: function (v) {
       var p = v.split('|'), t = find('tasks', p[0]); if (!t) return;
+      var fxDay = t.rep ? parseKey(p[1]) : parseKey(t.date || key(S.taskDay));
+      var wasDone = isDone(t, fxDay), allBefore = S.data.tasks.filter(function (x) { return occurs(x, fxDay); }).every(function (x) { return isDone(x, fxDay); });
       if (t.rep) { t.dd = t.dd || {}; if (t.dd[p[1]]) delete t.dd[p[1]]; else t.dd[p[1]] = 1; } else t.done = !t.done;
       S.fxId = t.id; S.fx = 'c'; put('tasks', t);
+      if (!wasDone && isDone(t, fxDay) && window.C2FX) {
+        var allNow = S.data.tasks.filter(function (x) { return occurs(x, fxDay); }).every(function (x) { return isDone(x, fxDay); });
+        if (allNow && !allBefore) C2FX.bomb(); else C2FX.fireworks();
+      }
     },
     tasktimer: function (m) { m = +m || 15; S.timer = { total: m * 60, left: m * 60, run: true, end: Date.now() + m * 60000 }; S.sub = 'timer'; S.fx = 'v'; render(); },
     tgsub: function (v) { var p = v.split('|'), x = find('lists', p[0]); if (x && x.subs && x.subs[+p[1]]) { x.subs[+p[1]].done = !x.subs[+p[1]].done; put('lists', x); } },
