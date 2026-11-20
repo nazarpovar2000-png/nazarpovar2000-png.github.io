@@ -371,7 +371,11 @@
     return out;
   }
   function isDone(t, d) { return t.rep ? !!(t.dd && t.dd[key(d)]) : !!t.done; }
-  function tasksOn(d, pid) { return S.data.tasks.filter(function (t) { return (!pid || t.p === pid) && occurs(t, d); }).sort(byAt); }
+  function tasksOn(d, pid) { return S.data.tasks.filter(function (t) { return (!pid || t.p === pid) && !taskParentOf(t) && occurs(t, d); }).sort(byAt); }
+  /* subtasks: a task whose `parent` points at an existing task; nesting is unlimited */
+  function taskParentOf(t) { return t.parent ? find('tasks', t.parent) : null; }
+  function taskKids(id, d) { return S.data.tasks.filter(function (t) { return t.parent === id && (!d || occurs(t, d)); }).sort(byAt); }
+  function delTaskTree(id) { taskKids(id).forEach(function (k) { delTaskTree(k.id); }); del('tasks', id); }
   function starsOf(pid) {
     var earned = 0, spent = 0;
     S.data.tasks.forEach(function (t) { if (t.p !== pid) return; var n = t.rep ? Object.keys(t.dd || {}).length : (t.done ? 1 : 0); earned += n * (+t.stars || 0); });
@@ -467,10 +471,13 @@
     var p = P(e.p), col = e.col || (e.p ? p.color : '#3a6cf0');
     return '<div class="ev" style="background:' + hexA(col, .1) + '" data-a="openev" data-v="' + e.kind + ':' + e.id + '"><span class="bar" style="background:' + col + '"></span><div><b>' + esc(e.t) + '</b><small>' + (e.ad ? 'All day' : fmtTime(e.time)) + (e.p ? ' · ' + esc(p.name) : '') + '</small></div></div>';
   }
-  function taskRow(t, d) {
-    d = d || S.taskDay;
+  function taskRow(t, d, depth) {
+    d = d || S.taskDay; depth = depth || 0;
     var p = P(t.p), done = isDone(t, d), pr = { high: '#e5484d', medium: '#f5a524', low: '#3a6cf0' }[t.pri];
-    return '<div class="ti' + (done ? ' done' : '') + (S.fxId === t.id ? ' pulse' : '') + '" style="background:' + hexA(p.color, done ? .22 : .12) + '">' + (t.color && VCOL[t.color] ? '<span class="tcol" style="background:' + VCOL[t.color] + '"></span>' : '') + '<div class="tx" data-a="edtask" data-v="' + t.id + '"><b>' + (t.emoji ? t.emoji + ' ' : '') + esc(t.t) + '</b><small>' + (pr ? '<span style="color:' + pr + '">⚑ </span>' : '') + (t.ad || !t.time ? 'All day' : fmtTime(t.time)) + (t.rep ? ' · ' + t.rep : '') + '</small></div>' + (t.tm ? '<button class="tmr" data-a="tasktimer" data-v="' + t.tm + '">' + FI.clock + '</button>' : '') + (+t.stars ? '<span class="st">★' + (+t.stars) + '</span>' : '') + '<button class="ck" style="color:' + p.color + (done ? ';background:' + p.color : '') + '" data-a="tgtask" data-v="' + t.id + '|' + key(d) + '">' + (done ? '<span style="color:#fff;display:flex">' + I.check + '</span>' : '') + '</button></div>';
+    var row = '<div class="ti' + (depth ? ' sub' : '') + (done ? ' done' : '') + (S.fxId === t.id ? ' pulse' : '') + '" style="background:' + hexA(p.color, done ? .22 : .12) + ';margin-left:' + (Math.min(depth, 4) * 1.1) + 'rem">' + (t.color && VCOL[t.color] ? '<span class="tcol" style="background:' + VCOL[t.color] + '"></span>' : '') + '<div class="tx" data-a="edtask" data-v="' + t.id + '"><b>' + (t.emoji ? t.emoji + ' ' : '') + esc(t.t) + '</b><small>' + (pr ? '<span style="color:' + pr + '">⚑ </span>' : '') + (t.ad || !t.time ? 'All day' : fmtTime(t.time)) + (t.rep ? ' · ' + t.rep : '') + '</small></div>' + (t.tm ? '<button class="tmr" data-a="tasktimer" data-v="' + t.tm + '">' + FI.clock + '</button>' : '') + (+t.stars ? '<span class="st">★' + (+t.stars) + '</span>' : '') + '<button class="stadd" data-a="subtask" data-v="' + t.id + '" aria-label="Add subtask">+</button><button class="ck" style="color:' + p.color + (done ? ';background:' + p.color : '') + '" data-a="tgtask" data-v="' + t.id + '|' + key(d) + '">' + (done ? '<span style="color:#fff;display:flex">' + I.check + '</span>' : '') + '</button></div>';
+    var kids = taskKids(t.id, d);
+    if (kids.length) row += '<div class="tkids">' + kids.map(function (k) { return taskRow(k, d, depth + 1); }).join('') + '</div>';
+    return row;
   }
   function renderHome() {
     var evs = eventsOn(S.sel);
@@ -520,8 +527,8 @@
           var d = addD(start, w * 7 + k), evs = eventsOn(d), out = d.getMonth() !== a.getMonth();
           var lab = d.getDate() === 1 ? MON[d.getMonth()] + ' 1' : d.getDate();
           h += '<div class="c' + (out ? ' out' : '') + (same(d, t) ? ' today' : '') + '" data-a="day" data-v="' + key(d) + '"><div class="n"><span>' + lab + '</span></div>';
-          evs.slice(0, 3).forEach(function (e) { var col = e.col || (e.p ? P(e.p).color : '#3a6cf0'); h += '<div class="ep" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
-          if (evs.length > 3) h += '<div class="more1">+' + (evs.length - 3) + '</div>';
+          evs.slice(0, 2).forEach(function (e) { var col = e.col || (e.p ? P(e.p).color : '#3a6cf0'); h += '<div class="ep" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
+          if (evs.length > 2) h += '<div class="more1">+' + (evs.length - 2) + '</div>';
           h += '</div>';
         }
         h += '</div>';
@@ -1576,26 +1583,27 @@
     }, { drawer: true });
   }
   var EMOJI = ['', '🧹', '🧺', '🍽️', '🛏️', '🗑️', '🐶', '🪴', '📚', '🛒', '🚿', '🦷', '🏃', '💊', '🎹', '🧸', '🚗', '💻', '📞', '🔧', '✏️', '⭐'];
-  function taskDialog(t) {
-    var isNew = !t;
+  function taskDialog(t, parentId) {
+    var isNew = !t, par = parentId ? find('tasks', parentId) : null;
+    if (par && isNew) t = { kind: par.kind || 'chore', t: '', date: par.date || key(S.taskDay), ad: par.ad !== false, time: par.time || '09:00', p: par.p, stars: 0, rem: '', rep: par.rep || '', pri: '', desc: '', color: par.color || '', emoji: '' };
     t = t || { kind: 'chore', t: '', date: key(S.view === 'tasks' ? S.taskDay : S.sel), ad: true, time: '09:00', ps: [], stars: 1, rem: '', rep: '', pri: '', desc: '' };
     var hasDate = isNew ? true : !!t.date, dk = t.date || key(sod(now()));
-    openModal(dhead(isNew ? 'Add Task' : 'Edit Task') + '<div class="seg2"><button type="button" data-kind="chore" class="' + (t.kind !== 'routine' ? 'on' : '') + '">Chore</button><button type="button" data-kind="routine" class="' + (t.kind === 'routine' ? 'on' : '') + '">Routine</button></div><div class="db">' + fTitle(t.t)
+    openModal(dhead(par && isNew ? 'Add subtask' : (isNew ? 'Add Task' : 'Edit Task')) + '<div class="seg2"><button type="button" data-kind="chore" class="' + (t.kind !== 'routine' ? 'on' : '') + '">Chore</button><button type="button" data-kind="routine" class="' + (t.kind === 'routine' ? 'on' : '') + '">Routine</button></div><div class="db">' + fTitle(t.t)
       + fSel(FI.smile, 'Emoji', 'emoji', EMOJI.map(function (x) { return [x, x || 'None']; }), t.emoji || '')
       + '<div class="f"><i>' + FI.cal + '</i><div class="col2"><small>Date</small><input type="date" name="date" value="' + dk + '"></div><button type="button" class="tg' + (hasDate ? ' on' : '') + '" data-tg="hasdate"></button></div>'
       + '<div class="f"><i>' + FI.clock + '</i><div class="col2"><small>Time (off = all day)</small><input type="time" name="time" value="' + esc(t.time || '09:00') + '"></div><button type="button" class="tg' + (t.ad === false ? ' on' : '') + '" data-tg="timed"></button></div>'
-      + fProfile(isNew ? [] : t.p, isNew)
+      + (par ? fProfile(par.p, false) : fProfile(isNew ? [] : t.p, isNew))
       + fTog(FI.clock, 'Add a timer on device', 'tm', !!t.tm, '<select name="tmin" class="mini">' + [5, 10, 15, 20, 30, 45, 60].map(function (m) { return '<option value="' + m + '"' + (m === (+t.tm || 15) ? ' selected' : '') + '>' + m + ' min</option>'; }).join('') + '</select>')
       + fSel(FI.bell, 'Reminder', 'rem', REM, t.rem == null ? '' : t.rem) + fRepeat(t.rep)
       + fSel(FI.flag, 'Priority', 'pri', [['', 'No priority'], ['high', 'High'], ['medium', 'Medium'], ['low', 'Low']], t.pri || '')
       + '<div class="f"><i>' + FI.star + '</i><span>Stars</span><input type="number" name="stars" min="0" max="20" value="' + (+t.stars || 0) + '" class="mini"></div>'
       + fDesc(t.desc) + '</div>' + dfoot(!isNew), function (act) {
-      if (act === 'del') { del('tasks', t.id); return true; }
+      if (act === 'del') { delTaskTree(t.id); return true; }
       if (act !== 'ok') return false;
       var n = val('t'), ps = pplVal(); if (!n) { toast('Enter a title'); return false; } if (!ps.length) { toast('Select a profile'); return false; }
       var kindB = M.querySelector('.seg2 .on'), kind = kindB ? kindB.getAttribute('data-kind') : 'chore';
       askNotify(val('rem'));
-      var base = { t: n, kind: kind, color: t.color || '', emoji: val('emoji'), date: togOn('hasdate') ? (val('date') || dk) : '', time: val('time'), ad: !togOn('timed'), tm: togOn('tm') ? (+val('tmin') || 15) : 0, rem: val('rem'), rep: repVal(), pri: val('pri'), stars: +val('stars') || 0, desc: val('desc') };
+      var base = { t: n, kind: kind, color: t.color || '', emoji: val('emoji'), date: togOn('hasdate') ? (val('date') || dk) : '', time: val('time'), ad: !togOn('timed'), tm: togOn('tm') ? (+val('tmin') || 15) : 0, rem: val('rem'), rep: repVal(), pri: val('pri'), stars: +val('stars') || 0, desc: val('desc'), parent: parentId || t.parent || '' };
       if (!base.date) base.rep = '';
       ps.forEach(function (pid, i) {
         var o = JSON.parse(JSON.stringify(base)); o.p = pid;
@@ -1837,7 +1845,7 @@
     openev: function (v) { var p = v.split(':'), k = p[0], id = p.slice(1).join(':'); if (k === 'ev') evDialog(find('events', id)); else if (k === 'anniv') annivDialog(find('anniv', id)); else if (k === 'bill') { billDialog(find('bills', id)); } else if (k === 'g') { var gp = id.split('|'), gx = G.ev.filter(function (x) { return x.a === gp[0] && x.c === gp[1] && x.id === gp.slice(2).join('|'); })[0]; if (gx) evDialogG(gx); } },
     addev: function () { evDialog(null, key(S.sel)); },
     tnav: function (v) { S.fx = 'n'; S.taskDay = addD(S.taskDay, +v); render(); },
-    taskmore: function () { choose('Tasks', [['today', 'Go to today'], ['clear', 'Clear completed (this day)']], null, function (o) { if (o === 'today') S.taskDay = sod(now()); else tasksOn(S.taskDay).forEach(function (t) { if (t.done) del('tasks', t.id); }); render(); }); },
+    taskmore: function () { choose('Tasks', [['today', 'Go to today'], ['clear', 'Clear completed (this day)']], null, function (o) { if (o === 'today') S.taskDay = sod(now()); else tasksOn(S.taskDay).forEach(function (t) { if (t.done) delTaskTree(t.id); }); render(); }); },
     tgtask: function (v) {
       var p = v.split('|'), t = find('tasks', p[0]); if (!t) return;
       if (t.rep) { t.dd = t.dd || {}; if (t.dd[p[1]]) delete t.dd[p[1]]; else t.dd[p[1]] = 1; } else t.done = !t.done;
@@ -1846,6 +1854,7 @@
     tasktimer: function (m) { m = +m || 15; S.timer = { total: m * 60, left: m * 60, run: true, end: Date.now() + m * 60000 }; S.sub = 'timer'; S.fx = 'v'; render(); },
     tgsub: function (v) { var p = v.split('|'), x = find('lists', p[0]); if (x && x.subs && x.subs[+p[1]]) { x.subs[+p[1]].done = !x.subs[+p[1]].done; put('lists', x); } },
     edtask: function (id) { taskDialog(find('tasks', id)); },
+    subtask: function (id) { taskDialog(null, id); },
     addtask: function () { taskDialog(null); },
     rwfilter: function () { choose('Show', [['all', 'All'], ['open', 'Open'], ['done', 'Redeemed']], S.rwFilter, function (f) { S.rwFilter = f; render(); }); },
     rwmore: function () { choose('Rewards', [['add', 'Create a reward']], null, function () { setTimeout(function () { rwDialog(null); }, 0); }); },
