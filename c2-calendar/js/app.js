@@ -56,7 +56,7 @@
     sleep: '<svg viewBox="0 0 32 32"><path d="M21 4a12 12 0 1 0 7 19A10 10 0 0 1 21 4z" fill="#5a6cf0"/></svg>',
     settings: '<svg viewBox="0 0 32 32"><path d="M16 3l3 .5 1 3 2.5 1.4 3-.8 2 2.2-.8 3 1.4 2.5 3 1v3l-3 1-1.4 2.5.8 3-2 2.2-3-.8L20 25.5l-1 3h-3l-1-3-2.5-1.4-3 .8-2-2.2.8-3L6.9 17l-3-1v-3l3-1 1.4-2.5-.8-3 2-2.2 3 .8L15 6.5z" fill="#3a8cf0"/><circle cx="16" cy="15" r="4.5" fill="#fff"/></svg>'
   };
-  var SI = { general: TI.settings, calendar: TI.calendar, photos: TI.photos, tasks: TI.tasks, wifi: '<svg viewBox="0 0 32 32">' + '<g fill="none" stroke="#3a8cf0" stroke-width="3" stroke-linecap="round"><path d="M4 12a17 17 0 0 1 24 0M8 16.5a11 11 0 0 1 16 0M12 21a5 5 0 0 1 8 0"/></g><circle cx="16" cy="25" r="2" fill="#3a8cf0"/></svg>', notif: '<svg viewBox="0 0 32 32"><path d="M16 4a8 8 0 0 0-8 8v7l-3 4h22l-3-4v-7a8 8 0 0 0-8-8z" fill="#f5b400"/><circle cx="16" cy="26" r="3" fill="#f5b400"/></svg>', users: '<svg viewBox="0 0 32 32"><circle cx="12" cy="11" r="5" fill="#5b7cf6"/><path d="M3 26c0-5 4-8 9-8s9 3 9 8z" fill="#5b7cf6"/><circle cx="22" cy="12" r="4" fill="#9db0fb"/><path d="M19 19c5-1 10 2 10 7h-6c0-3-1-5-4-7z" fill="#9db0fb"/></svg>', help: '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#3a8cf0"/><path d="M12.5 12.5a3.5 3.5 0 1 1 5 3.2c-1 .5-1.5 1.3-1.5 2.3v.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22.5" r="1.6" fill="#fff"/></svg>', about: '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#3a8cf0"/><circle cx="16" cy="10.5" r="1.8" fill="#fff"/><path d="M16 15v8" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg>' };
+  var SI = { general: TI.settings, modules: TI.settings, calendar: TI.calendar, photos: TI.photos, tasks: TI.tasks, wifi: '<svg viewBox="0 0 32 32">' + '<g fill="none" stroke="#3a8cf0" stroke-width="3" stroke-linecap="round"><path d="M4 12a17 17 0 0 1 24 0M8 16.5a11 11 0 0 1 16 0M12 21a5 5 0 0 1 8 0"/></g><circle cx="16" cy="25" r="2" fill="#3a8cf0"/></svg>', notif: '<svg viewBox="0 0 32 32"><path d="M16 4a8 8 0 0 0-8 8v7l-3 4h22l-3-4v-7a8 8 0 0 0-8-8z" fill="#f5b400"/><circle cx="16" cy="26" r="3" fill="#f5b400"/></svg>', users: '<svg viewBox="0 0 32 32"><circle cx="12" cy="11" r="5" fill="#5b7cf6"/><path d="M3 26c0-5 4-8 9-8s9 3 9 8z" fill="#5b7cf6"/><circle cx="22" cy="12" r="4" fill="#9db0fb"/><path d="M19 19c5-1 10 2 10 7h-6c0-3-1-5-4-7z" fill="#9db0fb"/></svg>', help: '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#3a8cf0"/><path d="M12.5 12.5a3.5 3.5 0 1 1 5 3.2c-1 .5-1.5 1.3-1.5 2.3v.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="22.5" r="1.6" fill="#fff"/></svg>', about: '<svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#3a8cf0"/><circle cx="16" cy="10.5" r="1.8" fill="#fff"/><path d="M16 15v8" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg>' };
 
   /* ---------- helpers ---------- */
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -435,7 +435,7 @@
     if (order.indexOf('bills') < 0) { var ai = order.indexOf('anniv'); order.splice(ai >= 0 ? ai + 1 : order.length, 0, 'bills'); }
     if (order.indexOf('calls') < 0) order.push('calls');
     if (order.indexOf('nezer') < 0) order.splice(order.indexOf('home') + 1, 0, 'nezer');
-    order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam) && !(t === 'calls' && !isOwner()); });
+    order = order.filter(function (t) { return TABS.indexOf(t) >= 0 && tabOn(t) && t !== 'more' && !(t === 'photos' && S.cfg.hidePhotos) && !(t === 'ncam' && S.cfg.hideNcam) && !(t === 'calls' && !isOwner()); });
     order.push('more');
     var cur = S.sub ? 'more' : S.view;
     return '<div class="tabs">' + order.map(function (t) {
@@ -490,14 +490,14 @@
     var tdisp = S.cfg.h24 ? pad(hh) + ':' + mm : ((hh % 12) || 12) + ':' + mm;
     var h = '<div class="home"><div class="hbg"></div><div style="position:relative">' + hdr(true) + '</div><div class="hgrid"><div class="hrow top">';
     var listCard = '<div class="hcard white" style="flex:1;display:flex;flex-direction:column"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.lists.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>' + esc(hl.name) + '</b><button class="sw" data-a="hl">' + I.swap + '</button></div><div class="wbody">' + (list.length ? list.map(listRow).join('') : empty('No checklist to complete today', 1, true)) + '</div></div>';
-    h += '<div class="hcolL' + (evs.length ? '' : ' split') + '"><div class="hcard calbox">' + miniCal() + '<div class="sched' + (evs.length ? '' : ' none') + '"><h4>' + MON[S.sel.getMonth()] + ' ' + S.sel.getDate() + ', ' + S.sel.getFullYear() + '</h4>' + (evs.length ? '<div class="lst">' + evs.map(evRow).join('') + '</div>' : '<div class="nosch"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" fill="#c7cff7"/><rect x="3" y="5" width="18" height="5" rx="2" fill="#8e9cf1"/><path d="M8 3v4M16 3v4" stroke="#8e9cf1" stroke-width="2" stroke-linecap="round"/></svg>No schedule</div>') + '</div></div>' + (evs.length ? '' : listCard) + '</div>';
-    h += '<div class="hcolR"><div class="hcard white" style="flex:1;display:flex;flex-direction:column' + (evs.length ? ';margin-bottom:1rem' : '') + '"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.tasks.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>Tasks</b><button data-a="hp" class="av m" style="width:1.9rem;height:1.9rem;font-size:1rem;background:' + hp.color + ';border:2px solid #fff;box-shadow:0 0 0 2px ' + hexA(hp.color, .35) + '">' + esc(hp.initial) + '</button></div><div class="wbody">' + (tks.length ? tks.map(function (t) { return taskRow(t, S.sel); }).join('') : empty('Nothing to do today', 1, true)) + '</div></div>';
-    h += (evs.length ? listCard : '') + '</div>';
+    h += '<div class="hcolL' + (evs.length ? '' : ' split') + '">' + (homeOn('cal') ? '<div class="hcard calbox">' + miniCal() + '<div class="sched' + (evs.length ? '' : ' none') + '"><h4>' + MON[S.sel.getMonth()] + ' ' + S.sel.getDate() + ', ' + S.sel.getFullYear() + '</h4>' + (evs.length ? '<div class="lst">' + evs.map(evRow).join('') + '</div>' : '<div class="nosch"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3" fill="#c7cff7"/><rect x="3" y="5" width="18" height="5" rx="2" fill="#8e9cf1"/><path d="M8 3v4M16 3v4" stroke="#8e9cf1" stroke-width="2" stroke-linecap="round"/></svg>No schedule</div>') + '</div></div>' : '') + (evs.length || !homeOn('list') ? '' : listCard) + '</div>';
+    h += '<div class="hcolR">' + (homeOn('tasks') ? '<div class="hcard white" style="flex:1;display:flex;flex-direction:column' + (evs.length ? ';margin-bottom:1rem' : '') + '"><div class="wh"><svg class="ic" viewBox="0 0 32 32">' + TI.tasks.replace(/^<svg[^>]*>/, '').replace('</svg>', '') + '</svg><b>Tasks</b><button data-a="hp" class="av m" style="width:1.9rem;height:1.9rem;font-size:1rem;background:' + hp.color + ';border:2px solid #fff;box-shadow:0 0 0 2px ' + hexA(hp.color, .35) + '">' + esc(hp.initial) + '</button></div><div class="wbody">' + (tks.length ? tks.map(function (t) { return taskRow(t, S.sel); }).join('') : empty('Nothing to do today', 1, true)) + '</div></div>' : '');
+    h += (homeOn('alarm') ? alarmTile() : '') + (evs.length && homeOn('list') ? listCard : '') + '</div>';
     ringLoad(false);
-    if (RV.ev && RV.url) h += '</div><div class="hrow bot"><div class="photo ringslot" data-a="ringopen"></div>';
-    else h += '</div><div class="hrow bot"><div class="photo" data-a="go" data-v="photos">' + (ph && photoSrc(ph) ? '<img src="' + photoSrc(ph) + '" alt="">' : '<div class="ph">' + I.mountain + '</div>') + (RV.st && !RV.st.connected && isOwner() ? '<button class="ringcon" data-a="ringconnect">🔔 Connect Ring</button>' : '') + '</div>';
+    if (RV.ev && RV.url) h += '</div><div class="hrow bot">' + (homeOn('photo') ? '<div class="photo ringslot" data-a="ringopen"></div>' : '');
+    else h += '</div><div class="hrow bot">' + (homeOn('photo') ? '<div class="photo" data-a="go" data-v="photos">' + (ph && photoSrc(ph) ? '<img src="' + photoSrc(ph) + '" alt="">' : '<div class="ph">' + I.mountain + '</div>') + (RV.st && !RV.st.connected && isOwner() ? '<button class="ringcon" data-a="ringconnect">🔔 Connect Ring</button>' : '') + '</div>' : '');
     var brief = dgHtml();
-    h += brief ? '<div class="clock withbrief nocl">' + brief + '</div>' : '<div class="clock"><div class="l1">' + WD[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate() + (S.cfg.h24 ? '' : (hh >= 12 ? ' PM' : ' AM')) + '</div><div class="l2"><span class="t">' + tdisp + '</span>' + (S.cfg.weather ? '<div class="w"><span>' + I.sun + '</span>' + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</div>' : '') + '</div></div>';
+    h += !homeOn('clock') ? '' : brief ? '<div class="clock withbrief nocl">' + brief + '</div>' : '<div class="clock"><div class="l1">' + WD[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate() + (S.cfg.h24 ? '' : (hh >= 12 ? ' PM' : ' AM')) + '</div><div class="l2"><span class="t">' + tdisp + '</span>' + (S.cfg.weather ? '<div class="w"><span>' + I.sun + '</span>' + esc(S.cfg.temp) + '°' + esc(S.cfg.unit) + '</div>' : '') + '</div></div>';
     h += '</div></div></div>';
     return h;
   }
@@ -685,17 +685,27 @@
     h += '<div class="ctl"><button data-a="treset">' + I.reset + '</button><button class="p" data-a="tgo">' + (T.run ? I.pause : I.play) + '</button><button data-a="tadd">+1</button></div></div></div>';
     return h;
   }
+  var HOME_MODS = [['alarm', 'Alarm button'], ['cal', 'Calendar'], ['tasks', 'Tasks'], ['list', 'Grocery list'], ['photo', 'Photo / Ring'], ['clock', 'Clock & briefing']];
+  function homeOn(m) { return !(S.cfg.hiddenHome && S.cfg.hiddenHome[m]); }
+  function tabOn(t) { return !(S.cfg.hiddenTabs && S.cfg.hiddenTabs[t]); }
+  function togHidden(map, k) { S.cfg[map] = S.cfg[map] || {}; S.cfg[map][k] = !S.cfg[map][k]; saveCfg(); }
+  function alarmTile() {
+    return '<div class="hcard alarmtile" data-a="sentry"><svg viewBox="0 0 64 40" class="eyeic"><path d="M2 20Q32-16 62 20Q32 56 2 20Z" fill="#2a0000" stroke="#ff2a2a" stroke-width="2"/><circle cx="32" cy="20" r="11" fill="#e0121b"/><circle cx="32" cy="20" r="5" fill="#000"/></svg><div><b>Alarm</b><small>Red eye lock</small></div></div>';
+  }
   function tg(on, act, v) { return '<button class="tg' + (on ? ' on' : '') + '" data-a="' + act + '" data-v="' + (v || '') + '"></button>'; }
   function rad(cur, val, act, label) { return '<button class="rad' + (cur === val ? ' on' : '') + '" data-a="' + act + '" data-v="' + val + '"><i></i>' + (label || val) + '</button>'; }
   function brGet() { try { return JSON.parse(Android.brightness()); } catch (e) { return { mode: 'auto', level: .6, bias: 0, lux: -1, cur: -1 }; } }
   function brInfo(B) { return (B.sensor === false ? 'No light sensor' : 'Light sensor: ' + (B.lux < 0 ? '…' : B.lux + ' lux')) + ' · screen ' + (B.cur < 0 ? 'system' : Math.round(B.cur * 100) + '%'); }
   setInterval(function () { var e = document.getElementById('brinfo'); if (e && window.Android && Android.brightness) e.textContent = brInfo(brGet()); }, 1000);
   function renderSettings() {
-    var c = S.cfg, side = [['general', 'General'], ['calendar', 'Calendar'], ['google', 'Google'], ['photos', 'Photos'], ['tasks', 'Tasks'], ['wifi', 'Wi-Fi'], ['notif', 'Notification'], ['users', 'User Mgmt'], ['help', 'Help'], ['about', 'About']];
+    var c = S.cfg, side = [['general', 'General'], ['modules', 'Modules'], ['calendar', 'Calendar'], ['google', 'Google'], ['photos', 'Photos'], ['tasks', 'Tasks'], ['wifi', 'Wi-Fi'], ['notif', 'Notification'], ['users', 'User Mgmt'], ['help', 'Help'], ['about', 'About']];
     var h = '<div class="hdr" style="height:3.6rem;background:var(--card2);border-bottom:1px solid var(--line)"><button class="back" style="background:rgba(58,108,240,.1);color:var(--acc)" data-a="go" data-v="home">' + I.back + '</button><span class="sp"></span><b style="font-weight:500;font-size:1.15rem">Settings</b><span class="sp"></span><span style="width:3.2rem"></span></div><div class="body"><div class="set"><div class="side">';
     h += side.map(function (s) { return '<button class="' + (S.setTab === s[0] ? 'on' : '') + '" data-a="stab" data-v="' + s[0] + '">' + SI[s[0]] + s[1] + '</button>'; }).join('') + '</div><div class="main">';
     var T = S.setTab;
-    if (T === 'general') {
+    if (T === 'modules') {
+      h += '<h3>Home screen</h3>' + HOME_MODS.map(function (m) { return '<div class="row"><span>' + m[1] + '</span>' + tg(homeOn(m[0]), 'homemod', m[0]) + '</div>'; }).join('');
+      h += '<h3>Tabs</h3>' + TABS.filter(function (t) { return t !== 'home' && t !== 'more'; }).map(function (t) { return '<div class="row"><span>' + TABN[t] + '</span>' + tg(tabOn(t), 'tabmod', t) + '</div>'; }).join('');
+    } else if (T === 'general') {
       h += '<h3>General</h3>';
       if (window.Android && Android.launch) h += '<div class="row" data-a="sub" data-v="stock"><span style="color:var(--acc)">Open original E-calendar</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
       h += '<div class="row"><span>Floating Action Button (FAB)</span>' + tg(c.fab, 'cfgtg', 'fab') + '</div>';
@@ -710,7 +720,7 @@
         else h += '<div class="row"><span>Auto: darker ↔ brighter</span><input type="range" class="brr" data-br="bias" min="-30" max="30" value="' + Math.round(B.bias * 100) + '"><span class="v brv" style="width:3rem;text-align:right">' + (B.bias > 0 ? '+' : '') + Math.round(B.bias * 100) + '</span></div>';
         h += '<div class="row"><span class="muted" id="brinfo">' + brInfo(B) + '</span></div>';
       }
-      if (window.Android && Android.sentryOn) h += '<h3>Alarm</h3><div class="row" data-a="sentry"><span style="color:var(--acc)">Alarm: red eye lock screen</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
+      h += '<h3>Alarm</h3><div class="row" data-a="sentry"><span style="color:var(--acc)">Alarm: red eye lock screen</span>' + I.r.replace('<svg', '<svg style="width:1rem;height:1rem;opacity:.5"') + '</div>';
       h += '<h3>Show</h3>';
       h += '<div class="row"><span>Font Size</span>' + rad(c.font, 'small', 'cfgfont', 'Small') + rad(c.font, 'medium', 'cfgfont', 'Medium') + rad(c.font, 'large', 'cfgfont', 'Large') + '</div>';
       h += '<div class="row"><span>Show weather information</span>' + tg(c.weather, 'cfgtg', 'weather') + '</div>';
@@ -1911,7 +1921,9 @@
     treset: function () { S.timer.run = false; S.timer.left = S.timer.total; render(); },
     tadd: function () { var T = S.timer; if (T.run) T.end += 60000; else T.left += 60; T.total += 60; render(); },
     stab: function (v) { S.setTab = v; S.gFlash = null; if (v === 'google') { G.cals = {}; loadGAccts(); } render(); },
-    sentry: function () { if (window.Android && Android.sentryOn) Android.sentryOn(); },
+    sentry: function () { if (window.Android && Android.sentryOn) Android.sentryOn(); else if (window.C2FX) C2FX.eye(); },
+    homemod: function (v) { togHidden('hiddenHome', v); render(); },
+    tabmod: function (v) { togHidden('hiddenTabs', v); render(); },
     bmode: function (v) { Android.brightnessSet(v, -1, -2); render(); },
     cfgtg: function (k) { S.cfg[k] = !S.cfg[k]; saveCfg(); },
     cfgtg2: function (k) { S.cfg[k] = S.cfg[k] === false; saveCfg(); },

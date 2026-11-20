@@ -129,5 +129,73 @@
     add(3600, function () { if (txtEl) { txtEl.remove(); txtEl = null; } });
   }
 
-  window.C2FX = { fireworks: fireworks, bomb: bomb };
+  // Веб-версия глаза (для теста): без блокировки, закрывается касанием
+  function eye() {
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;background:#000;z-index:10001;cursor:pointer';
+    var cvE = document.createElement('canvas');
+    cvE.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%';
+    ov.appendChild(cvE);
+    document.body.appendChild(ov);
+    var ctx = cvE.getContext('2d'), dpr = Math.min(window.devicePixelRatio || 1, 2), W = 0, H = 0;
+    var px = 0, py = 0, tx = 0, ty = 0, sp = 0.1, nm = 0, nb = Date.now() + 2000, bs = -1, raf = 0;
+    function sz() {
+      W = window.innerWidth; H = window.innerHeight;
+      cvE.width = Math.round(W * dpr); cvE.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function frame() {
+      var now = Date.now();
+      if (now >= nm) {
+        var dart = Math.random() < 0.35;
+        tx = dart ? rnd(-1, 1) : rnd(-0.6, 0.6);
+        ty = dart ? rnd(-1, 1) : rnd(-0.5, 0.5);
+        sp = dart ? 0.4 : 0.1;
+        nm = now + (dart ? 300 + Math.random() * 400 : 500 + Math.random() * 1800);
+      }
+      px += (tx - px) * sp; py += (ty - py) * sp;
+      if (bs < 0 && now >= nb) bs = now;
+      var open = 1;
+      if (bs >= 0) {
+        var t = now - bs;
+        if (t >= 180) { bs = -1; nb = now + 1800 + Math.random() * 3500; }
+        else { var ph = t < 90 ? 1 - t / 90 : (t - 90) / 90; open = 0.06 + 0.94 * ph; }
+      }
+      ctx.clearRect(0, 0, W, H);
+      var cx = W / 2, cy = H / 2, w = Math.min(W, H) * 0.42, h = w * 0.42;
+      var path = new Path2D();
+      path.moveTo(cx - w, cy);
+      path.quadraticCurveTo(cx, cy - h * 2, cx + w, cy);
+      path.quadraticCurveTo(cx, cy + h * 2, cx - w, cy);
+      ctx.save();
+      ctx.translate(0, cy); ctx.scale(1, open); ctx.translate(0, -cy);
+      ctx.shadowBlur = h * 0.9; ctx.shadowColor = '#ff1010';
+      ctx.fillStyle = '#2a0000'; ctx.fill(path);
+      ctx.shadowBlur = 0;
+      ctx.save();
+      ctx.clip(path);
+      var ir = h * 0.95, ix = cx + px * w * 0.42, iy = cy + py * h * 0.35;
+      var g = ctx.createRadialGradient(ix, iy, 0, ix, iy, ir);
+      g.addColorStop(0, '#ff7a5c'); g.addColorStop(0.6, '#e0121b'); g.addColorStop(1, '#4a0005');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(ix, iy, ir, 0, 6.283); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(ix, iy, ir * 0.42, 0, 6.283); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.arc(ix + ir * 0.3, iy - ir * 0.3, ir * 0.1, 0, 6.283); ctx.fill();
+      ctx.restore();
+      ctx.lineWidth = Math.max(3, h * 0.05); ctx.strokeStyle = '#1a0000'; ctx.stroke(path);
+      ctx.restore();
+      ctx.fillStyle = 'rgba(255,90,90,0.45)'; ctx.font = Math.max(18, H * 0.03) + 'px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('Нажмите, чтобы закрыть', cx, H * 0.92);
+      raf = requestAnimationFrame(frame);
+    }
+    function close() {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', sz);
+      ov.remove();
+    }
+    ov.addEventListener('click', close);
+    window.addEventListener('resize', sz);
+    sz(); frame();
+  }
+
+  window.C2FX = { fireworks: fireworks, bomb: bomb, eye: eye };
 })();

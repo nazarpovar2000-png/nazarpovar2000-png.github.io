@@ -890,3 +890,9 @@ label.sc.on i{border:.36rem solid #3a6cf0}
 .week .col .h b{font-size:1.6rem;min-width:2.6rem;height:2.6rem;line-height:2.6rem}
 .week .ep{font-size:1rem;padding:.32rem .4rem}
 .week .ep small{font-size:.86rem}
+
+/* Alarm tile on home */
+.alarmtile{display:flex;align-items:center;gap:.8rem;padding:.9rem 1.1rem;border-radius:1.1rem;background:linear-gradient(135deg,#2a0000,#6a0010);color:#fff;cursor:pointer;flex:0 0 auto;margin-top:.8rem}
+.alarmtile b{display:block;font-size:1.1rem}
+.alarmtile small{opacity:.7;font-size:.85rem}
+.alarmtile .eyeic{width:3.6rem;height:2.2rem;flex:0 0 auto}
