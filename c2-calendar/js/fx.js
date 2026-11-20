@@ -129,23 +129,25 @@
     add(3600, function () { if (txtEl) { txtEl.remove(); txtEl = null; } });
   }
 
-  // Веб-версия глаза (для теста): без блокировки, закрывается касанием
+  // Веб-версия глаза (для теста): надпись сверху, снять можно только PIN-кодом
+  var WEB_PIN = '1234';
+  var KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '×'];
   function eye() {
     var ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;background:#000;z-index:10001;cursor:pointer';
+    ov.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;background:#000;z-index:10001';
     var cvE = document.createElement('canvas');
     cvE.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%';
     ov.appendChild(cvE);
     document.body.appendChild(ov);
     var ctx = cvE.getContext('2d'), dpr = Math.min(window.devicePixelRatio || 1, 2), W = 0, H = 0;
     var px = 0, py = 0, tx = 0, ty = 0, sp = 0.1, nm = 0, nb = Date.now() + 2000, bs = -1, raf = 0;
+    var pad = false, entered = '', msg = '', msgUntil = 0;
     function sz() {
       W = window.innerWidth; H = window.innerHeight;
       cvE.width = Math.round(W * dpr); cvE.height = Math.round(H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
-    function frame() {
-      var now = Date.now();
+    function drawEye(now) {
       if (now >= nm) {
         var dart = Math.random() < 0.35;
         tx = dart ? rnd(-1, 1) : rnd(-0.6, 0.6);
@@ -161,7 +163,6 @@
         if (t >= 180) { bs = -1; nb = now + 1800 + Math.random() * 3500; }
         else { var ph = t < 90 ? 1 - t / 90 : (t - 90) / 90; open = 0.06 + 0.94 * ph; }
       }
-      ctx.clearRect(0, 0, W, H);
       var cx = W / 2, cy = H / 2, w = Math.min(W, H) * 0.42, h = w * 0.42;
       var path = new Path2D();
       path.moveTo(cx - w, cy);
@@ -183,16 +184,62 @@
       ctx.restore();
       ctx.lineWidth = Math.max(3, h * 0.05); ctx.strokeStyle = '#1a0000'; ctx.stroke(path);
       ctx.restore();
-      ctx.fillStyle = 'rgba(255,90,90,0.45)'; ctx.font = Math.max(18, H * 0.03) + 'px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.fillText('Нажмите, чтобы закрыть', cx, H * 0.92);
+      ctx.textAlign = 'center';
+      ctx.font = '700 ' + Math.max(22, H * 0.04) + 'px system-ui,sans-serif';
+      ctx.fillStyle = 'rgba(255,42,42,' + (0.6 + 0.4 * (0.5 + 0.5 * Math.sin(now / 350))).toFixed(2) + ')';
+      ctx.fillText('Актив аларм', cx, H * 0.2);
+      ctx.font = Math.max(18, H * 0.03) + 'px system-ui,sans-serif';
+      ctx.fillStyle = 'rgba(255,90,90,0.45)';
+      ctx.fillText('Касанитесь экрана, чтобы ввести код', cx, H * 0.92);
+    }
+    function drawPad(now) {
+      var cell = Math.min(W, H) * 0.14, cx = W / 2;
+      var n = WEB_PIN.length;
+      for (var i = 0; i < n; i++) {
+        ctx.beginPath(); ctx.arc(cx + (i - (n - 1) / 2) * cell * 0.5, H * 0.22, cell * 0.14, 0, 6.283);
+        ctx.fillStyle = i < entered.length ? '#ff2a2a' : '#3a0808'; ctx.fill();
+      }
+      if (now < msgUntil) {
+        ctx.fillStyle = '#ff5a5a'; ctx.font = Math.max(18, H * 0.035) + 'px system-ui,sans-serif';
+        ctx.textAlign = 'center'; ctx.fillText(msg, cx, H * 0.3);
+      }
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (var k = 0; k < KEYS.length; k++) {
+        var kx = cx + ((k % 3) - 1) * cell * 1.15, ky = H * 0.42 + Math.floor(k / 3) * cell * 1.15;
+        ctx.beginPath(); ctx.arc(kx, ky, cell * 0.5, 0, 6.283); ctx.fillStyle = '#2a0404'; ctx.fill();
+        ctx.fillStyle = '#ff5a5a'; ctx.font = '700 ' + (cell * 0.42) + 'px system-ui,sans-serif';
+        ctx.fillText(KEYS[k], kx, ky);
+      }
+      ctx.textBaseline = 'alphabetic';
+    }
+    function frame() {
+      var now = Date.now();
+      ctx.clearRect(0, 0, W, H);
+      if (pad) drawPad(now); else drawEye(now);
       raf = requestAnimationFrame(frame);
+    }
+    function press(k) {
+      if (k === '×') { pad = false; entered = ''; return; }
+      if (k === '⌫') { entered = entered.slice(0, -1); return; }
+      if (entered.length < WEB_PIN.length) entered += k;
+      if (entered.length === WEB_PIN.length) {
+        if (entered === WEB_PIN) { close(); }
+        else { entered = ''; msg = 'Неверный код'; msgUntil = Date.now() + 1500; }
+      }
     }
     function close() {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', sz);
       ov.remove();
     }
-    ov.addEventListener('click', close);
+    ov.addEventListener('click', function (e) {
+      if (!pad) { pad = true; entered = ''; msg = ''; return; }
+      var cell = Math.min(W, H) * 0.14, cx = W / 2;
+      for (var k = 0; k < KEYS.length; k++) {
+        var kx = cx + ((k % 3) - 1) * cell * 1.15, ky = H * 0.42 + Math.floor(k / 3) * cell * 1.15;
+        if (Math.abs(e.clientX - kx) < cell * 0.5 && Math.abs(e.clientY - ky) < cell * 0.5) { press(KEYS[k]); break; }
+      }
+    });
     window.addEventListener('resize', sz);
     sz(); frame();
   }
