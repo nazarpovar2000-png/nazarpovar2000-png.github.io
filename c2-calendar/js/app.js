@@ -527,7 +527,7 @@
           var d = addD(start, w * 7 + k), evs = eventsOn(d), out = d.getMonth() !== a.getMonth();
           var lab = d.getDate() === 1 ? MON[d.getMonth()] + ' 1' : d.getDate();
           h += '<div class="c' + (out ? ' out' : '') + (same(d, t) ? ' today' : '') + '" data-a="day" data-v="' + key(d) + '"><div class="n"><span>' + lab + '</span></div>';
-          evs.slice(0, 2).forEach(function (e) { var col = e.col || (e.p ? P(e.p).color : '#3a6cf0'); h += '<div class="ep" style="background:' + hexA(col, .12) + ';border-color:' + col + '">' + esc(e.t) + '<small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small></div>'; });
+          evs.slice(0, 2).forEach(function (e) { var col = e.col || (e.p ? P(e.p).color : '#3a6cf0'); h += '<div class="ep" style="background:' + hexA(col, .12) + ';border-color:' + col + '"><small>' + (e.ad ? 'All day' : fmtTime(e.time)) + '</small>' + esc(e.t) + '</div>'; });
           if (evs.length > 2) h += '<div class="more1">+' + (evs.length - 2) + '</div>';
           h += '</div>';
         }
