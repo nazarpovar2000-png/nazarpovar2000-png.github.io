@@ -4,42 +4,302 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Link expired</title>
+<title>Closet Design Concepts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 <style>
-:root{ --bg:#f4f4f2; --surface:#ffffff; --ink:#1f2328; --muted:#5d636b; --line:#dcdcd7; color-scheme:light; }
-@media (prefers-color-scheme: dark){ :root{ --bg:#15181b; --surface:#1d2125; --ink:#eceff1; --muted:#a3abb3; --line:#30363c; color-scheme:dark; } }
-html,body{margin:0; height:100%}
-body{background:var(--bg); color:var(--ink); font-family:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif; display:flex; align-items:center; justify-content:center; padding:24px; box-sizing:border-box}
-.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:32px 28px; max-width:460px; text-align:center; display:flex; flex-direction:column; gap:10px}
-.brand{font-family:"Archivo",Arial,sans-serif; font-weight:700; letter-spacing:.06em; text-transform:uppercase; font-size:13px; color:var(--muted)}
-h1{font-family:"Archivo",Arial,sans-serif; font-size:28px; margin:4px 0 0}
-p{margin:0; color:var(--muted); font-size:17px; line-height:1.5}
+/* Layout: one column; closet tabs, then variant pills, then a large photo with thumbnails, then the variant notes and an on-demand 3D viewer. */
+:root{
+  --bg:#f4f4f2; --surface:#ffffff; --ink:#1f2328; --muted:#5d636b; --line:#dcdcd7; --accent:#2f5d62; --accent-ink:#ffffff;
+  --display:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", Roboto, Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#15181b; --surface:#1d2125; --ink:#eceff1; --muted:#a3abb3; --line:#30363c; --accent:#6fa7ad; --accent-ink:#0f1416; color-scheme: dark; }
+}
+:root[data-theme="dark"]{ --bg:#15181b; --surface:#1d2125; --ink:#eceff1; --muted:#a3abb3; --line:#30363c; --accent:#6fa7ad; --accent-ink:#0f1416; color-scheme: dark; }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.5}
+.wrap{max-width:1120px; margin:0 auto; padding:24px 20px 48px; display:flex; flex-direction:column; gap:20px}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap}
+.brand{font-family:var(--display); font-weight:700; letter-spacing:.06em; text-transform:uppercase; font-size:13px; color:var(--muted)}
+h1{font-family:var(--display); font-weight:700; font-size:clamp(26px,4vw,38px); line-height:1.1; margin:4px 0 0; text-wrap:balance}
+.sub{color:var(--muted); margin:6px 0 0; max-width:65ch}
+.lang{display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden}
+.lang button{border:0; background:transparent; color:var(--ink); padding:6px 12px; font:600 14px var(--body); cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink); color:var(--bg)}
+
+.tabs{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.tab{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:12px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:2px}
+.tab b{font-family:var(--display); font-size:18px}
+.tab span{color:var(--muted); font-size:14px; font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+
+.variants{display:flex; gap:8px; flex-wrap:wrap}
+.vbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:8px 16px; font:600 15px var(--body); cursor:pointer}
+.vbtn[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+
+.viewer{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start}
+@media (max-width:860px){ .viewer{grid-template-columns:1fr} }
+.stage{display:flex; flex-direction:column; gap:10px}
+.main{position:relative; border-radius:12px; overflow:hidden; background:var(--surface); border:1px solid var(--line); cursor:zoom-in}
+.main img{display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:cover}
+.cap{font-size:14px; color:var(--muted)}
+.thumbs{display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px}
+.thumbs button{padding:0; border:2px solid var(--line); border-radius:8px; overflow:hidden; background:none; cursor:pointer}
+.thumbs button[aria-current="true"]{border-color:var(--accent)}
+.thumbs img{display:block; width:100%; aspect-ratio:4/3; object-fit:cover}
+
+.notes{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:10px}
+.notes h2{font-family:var(--display); font-size:20px; margin:0; text-wrap:balance}
+.notes p{margin:0; color:var(--muted)}
+.notes ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px}
+
+.three{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:12px}
+.three h2{font-family:var(--display); font-size:20px; margin:0}
+.three p{margin:0; color:var(--muted); max-width:65ch}
+.load3d{align-self:flex-start; border:0; background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:8px; font:600 15px var(--body); cursor:pointer}
+model-viewer{width:100%; height:min(70vh,560px); background:var(--bg); border-radius:10px; --poster-color:transparent}
+.foot{font-size:14px; color:var(--muted); max-width:75ch}
+
+.lb{position:fixed; inset:0; background:rgba(10,12,14,.92); display:none; align-items:center; justify-content:center; padding:16px; z-index:10}
+.lb[data-open="true"]{display:flex}
+.lb img{max-width:100%; max-height:100%; border-radius:8px}
+.lb button{position:absolute; top:12px; right:12px; border:0; background:#fff; color:#111; border-radius:999px; padding:8px 14px; font:600 15px var(--body); cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){ .main img{transition:opacity .2s} }
 </style>
 </head>
 <body>
-  <main class="card">
-    <div class="brand">NEZER Repair &amp; Remodeling</div>
-    <h1>This link has expired</h1>
-    <p>The closet design preview is no longer available. Please contact NEZER Repair &amp; Remodeling for a new link.</p>
-  </main>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">NEZER Repair &amp; Remodeling</div>
+      <h1 id="t-title">Closet design concepts</h1>
+      <p class="sub" id="t-sub"></p>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="l-en" type="button" aria-pressed="true">EN</button>
+      <button id="l-ru" type="button" aria-pressed="false">RU</button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="variants" id="variants" role="group" aria-label="Variant"></div>
+
+  <div class="viewer">
+    <div class="stage">
+      <div class="main" id="main" role="button" tabindex="0" aria-label="Open full size"><img id="mainImg" alt=""></div>
+      <div class="cap" id="cap"></div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <aside class="notes">
+      <h2 id="vTitle"></h2>
+      <p id="vDesc"></p>
+      <ul id="vList"></ul>
+    </aside>
+  </div>
+
+  <section class="three">
+    <h2 id="t-3d">3D model</h2>
+    <p id="t-3dtext"></p>
+    <button class="load3d" id="load3d" type="button"></button>
+    <div id="mvHost"></div>
+  </section>
+
+  <p class="foot" id="t-foot"></p>
+</div>
+
+<div class="lb" id="lb" data-open="false"><img id="lbImg" alt=""><button type="button" id="lbClose">Close</button></div>
+
 <script>
-// Visit log for the expired link (owner's own browsers are skipped via ?owner=1)
-(function(){
+const T = {
+  en: {
+    title: "Closet design concepts",
+    sub: "Two walk-in closets, five layout options each. Pick a closet and an option, tap a photo to enlarge it, or open the 3D model of the room.",
+    t3d: "3D model",
+    t3dtext: "The room as scanned, with the closet system built in to its real dimensions. Drag to rotate, pinch or scroll to zoom. Clothing in the model is simplified.",
+    load: "Open 3D model",
+    reload: "Show 3D model of this option",
+    foot: "Photos are realistic visualizations of each option; clothing and decor are illustrative. Final dimensions are confirmed on site before production.",
+    close: "Close", variant: "Option",
+    c1: ["Closet 1", "Walk-in, sloped ceiling · 10′4″ × 5′0″"],
+    c2: ["Closet 2", "L-shaped, sloped back section · 8′4″ × 8′6″"],
+  },
+  ru: {
+    title: "Варианты гардеробной",
+    sub: "Две гардеробные, по пять вариантов планировки. Выберите гардеробную и вариант, нажмите на фото, чтобы увеличить, или откройте 3D-модель комнаты.",
+    t3d: "3D-модель",
+    t3dtext: "Комната по реальному скану, система хранения встроена по реальным размерам. Крутите пальцем или мышью, увеличивайте щипком или колёсиком. Одежда в модели упрощённая.",
+    load: "Открыть 3D-модель",
+    reload: "Показать 3D-модель этого варианта",
+    foot: "Фото — реалистичные визуализации каждого варианта; одежда и декор показаны для примера. Окончательные размеры уточняются на месте перед производством.",
+    close: "Закрыть", variant: "Вариант",
+    c1: ["Гардеробная 1", "Скошенный потолок · 3,16 × 1,53 м"],
+    c2: ["Гардеробная 2", "Г-образная, скос в дальней части · 2,55 × 2,6 м"],
+  }
+};
+const D = {
+  c1: {
+    a: { imgs: ["c1a_1","c1a_2","c1a_3"],
+      en: {name:"Option A · Classic", desc:"Balanced mix of hanging and drawers.", list:["Shoe rack for about 16 pairs under the low slope","3-drawer dresser with a shelf above","Long-hang section and a tall tower with 4 drawers","Double-hang section for shirts and pants","Walkway stays 38″ wide"], caps:["Front view","From the door","Low end under the slope"]},
+      ru: {name:"Вариант A · Классика", desc:"Сбалансированно: вешалки и ящики.", list:["Обувная этажерка примерно на 16 пар под низким скосом","Комод на 3 ящика с полкой над ним","Секция для длинной одежды и колонна с 4 ящиками","Двойная штанга для рубашек и брюк","Проход 96 см"], caps:["Общий вид","Вид от двери","Низкая часть под скосом"]}},
+    b: { imgs: ["c1b_1","c1b_2"],
+      en: {name:"Option B · More drawers", desc:"Less hanging, more drawers and open shelves.", list:["13 drawers in total","Open shelves for folded clothes and boxes","One long-hang section in the center","Full-length mirror on the side wall by the door","Shoe rack under the slope"], caps:["Front view","From the door"]},
+      ru: {name:"Вариант B · Больше ящиков", desc:"Меньше вешалок, больше ящиков и открытых полок.", list:["Всего 13 ящиков","Открытые полки для сложенных вещей и коробок","Одна секция длинной одежды по центру","Зеркало в полный рост на боковой стене у двери","Обувная этажерка под скосом"], caps:["Общий вид","Вид от двери"]}},
+    c: { imgs: ["c1c_1","c1c_2","c1c_3"],
+      en: {name:"Option C · Built-in to the ceiling", desc:"Cabinets run all the way up; under the slope their tops and doors are cut to the ceiling angle, so no space is lost.", list:["Angled upper cabinets that follow the sloped ceiling","Top cabinets above the tower and double-hang","Drawers, long-hang and double-hang sections","Shoe rack with an angled top","Full-length mirror on the front wall"], caps:["Front view","From the door","Mirror wall and shoe rack"]},
+      ru: {name:"Вариант C · Встроенный до потолка", desc:"Шкафы доходят до самого потолка; под скосом их верх и дверцы срезаны по углу потолка, и место не теряется.", list:["Верхние шкафы с косыми дверцами по линии скоса","Антресоли над колонной и двойной штангой","Ящики, длинная одежда и двойная штанга","Обувная этажерка с косым верхом","Зеркало в полный рост на передней стене"], caps:["Общий вид","Вид от двери","Стена с зеркалом и обувная этажерка"]}},
+    d: { imgs: ["c1d_1","c1d_2","c1d_3"],
+      en: {name:"Option D · Open & simple", desc:"Painted open shelving with wood rods, no doors or drawers.", list:["Open shoe rack under the low slope","Low open cubbies with a shelf above","Two long-hang sections with shelves above","Narrow open shelf tower","Full-length mirror on the front wall"], caps:["Front view","From the door","Mirror wall and shoe rack"]},
+      ru: {name:"Вариант D · Открытый, простой", desc:"Крашеные открытые полки и деревянные штанги, без дверей и ящиков.", list:["Открытая обувная этажерка под низким скосом","Низкие открытые ячейки и полка над ними","Две секции длинной одежды с полками сверху","Узкая открытая колонна полок","Зеркало в полный рост на передней стене"], caps:["Общий вид","Вид от двери","Стена с зеркалом и обувная этажерка"]}},
+    e: { imgs: ["c1e_1","c1e_2"],
+      en: {name:"Option E · Open with bench", desc:"Open shelving with a built-in bench, baskets and hooks.", list:["Built-in bench with two basket cubbies","Hooks and a shelf above the bench","Open cubbies and shoe rack under the slope","Narrow open shelf tower","Double-hang section and mirror on the side wall"], caps:["Front view","From the door"]},
+      ru: {name:"Вариант E · Открытый со скамьёй", desc:"Открытые полки со встроенной скамьёй, корзинами и крючками.", list:["Встроенная скамья с двумя ячейками под корзины","Крючки и полка над скамьёй","Открытые ячейки и обувная этажерка под скосом","Узкая открытая колонна полок","Двойная штанга и зеркало на боковой стене"], caps:["Общий вид","Вид от двери"]}},
+  },
+  c2: {
+    a: { imgs: ["c2a_1","c2a_2","c2a_3"],
+      en: {name:"Option A · Classic", desc:"Clear entry with a mirror; hanging and drawers along the long wall.", list:["Short-hang, drawer tower and long-hang along the long wall","Double-hang section in the corner","Dresser and shoe cubbies at the low end","Full-length mirror and hooks at the entry","Open shelf unit by the door"], caps:["Top view","Looking toward the entry","Entry with mirror"]},
+      ru: {name:"Вариант A · Классика", desc:"Свободный вход с зеркалом; вешалки и ящики вдоль длинной стены.", list:["Короткая штанга, колонна с ящиками и длинная одежда вдоль длинной стены","Двойная штанга в углу","Комод и полки для обуви в низкой части","Зеркало в полный рост и крючки у входа","Открытый стеллаж у двери"], caps:["Вид сверху","Вид в сторону входа","Вход с зеркалом"]}},
+    b: { imgs: ["c2b_1","c2b_2","c2b_3"],
+      en: {name:"Option B · More drawers", desc:"Fewer hanging rods, more drawers and shelves.", list:["Drawers and shelves under the slope","Long-hang section in the middle","Tower with 4 drawers","Tall open shelf tower at the entry","Full-length mirror on the long side wall"], caps:["Top view","Looking toward the entry","Mirror wall"]},
+      ru: {name:"Вариант B · Больше ящиков", desc:"Меньше штанг, больше ящиков и полок.", list:["Ящики и полки под скосом","Секция длинной одежды посередине","Колонна с 4 ящиками","Высокий открытый стеллаж у входа","Зеркало в полный рост на длинной стене"], caps:["Вид сверху","Вид в сторону входа","Стена с зеркалом"]}},
+    c: { imgs: ["c2c_1","c2c_2","c2c_3","c2c_4"],
+      en: {name:"Option C · Built-in to the ceiling", desc:"Cabinets run up to the ceiling; under the slope their doors are cut to the ceiling angle.", list:["Angled upper cabinets along the sloped section","Upper cabinet with 4 doors above the low-end dresser","Drawers, long-hang, drawer tower and double-hang","Top cabinets above every section","Full-length mirror facing the door"], caps:["Top view","Toward the sloped end","Looking toward the entry","Entry with mirror"]},
+      ru: {name:"Вариант C · Встроенный до потолка", desc:"Шкафы доходят до потолка; под скосом их дверцы срезаны по углу потолка.", list:["Верхние шкафы с косыми дверцами вдоль скоса","Шкаф на 4 дверцы над комодом в низкой части","Ящики, длинная одежда, колонна с ящиками, двойная штанга","Антресоли над каждой секцией","Зеркало в полный рост напротив входа"], caps:["Вид сверху","В сторону скоса","Вид в сторону входа","Вход с зеркалом"]}},
+    d: { imgs: ["c2d_1","c2d_2","c2d_3"],
+      en: {name:"Option D · Open & simple", desc:"Painted open shelving with wood rods, no doors or drawers.", list:["Open cubbies under the slope","Narrow open shelf tower","Long-hang section with shelves above","Open double-hang in the corner","Open cubbies for shoes at the low end","Mirror and hooks at the entry"], caps:["Top view","Looking toward the entry","Entry with mirror"]},
+      ru: {name:"Вариант D · Открытый, простой", desc:"Крашеные открытые полки и деревянные штанги, без дверей и ящиков.", list:["Открытые ячейки под скосом","Узкая открытая колонна полок","Длинная одежда с полками сверху","Открытая двойная штанга в углу","Открытые ячейки для обуви в низкой части","Зеркало и крючки у входа"], caps:["Вид сверху","Вид в сторону входа","Вход с зеркалом"]}},
+    e: { imgs: ["c2e_1","c2e_2","c2e_3"],
+      en: {name:"Option E · Open with bench", desc:"Open shelving with a shoe bench at the low end.", list:["Shoe bench with cubbies at the low end","Short-hang section under the slope","Narrow open shelf tower","Double-hang section","Mirror facing the door, hooks, tall open tower"], caps:["Top view","Toward the bench","Entry with mirror"]},
+      ru: {name:"Вариант E · Открытый со скамьёй", desc:"Открытые полки и скамья для обуви в низкой части.", list:["Скамья с ячейками для обуви в низкой части","Короткая штанга под скосом","Узкая открытая колонна полок","Двойная штанга","Зеркало напротив входа, крючки, высокий открытый стеллаж"], caps:["Вид сверху","В сторону скамьи","Вход с зеркалом"]}},
+  }
+};
+
+let lang = "en", closet = "c1", variant = "a", idx = 0;
+try { const s = localStorage.getItem("closetLang"); if (s === "ru" || s === "en") lang = s; } catch (e) {}
+
+const $ = id => document.getElementById(id);
+
+function readHash(){
+  const m = location.hash.match(/^#closet([12])-([a-e])$/);
+  if (m){ closet = "c" + m[1]; variant = m[2]; idx = 0; }
+}
+function writeHash(){
+  const h = "#closet" + closet.slice(1) + "-" + variant;
+  if (location.hash !== h) history.replaceState(null, "", h);
+}
+
+function render(){
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  $("t-title").textContent = t.title; $("t-sub").textContent = t.sub;
+  $("t-3d").textContent = t.t3d; $("t-3dtext").textContent = t.t3dtext; $("t-foot").textContent = t.foot;
+  $("lbClose").textContent = t.close;
+  $("l-en").setAttribute("aria-pressed", lang === "en"); $("l-ru").setAttribute("aria-pressed", lang === "ru");
+
+  const tabs = $("tabs"); tabs.innerHTML = "";
+  ["c1","c2"].forEach(c => {
+    const b = document.createElement("button");
+    b.className = "tab"; b.type = "button"; b.setAttribute("role","tab"); b.id = "tab-" + c;
+    b.setAttribute("aria-selected", c === closet);
+    b.innerHTML = "<b></b><span></span>";
+    b.querySelector("b").textContent = t[c][0]; b.querySelector("span").textContent = t[c][1];
+    b.onclick = () => { closet = c; variant = "a"; idx = 0; writeHash(); render(); };
+    tabs.appendChild(b);
+  });
+
+  const vs = $("variants"); vs.innerHTML = "";
+  ["a","b","c","d","e"].forEach(v => {
+    const b = document.createElement("button");
+    b.className = "vbtn"; b.type = "button"; b.id = "v-" + v;
+    b.textContent = D[closet][v][lang].name;
+    b.setAttribute("aria-pressed", v === variant);
+    b.onclick = () => { variant = v; idx = 0; writeHash(); render(); };
+    vs.appendChild(b);
+  });
+
+  const V = D[closet][variant], L = V[lang];
+  if (idx >= V.imgs.length) idx = 0;
+  $("mainImg").src = "img/" + V.imgs[idx] + ".jpg";
+  $("mainImg").alt = L.name + " — " + L.caps[idx];
+  $("cap").textContent = L.caps[idx];
+
+  const th = $("thumbs"); th.innerHTML = "";
+  V.imgs.forEach((k, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.id = "th-" + i;
+    b.setAttribute("aria-current", i === idx); b.setAttribute("aria-label", L.caps[i]);
+    const im = document.createElement("img"); im.src = "img/" + k + ".jpg"; im.alt = "";
+    b.appendChild(im); b.onclick = () => { idx = i; render(); };
+    th.appendChild(b);
+  });
+
+  $("vTitle").textContent = L.name; $("vDesc").textContent = L.desc;
+  const ul = $("vList"); ul.innerHTML = "";
+  L.list.forEach(s => { const li = document.createElement("li"); li.textContent = s; ul.appendChild(li); });
+
+  const mv = $("mvHost").querySelector("model-viewer");
+  if (!$("load3d").disabled){
+    $("load3d").textContent = mv ? t.reload : t.load;
+    $("load3d").hidden = !!(mv && mv.dataset.key === closet + variant);
+  }
+}
+
+$("load3d").onclick = () => {
+  const host = $("mvHost");
+  let mv = host.querySelector("model-viewer");
+  if (!mv){
+    mv = document.createElement("model-viewer");
+    mv.setAttribute("camera-controls", "");
+    mv.setAttribute("touch-action", "pan-y");
+    mv.setAttribute("shadow-intensity", "0.6");
+    mv.setAttribute("exposure", "1.05");
+    mv.setAttribute("camera-orbit", "0deg 55deg auto");
+    host.appendChild(mv);
+  }
+  const key = closet + variant;
+  mv.setAttribute("alt", D[closet][variant][lang].name);
+  $("load3d").disabled = true; $("load3d").textContent = lang === "ru" ? "Загрузка…" : "Loading…";
+  loadModel(key).then(url => { mv.dataset.key = key; mv.setAttribute("src", url); $("load3d").disabled = false; render(); })
+    .catch(() => { $("load3d").disabled = false; $("load3d").textContent = lang === "ru" ? "Не удалось загрузить 3D-модель. Попробуйте ещё раз" : "Could not load the 3D model. Try again"; });
+};
+const modelCache = {};
+async function loadModel(key){ return "models/" + key + ".glb"; }
+
+function openLb(){ $("lbImg").src = $("mainImg").src; $("lbImg").alt = $("mainImg").alt; $("lb").dataset.open = "true"; $("lbClose").focus(); }
+function closeLb(){ $("lb").dataset.open = "false"; $("main").focus(); }
+$("main").onclick = openLb;
+$("main").onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openLb(); } };
+$("lbClose").onclick = closeLb;
+$("lb").onclick = e => { if (e.target.id === "lb") closeLb(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("lb").dataset.open === "true") closeLb(); });
+
+function setLang(l){ lang = l; try { localStorage.setItem("closetLang", l); } catch (e) {} render(); }
+$("l-en").onclick = () => setLang("en");
+$("l-ru").onclick = () => setLang("ru");
+
+window.addEventListener("hashchange", () => { readHash(); render(); });
+readHash(); render();
+
+// Visit log (owner's own visits are skipped: open the page once with ?owner=1 on each of your devices)
+(function logVisit(){
   try {
-    const p = new URLSearchParams(location.search);
-    if (p.get("owner") === "1"){ localStorage.setItem("closetOwner", "1"); history.replaceState(null, "", location.pathname + location.hash); }
-    if (p.get("owner") === "0"){ localStorage.removeItem("closetOwner"); history.replaceState(null, "", location.pathname + location.hash); }
+    const params = new URLSearchParams(location.search);
+    if (params.get("owner") === "1"){ localStorage.setItem("closetOwner", "1"); history.replaceState(null, "", location.pathname + location.hash); }
+    if (params.get("owner") === "0"){ localStorage.removeItem("closetOwner"); history.replaceState(null, "", location.pathname + location.hash); }
     if (localStorage.getItem("closetOwner") === "1") return;
   } catch (e) {}
   let vid = "";
   try { vid = localStorage.getItem("closetVisitor") || ""; if (!vid){ vid = Math.random().toString(36).slice(2, 12); localStorage.setItem("closetVisitor", vid); } } catch (e) {}
-  const m = location.hash.match(/^#closet([12])-([abc])$/);
+  const m = location.hash.match(/^#closet([12])-([a-e])$/);
   const row = {
-    page: "closets-expired",
-    variant: m ? ("expired-closet" + m[1] + "-" + m[2]) : "expired",
+    page: "closets",
+    variant: m ? ("closet" + m[1] + "-" + m[2]) : null,
     visitor_id: vid || null,
     device: navigator.userAgent.slice(0, 300),
     referrer: (document.referrer || "").slice(0, 300) || null,
