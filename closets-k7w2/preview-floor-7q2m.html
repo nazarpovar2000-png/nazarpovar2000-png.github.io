@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Closet Design Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+/* Layout: one column; closet tabs, then variant pills, then a large photo with thumbnails, then the variant notes and an on-demand 3D viewer. */
+:root{
+  --bg:#f4f4f2; --surface:#ffffff; --ink:#1f2328; --muted:#5d636b; --line:#dcdcd7; --accent:#2f5d62; --accent-ink:#ffffff;
+  --display:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", Roboto, Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#15181b; --surface:#1d2125; --ink:#eceff1; --muted:#a3abb3; --line:#30363c; --accent:#6fa7ad; --accent-ink:#0f1416; color-scheme: dark; }
+}
+:root[data-theme="dark"]{ --bg:#15181b; --surface:#1d2125; --ink:#eceff1; --muted:#a3abb3; --line:#30363c; --accent:#6fa7ad; --accent-ink:#0f1416; color-scheme: dark; }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.5}
+.wrap{max-width:1120px; margin:0 auto; padding:24px 20px 48px; display:flex; flex-direction:column; gap:20px}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap}
+.brand{font-family:var(--display); font-weight:700; letter-spacing:.06em; text-transform:uppercase; font-size:13px; color:var(--muted)}
+h1{font-family:var(--display); font-weight:700; font-size:clamp(26px,4vw,38px); line-height:1.1; margin:4px 0 0; text-wrap:balance}
+.sub{color:var(--muted); margin:6px 0 0; max-width:65ch}
+.lang{display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden}
+.lang button{border:0; background:transparent; color:var(--ink); padding:6px 12px; font:600 14px var(--body); cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink); color:var(--bg)}
+
+.tabs{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.tab{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:10px; padding:12px 14px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:2px}
+.tab b{font-family:var(--display); font-size:18px}
+.tab span{color:var(--muted); font-size:14px; font-variant-numeric:tabular-nums}
+.tab[aria-selected="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+
+.variants{display:flex; gap:8px; flex-wrap:wrap}
+.vbtn{border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:8px 16px; font:600 15px var(--body); cursor:pointer}
+.vbtn[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+
+.viewer{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start}
+@media (max-width:860px){ .viewer{grid-template-columns:1fr} }
+.stage{display:flex; flex-direction:column; gap:10px}
+.main{position:relative; border-radius:12px; overflow:hidden; background:var(--surface); border:1px solid var(--line); cursor:zoom-in}
+.main img{display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:cover}
+.cap{font-size:14px; color:var(--muted)}
+.thumbs{display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px}
+.thumbs button{padding:0; border:2px solid var(--line); border-radius:8px; overflow:hidden; background:none; cursor:pointer}
+.thumbs button[aria-current="true"]{border-color:var(--accent)}
+.thumbs img{display:block; width:100%; aspect-ratio:4/3; object-fit:cover}
+
+.notes{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:10px}
+.notes h2{font-family:var(--display); font-size:20px; margin:0; text-wrap:balance}
+.notes p{margin:0; color:var(--muted)}
+.notes ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px}
+
+.three{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:12px}
+.three h2{font-family:var(--display); font-size:20px; margin:0}
+.three p{margin:0; color:var(--muted); max-width:65ch}
+.load3d{align-self:flex-start; border:0; background:var(--ink); color:var(--bg); padding:10px 18px; border-radius:8px; font:600 15px var(--body); cursor:pointer}
+model-viewer{width:100%; height:min(70vh,560px); background:var(--bg); border-radius:10px; --poster-color:transparent}
+.foot{font-size:14px; color:var(--muted); max-width:75ch}
+
+.lb{position:fixed; inset:0; background:rgba(10,12,14,.92); display:none; align-items:center; justify-content:center; padding:16px; z-index:10}
+.lb[data-open="true"]{display:flex}
+.lb img{max-width:100%; max-height:100%; border-radius:8px}
+.lb button{position:absolute; top:12px; right:12px; border:0; background:#fff; color:#111; border-radius:999px; padding:8px 14px; font:600 15px var(--body); cursor:pointer}
+
+/* ---- Floor section ---- */
+.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){ .tabs{grid-template-columns:1fr} }
+#floorSec{display:none; flex-direction:column; gap:20px}
+.fgrid{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; align-items:start}
+@media (max-width:900px){ .fgrid{grid-template-columns:1fr} }
+.fvis{display:flex; flex-direction:column; gap:10px}
+.fcanvas{width:100%; height:auto; border-radius:12px; background:var(--surface); border:1px solid var(--line); display:block}
+.swrow{display:flex; gap:12px; align-items:center}
+.swatch{width:96px; height:96px; border-radius:10px; border:1px solid var(--line); flex:none}
+.swtext{font-size:14px; color:var(--muted)}
+.swtext b{display:block; color:var(--ink); font-size:16px}
+.fpanel{display:flex; flex-direction:column; gap:14px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px}
+.card h3{font-family:var(--display); font-size:16px; margin:0}
+.opt{display:flex; gap:10px; align-items:flex-start; border:1px solid var(--line); border-radius:10px; padding:10px 12px; cursor:pointer; background:var(--surface); text-align:left; color:var(--ink); font:inherit; width:100%}
+.opt[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.opt .dot{width:16px; height:16px; border-radius:50%; border:2px solid var(--line); flex:none; margin-top:3px}
+.opt[aria-pressed="true"] .dot{border-color:var(--accent); background:var(--accent)}
+.opt .ot{flex:1; display:flex; flex-direction:column; gap:2px}
+.opt .ot b{font-size:15px}
+.opt .ot span{font-size:13px; color:var(--muted)}
+.opt .op{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:999px; padding:5px 12px 5px 5px; background:var(--surface); color:var(--ink); font:600 14px var(--body); cursor:pointer}
+.chip i{width:24px; height:24px; border-radius:50%; display:block; background-size:cover; border:1px solid rgba(0,0,0,.15)}
+.chip[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.chip:disabled{opacity:.4; cursor:not-allowed}
+.hint{font-size:13px; color:var(--muted); margin:0}
+.total{display:flex; flex-direction:column; gap:6px}
+.trow{display:flex; justify-content:space-between; gap:12px; font-size:15px; font-variant-numeric:tabular-nums}
+.trow.sum{font-family:var(--display); font-size:24px; border-top:1px solid var(--line); padding-top:8px}
+.scope ol{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px}
+.scope li b{display:block}
+.scope li span{color:var(--muted); font-size:14px}
+.notice{font-size:14px; color:var(--muted); border-left:3px solid var(--accent); padding-left:10px; margin:0}
+
+button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){ .main img{transition:opacity .2s} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">NEZER Repair &amp; Remodeling</div>
+      <h1 id="t-title">Closet design concepts</h1>
+      <p class="sub" id="t-sub"></p>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="l-en" type="button" aria-pressed="true">EN</button>
+      <button id="l-ru" type="button" aria-pressed="false">RU</button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="variants" id="variants" role="group" aria-label="Variant"></div>
+
+  <div class="viewer">
+    <div class="stage">
+      <div class="main" id="main" role="button" tabindex="0" aria-label="Open full size"><img id="mainImg" alt=""></div>
+      <div class="cap" id="cap"></div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <aside class="notes">
+      <h2 id="vTitle"></h2>
+      <p id="vDesc"></p>
+      <ul id="vList"></ul>
+    </aside>
+  </div>
+
+
+  <section id="floorSec">
+    <div class="fgrid">
+      <div class="fvis">
+        <canvas class="fcanvas" id="fcanvas" width="1457" height="1737" aria-label="Floor preview, top view"></canvas>
+        <div class="swrow">
+          <canvas class="swatch" id="swatch" width="192" height="192" aria-hidden="true"></canvas>
+          <div class="swtext"><b id="swName"></b><span id="swNote"></span></div>
+        </div>
+        <p class="hint" id="fvHint"></p>
+      </div>
+      <div class="fpanel">
+        <div class="card"><h3 id="f-optT"></h3><div id="fopts" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        <div class="card" id="spCard"><h3 id="f-spT"></h3><div class="chips" id="fspecies"></div><p class="hint" id="spHint"></p></div>
+        <div class="card" id="stCard"><h3 id="f-stT"></h3><div class="chips" id="fstains"></div><p class="hint" id="stHint"></p></div>
+        <div class="card total" id="ftotal"></div>
+      </div>
+    </div>
+    <div class="card scope"><h3 id="scopeT"></h3><ol id="scopeList"></ol><p class="notice" id="scopeNote"></p></div>
+  </section>
+
+  <section class="three">
+    <h2 id="t-3d">3D model</h2>
+    <p id="t-3dtext"></p>
+    <button class="load3d" id="load3d" type="button"></button>
+    <div id="mvHost"></div>
+  </section>
+
+  <p class="foot" id="t-foot"></p>
+</div>
+
+<div class="lb" id="lb" data-open="false"><img id="lbImg" alt=""><button type="button" id="lbClose">Close</button></div>
+
+<script>
+const T = {
+  en: {
+    title: "Design concepts",
+    sub: "Two walk-in closets with five layout options each, and hardwood floor options for the hallway and master bedroom.",
+    t3d: "3D model",
+    t3dtext: "The room as scanned, with the closet system built in to its real dimensions. Drag to rotate, pinch or scroll to zoom. Clothing in the model is simplified.",
+    load: "Open 3D model",
+    reload: "Show 3D model of this option",
+    foot: "Photos are realistic visualizations of each option; clothing and decor are illustrative. Final dimensions are confirmed on site before production.",
+    close: "Close", variant: "Option",
+    c1: ["Closet 1", "Walk-in, sloped ceiling · 10′4″ × 5′0″"],
+    c2: ["Closet 2", "L-shaped, sloped back section · 8′4″ × 8′6″"],
+  },
+  ru: {
+    title: "Варианты проекта",
+    sub: "Две гардеробные по пять вариантов планировки и варианты деревянного пола для коридора и спальни.",
+    t3d: "3D-модель",
+    t3dtext: "Комната по реальному скану, система хранения встроена по реальным размерам. Крутите пальцем или мышью, увеличивайте щипком или колёсиком. Одежда в модели упрощённая.",
+    load: "Открыть 3D-модель",
+    reload: "Показать 3D-модель этого варианта",
+    foot: "Фото — реалистичные визуализации каждого варианта; одежда и декор показаны для примера. Окончательные размеры уточняются на месте перед производством.",
+    close: "Закрыть", variant: "Вариант",
+    c1: ["Гардеробная 1", "Скошенный потолок · 3,16 × 1,53 м"],
+    c2: ["Гардеробная 2", "Г-образная, скос в дальней части · 2,55 × 2,6 м"],
+  }
+};
+const D = {
+  c1: {
+    a: { imgs: ["c1a_1","c1a_2","c1a_3"],
+      en: {name:"Option A · Classic", desc:"Balanced mix of hanging and drawers.", list:["Shoe rack for about 16 pairs under the low slope","3-drawer dresser with a shelf above","Long-hang section and a tall tower with 4 drawers","Double-hang section for shirts and pants","Walkway stays 38″ wide"], caps:["Front view","From the door","Low end under the slope"]},
+      ru: {name:"Вариант A · Классика", desc:"Сбалансированно: вешалки и ящики.", list:["Обувная этажерка примерно на 16 пар под низким скосом","Комод на 3 ящика с полкой над ним","Секция для длинной одежды и колонна с 4 ящиками","Двойная штанга для рубашек и брюк","Проход 96 см"], caps:["Общий вид","Вид от двери","Низкая часть под скосом"]}},
+    b: { imgs: ["c1b_1","c1b_2"],
+      en: {name:"Option B · More drawers", desc:"Less hanging, more drawers and open shelves.", list:["13 drawers in total","Open shelves for folded clothes and boxes","One long-hang section in the center","Full-length mirror on the side wall by the door","Shoe rack under the slope"], caps:["Front view","From the door"]},
+      ru: {name:"Вариант B · Больше ящиков", desc:"Меньше вешалок, больше ящиков и открытых полок.", list:["Всего 13 ящиков","Открытые полки для сложенных вещей и коробок","Одна секция длинной одежды по центру","Зеркало в полный рост на боковой стене у двери","Обувная этажерка под скосом"], caps:["Общий вид","Вид от двери"]}},
+    c: { imgs: ["c1c_1","c1c_2","c1c_3"],
+      en: {name:"Option C · Built-in to the ceiling", desc:"Cabinets run all the way up; under the slope their tops and doors are cut to the ceiling angle, so no space is lost.", list:["Angled upper cabinets that follow the sloped ceiling","Top cabinets above the tower and double-hang","Drawers, long-hang and double-hang sections","Shoe rack with an angled top","Full-length mirror on the front wall"], caps:["Front view","From the door","Mirror wall and shoe rack"]},
+      ru: {name:"Вариант C · Встроенный до потолка", desc:"Шкафы доходят до самого потолка; под скосом их верх и дверцы срезаны по углу потолка, и место не теряется.", list:["Верхние шкафы с косыми дверцами по линии скоса","Антресоли над колонной и двойной штангой","Ящики, длинная одежда и двойная штанга","Обувная этажерка с косым верхом","Зеркало в полный рост на передней стене"], caps:["Общий вид","Вид от двери","Стена с зеркалом и обувная этажерка"]}},
+    d: { imgs: ["c1d_1","c1d_2","c1d_3"],
+      en: {name:"Option D · Open & simple", desc:"Painted open shelving with wood rods, no doors or drawers.", list:["Open shoe rack under the low slope","Low open cubbies with a shelf above","Two long-hang sections with shelves above","Narrow open shelf tower","Full-length mirror on the front wall"], caps:["Front view","From the door","Mirror wall and shoe rack"]},
+      ru: {name:"Вариант D · Открытый, простой", desc:"Крашеные открытые полки и деревянные штанги, без дверей и ящиков.", list:["Открытая обувная этажерка под низким скосом","Низкие открытые ячейки и полка над ними","Две секции длинной одежды с полками сверху","Узкая открытая колонна полок","Зеркало в полный рост на передней стене"], caps:["Общий вид","Вид от двери","Стена с зеркалом и обувная этажерка"]}},
+    e: { imgs: ["c1e_1","c1e_2"],
+      en: {name:"Option E · Open with bench", desc:"Open shelving with a built-in bench, baskets and hooks.", list:["Built-in bench with two basket cubbies","Hooks and a shelf above the bench","Open cubbies and shoe rack under the slope","Narrow open shelf tower","Double-hang section and mirror on the side wall"], caps:["Front view","From the door"]},
+      ru: {name:"Вариант E · Открытый со скамьёй", desc:"Открытые полки со встроенной скамьёй, корзинами и крючками.", list:["Встроенная скамья с двумя ячейками под корзины","Крючки и полка над скамьёй","Открытые ячейки и обувная этажерка под скосом","Узкая открытая колонна полок","Двойная штанга и зеркало на боковой стене"], caps:["Общий вид","Вид от двери"]}},
+  },
+  c2: {
+    a: { imgs: ["c2a_1","c2a_2","c2a_3"],
+      en: {name:"Option A · Classic", desc:"Clear entry with a mirror; hanging and drawers along the long wall.", list:["Short-hang, drawer tower and long-hang along the long wall","Double-hang section in the corner","Dresser and shoe cubbies at the low end","Full-length mirror and hooks at the entry","Open shelf unit by the door"], caps:["Top view","Looking toward the entry","Entry with mirror"]},
+      ru: {name:"Вариант A · Классика", desc:"Свободный вход с зеркалом; вешалки и ящики вдоль длинной стены.", list:["Короткая штанга, колонна с ящиками и длинная одежда вдоль длинной стены","Двойная штанга в углу","Комод и полки для обуви в низкой части","Зеркало в полный рост и крючки у входа","Открытый стеллаж у двери"], caps:["Вид сверху","Вид в сторону входа","Вход с зеркалом"]}},
+    b: { imgs: ["c2b_1","c2b_2","c2b_3"],
+      en: {name:"Option B · More drawers", desc:"Fewer hanging rods, more drawers and shelves.", list:["Drawers and shelves under the slope","Long-hang section in the middle","Tower with 4 drawers","Tall open shelf tower at the entry","Full-length mirror on the long side wall"], caps:["Top view","Looking toward the entry","Mirror wall"]},
+      ru: {name:"Вариант B · Больше ящиков", desc:"Меньше штанг, больше ящиков и полок.", list:["Ящики и полки под скосом","Секция длинной одежды посередине","Колонна с 4 ящиками","Высокий открытый стеллаж у входа","Зеркало в полный рост на длинной стене"], caps:["Вид сверху","Вид в сторону входа","Стена с зеркалом"]}},
+    c: { imgs: ["c2c_1","c2c_2","c2c_3","c2c_4"],
+      en: {name:"Option C · Built-in to the ceiling", desc:"Cabinets run up to the ceiling; under the slope their doors are cut to the ceiling angle.", list:["Angled upper cabinets along the sloped section","Upper cabinet with 4 doors above the low-end dresser","Drawers, long-hang, drawer tower and double-hang","Top cabinets above every section","Full-length mirror facing the door"], caps:["Top view","Toward the sloped end","Looking toward the entry","Entry with mirror"]},
+      ru: {name:"Вариант C · Встроенный до потолка", desc:"Шкафы доходят до потолка; под скосом их дверцы срезаны по углу потолка.", list:["Верхние шкафы с косыми дверцами вдоль скоса","Шкаф на 4 дверцы над комодом в низкой части","Ящики, длинная одежда, колонна с ящиками, двойная штанга","Антресоли над каждой секцией","Зеркало в полный рост напротив входа"], caps:["Вид сверху","В сторону скоса","Вид в сторону входа","Вход с зеркалом"]}},
+    d: { imgs: ["c2d_1","c2d_2","c2d_3"],
+      en: {name:"Option D · Open & simple", desc:"Painted open shelving with wood rods, no doors or drawers.", list:["Open cubbies under the slope","Narrow open shelf tower","Long-hang section with shelves above","Open double-hang in the corner","Open cubbies for shoes at the low end","Mirror and hooks at the entry"], caps:["Top view","Looking toward the entry","Entry with mirror"]},
+      ru: {name:"Вариант D · Открытый, простой", desc:"Крашеные открытые полки и деревянные штанги, без дверей и ящиков.", list:["Открытые ячейки под скосом","Узкая открытая колонна полок","Длинная одежда с полками сверху","Открытая двойная штанга в углу","Открытые ячейки для обуви в низкой части","Зеркало и крючки у входа"], caps:["Вид сверху","Вид в сторону входа","Вход с зеркалом"]}},
+    e: { imgs: ["c2e_1","c2e_2","c2e_3"],
+      en: {name:"Option E · Open with bench", desc:"Open shelving with a shoe bench at the low end.", list:["Shoe bench with cubbies at the low end","Short-hang section under the slope","Narrow open shelf tower","Double-hang section","Mirror facing the door, hooks, tall open tower"], caps:["Top view","Toward the bench","Entry with mirror"]},
+      ru: {name:"Вариант E · Открытый со скамьёй", desc:"Открытые полки и скамья для обуви в низкой части.", list:["Скамья с ячейками для обуви в низкой части","Короткая штанга под скосом","Узкая открытая колонна полок","Двойная штанга","Зеркало напротив входа, крючки, высокий открытый стеллаж"], caps:["Вид сверху","В сторону скамьи","Вход с зеркалом"]}},
+  }
+};
+
+
+// ================= FLOOR =================
+const FL = {
+  areas: { hall: 130, bed: 180 },
+  waste: 0.10,
+  // price adders, USD per sq ft (placeholders until confirmed)
+  species: [
+    {id:"fir",       img:"fir",       add:0.00, en:"Douglas fir",  ru:"Ель (Douglas fir)"},
+    {id:"red_oak",   img:"red_oak",   add:0.00, en:"Red oak",      ru:"Красный дуб"},
+    {id:"white_oak", img:"white_oak", add:2.00, en:"White oak",    ru:"Белый дуб"},
+    {id:"maple",     img:"maple",     add:1.50, en:"Hard maple",   ru:"Клён"},
+    {id:"hickory",   img:"hickory",   add:1.50, en:"Hickory",      ru:"Гикори"},
+    {id:"walnut",    img:"walnut",    add:5.00, en:"Walnut",       ru:"Орех"}
+  ],
+  stains: [
+    {id:"natural",   color:null,      add:0.00, en:"Natural",        ru:"Натуральный"},
+    {id:"golden",    color:"#d9a35a", add:1.00, en:"Golden Oak",     ru:"Golden Oak"},
+    {id:"early",     color:"#a87040", add:1.00, en:"Early American", ru:"Early American"},
+    {id:"provincial",color:"#8f5c36", add:1.00, en:"Provincial",     ru:"Provincial"},
+    {id:"swalnut",   color:"#7a4f30", add:1.00, en:"Special Walnut", ru:"Special Walnut"},
+    {id:"jacobean",  color:"#4f3726", add:1.00, en:"Jacobean",       ru:"Jacobean"},
+    {id:"ebony",     color:"#352a24", add:1.25, en:"Ebony",          ru:"Ebony"}
+  ],
+  options: [
+    { id:"1", base:5700, newSqft:130, finishSqft:310, speciesLock:"fir", stain:true,
+      en:{name:"#1 Partial replacement & refinishing", sub:"New hardwood in the hallway, laced into the existing floor; sand and finish hallway + master bedroom (310 sq ft)."},
+      ru:{name:"#1 Частичная замена и шлифовка", sub:"Новая доска в коридоре, вплетённая в старый пол; шлифовка и лак коридора и спальни (310 кв. футов)."},
+      scope:{
+        en:[["Dust containment & floor protection","Dust barriers; protect adjacent rooms, walls and surfaces; dust control during work."],
+            ["Existing flooring removal","Remove existing flooring in the hallway; haul away and dispose."],
+            ["Subfloor repair & preparation","Inspect plywood subfloor; repair damaged or loose sections; secure and prepare."],
+            ["New hardwood flooring materials","New hardwood for the hallway with ~10% waste allowance and installation materials."],
+            ["Hardwood flooring installation","Install with professional adhesive and nails; lace in with existing flooring for a seamless transition (up to 4 linear ft)."],
+            ["Sanding & refinishing","Sand hallway and master bedroom (310 sq ft); blend new and existing wood; sealer and three protective finish coats."],
+            ["Corner round","Remove, reinstall, fill nail holes, caulk and paint the existing corner round."],
+            ["Final cleanup","Remove job debris and clean the work areas."]],
+        ru:[["Защита от пыли","Пылевые барьеры; защита соседних комнат, стен и поверхностей."],
+            ["Демонтаж старого пола","Снять старый пол в коридоре; вывоз и утилизация."],
+            ["Ремонт и подготовка основания","Осмотр фанеры; ремонт повреждённых и шатающихся участков; подготовка."],
+            ["Материалы","Новая доска для коридора с запасом ~10% и монтажные материалы."],
+            ["Укладка","Укладка на клей и гвозди; вплетение в существующий пол без видимого стыка (до 4 погонных футов)."],
+            ["Шлифовка и покрытие","Шлифовка коридора и спальни (310 кв. футов); выравнивание нового и старого дерева; грунт и три слоя лака."],
+            ["Галтель (corner round)","Снять, установить обратно, зашпаклевать, загерметизировать и покрасить."],
+            ["Уборка","Вывоз мусора и уборка рабочих зон."]]},
+      note:{en:"Exclusions: extensive structural repairs, major plywood replacement and unforeseen damage outside the described scope. Existing corner round reused where possible.",
+            ru:"Не входит: серьёзный ремонт конструкций, крупная замена фанеры и скрытые повреждения вне описанного объёма. Существующая галтель используется повторно, где возможно."} },
+    { id:"2", base:6950, newSqft:310, finishSqft:310, speciesLock:null, stain:true,
+      en:{name:"#2 Complete replacement", sub:"All flooring in the hallway and master bedroom replaced with new hardwood (310 sq ft), sanded and finished."},
+      ru:{name:"#2 Полная замена", sub:"Весь пол в коридоре и спальне меняется на новую доску (310 кв. футов), шлифовка и лак."},
+      scope:{
+        en:[["Dust containment & floor protection","Dust barriers; protect surrounding rooms, walls and surfaces; dust control throughout."],
+            ["Existing flooring removal","Remove all existing hardwood in the hallway and master bedroom; haul away debris."],
+            ["Subfloor preparation & repair","Inspect plywood subfloor; repair damaged or loose sections; secure and prepare."],
+            ["New hardwood flooring materials","New hardwood for ~310 sq ft with ~10% waste allowance and installation materials."],
+            ["Hardwood flooring installation","Install throughout with professional adhesive and nails; proper alignment."],
+            ["Transitions & trim","Install transitions and thresholds; adjust existing trim as needed."],
+            ["Sanding & refinishing","Sand the new floor; sealer and three protective finish coats."],
+            ["Corner round","Remove, reinstall, fill nail holes, caulk and paint the existing corner round."],
+            ["Final cleanup","Remove job debris and clean all work areas."]],
+        ru:[["Защита от пыли","Пылевые барьеры; защита соседних комнат, стен и поверхностей."],
+            ["Демонтаж старого пола","Снять весь пол в коридоре и спальне; вывоз мусора."],
+            ["Подготовка основания","Осмотр фанеры; ремонт повреждённых участков; подготовка."],
+            ["Материалы","Новая доска на ~310 кв. футов с запасом ~10% и монтажные материалы."],
+            ["Укладка","Укладка по всей площади на клей и гвозди."],
+            ["Пороги и отделка","Пороги и переходы; подгонка существующей отделки."],
+            ["Шлифовка и покрытие","Шлифовка нового пола; грунт и три слоя лака."],
+            ["Галтель (corner round)","Снять, установить обратно, зашпаклевать, загерметизировать и покрасить."],
+            ["Уборка","Вывоз мусора и уборка."]]},
+      note:{en:"Exclusions: extensive structural repairs, major subfloor replacement and unforeseen damage outside the described scope. Final species, grade and finish must be approved before ordering materials.",
+            ru:"Не входит: серьёзный ремонт конструкций, крупная замена основания и скрытые повреждения. Порода, сорт и покрытие утверждаются заказчиком до заказа материалов."} },
+    { id:"3", base:1570, newSqft:0, finishSqft:0, speciesLock:"existing", stain:false,
+      en:{name:"#3 Squeak & damaged board repair", sub:"Localized repairs of the existing floor; no replacement, sanding or refinishing."},
+      ru:{name:"#3 Ремонт скрипа и повреждённых досок", sub:"Точечный ремонт существующего пола; без замены, шлифовки и лака."},
+      scope:{
+        en:[["Squeaky floorboard repair","Find squeaking or moving boards; inject flooring adhesive through small holes; secure with flooring nails; reinforce loose sections."],
+            ["Damaged board repair","Repair cracked, broken or loose boards; fill holes and minor imperfections with matching wood wax."],
+            ["Final cleanup","Clean repaired areas and remove repair debris."]],
+        ru:[["Устранение скрипа","Найти скрипящие доски; клей под доски через небольшие отверстия; закрепить гвоздями; усилить шатающиеся участки."],
+            ["Ремонт повреждённых досок","Ремонт треснувших, сломанных и шатающихся досок; заделка отверстий и дефектов воском в цвет."],
+            ["Уборка","Уборка отремонтированных мест."]]},
+      note:{en:"The existing floor is very old and worn. This repair reduces movement and squeaking in treated areas; complete elimination of all squeaking cannot be guaranteed. Does not include replacement, sanding or refinishing.",
+            ru:"Существующий пол очень старый и изношенный. Ремонт уменьшает скрип в обработанных местах, но полностью устранить весь скрип гарантировать нельзя. Замена, шлифовка и лак не входят."} }
+  ]
+};
+const FT = {
+  en:{tab:["Floor","Hallway + master bedroom · 310 sq ft"], optT:"Estimate option", spT:"Wood species", stT:"Finish color", scopeT:"Scope of work",
+      spLock1:"Option #1 laces new boards into the existing fir floor, so the species stays Douglas fir.", spLock3:"Repairs keep the existing floor.",
+      stNo:"No refinishing in this option.", base:"Base price", spAdd:"Species upgrade", stAdd:"Stain color", total:"Total",
+      blotch:"Fir and maple can look blotchy with darker stains; we test a sample board first.", existing:"Existing floor (no change)",
+      vis:"Preview on your floor plan, top view. Colors are approximate; final color is approved on a sample board.", sqft:"sq ft"},
+  ru:{tab:["Пол","Коридор + спальня · 310 кв. футов"], optT:"Вариант эстимейта", spT:"Порода дерева", stT:"Цвет покрытия", scopeT:"Объём работ",
+      spLock1:"В варианте #1 новая доска вплетается в старый еловый пол, поэтому порода — ель.", spLock3:"Ремонт сохраняет существующий пол.",
+      stNo:"В этом варианте шлифовки и лака нет.", base:"Базовая цена", spAdd:"Доплата за породу", stAdd:"Морилка", total:"Итого",
+      blotch:"Ель и клён с тёмной морилкой могут ложиться пятнами; сначала делаем пробу на доске.", existing:"Существующий пол (без изменений)",
+      vis:"Предпросмотр на плане вашего пола, вид сверху. Цвета примерные; окончательный цвет утверждается на пробной доске.", sqft:"кв. футов"}
+};
+let fOpt = "1", fSp = "fir", fSt = "natural";
+const fImgs = {};
+function fLoad(src){ return fImgs[src] || (fImgs[src] = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; })); }
+const money = n => "$" + Math.round(n).toLocaleString("en-US");
+function fState(){
+  const o = FL.options.find(x => x.id === fOpt);
+  const sp = o.speciesLock === "fir" ? "fir" : (o.speciesLock === "existing" ? "fir" : fSp);
+  const st = o.stain ? fSt : "natural";
+  const spObj = FL.species.find(x => x.id === sp), stObj = FL.stains.find(x => x.id === st);
+  const spAdd = o.speciesLock ? 0 : spObj.add * o.newSqft * (1 + FL.waste);
+  const stAdd = o.stain ? stObj.add * o.finishSqft : 0;
+  return {o, sp, st, spObj, stObj, spAdd, stAdd, total: o.base + spAdd + stAdd};
+}
+async function fDraw(){
+  const S = fState(), cv = $("fcanvas"), ctx = cv.getContext("2d");
+  const [plan, mask, shade, wood] = await Promise.all([fLoad("floor/plan.jpg"), fLoad("floor/mask.png"), fLoad("floor/shade.png"), fLoad("floor/wood_" + S.spObj.img + ".jpg")]);
+  if (!plan) return;
+  ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  ctx.drawImage(plan, 0, 0, cv.width, cv.height);
+  const changed = S.o.id !== "3" && !(S.sp === "fir" && S.st === "natural" && S.o.id === "1" && false);
+  if (S.o.id !== "3" && wood && mask && shade){
+    const off = document.createElement("canvas"); off.width = cv.width; off.height = cv.height;
+    const o = off.getContext("2d");
+    const tile = document.createElement("canvas"); const ts = 230; tile.width = ts; tile.height = ts;
+    tile.getContext("2d").drawImage(wood, 0, 0, ts, ts);
+    o.fillStyle = o.createPattern(tile, "repeat"); o.fillRect(0, 0, off.width, off.height);
+    if (S.stObj.color){ o.globalCompositeOperation = "multiply"; o.globalAlpha = 0.88; o.fillStyle = S.stObj.color; o.fillRect(0, 0, off.width, off.height); o.globalAlpha = 1; }
+    o.globalCompositeOperation = "multiply"; o.drawImage(shade, 0, 0, off.width, off.height);
+    o.globalCompositeOperation = "destination-in"; o.drawImage(mask, 0, 0, off.width, off.height);
+    ctx.drawImage(off, 0, 0);
+  }
+  // swatch
+  const sw = $("swatch"), sx = sw.getContext("2d");
+  sx.globalCompositeOperation = "source-over"; sx.globalAlpha = 1;
+  if (S.o.id === "3"){ sx.drawImage(plan, 760, 1150, 160, 160, 0, 0, sw.width, sw.height); }
+  else if (wood){
+    sx.drawImage(wood, 0, 0, 384, 384, 0, 0, sw.width, sw.height);
+    if (S.stObj.color){ sx.globalCompositeOperation = "multiply"; sx.globalAlpha = 0.88; sx.fillStyle = S.stObj.color; sx.fillRect(0, 0, sw.width, sw.height); }
+  }
+}
+function fRender(){
+  const t = FT[lang], S = fState();
+  $("f-optT").textContent = t.optT; $("f-spT").textContent = t.spT; $("f-stT").textContent = t.stT; $("scopeT").textContent = t.scopeT;
+  $("fvHint").textContent = t.vis;
+  const oh = $("fopts"); oh.innerHTML = "";
+  FL.options.forEach(o => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.id = "fo-" + o.id;
+    b.setAttribute("aria-pressed", o.id === fOpt);
+    b.innerHTML = '<span class="dot"></span><span class="ot"><b></b><span></span></span><span class="op"></span>';
+    b.querySelector("b").textContent = o[lang].name; b.querySelector(".ot span").textContent = o[lang].sub;
+    b.querySelector(".op").textContent = money(o.base);
+    b.onclick = () => { fOpt = o.id; fRender(); };
+    oh.appendChild(b);
+  });
+  const sh = $("fspecies"); sh.innerHTML = "";
+  FL.species.forEach(sp => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.id = "fs-" + sp.id;
+    b.innerHTML = '<i></i><span></span>'; b.querySelector("i").style.backgroundImage = "url(floor/wood_" + sp.img + ".jpg)";
+    b.querySelector("span").textContent = sp[lang] + (sp.add && !S.o.speciesLock ? " +$" + sp.add.toFixed(2) + "/" + t.sqft : "");
+    b.setAttribute("aria-pressed", sp.id === S.sp);
+    b.disabled = !!S.o.speciesLock && sp.id !== "fir";
+    b.onclick = () => { fSp = sp.id; fRender(); };
+    sh.appendChild(b);
+  });
+  $("spHint").textContent = S.o.speciesLock === "fir" ? t.spLock1 : (S.o.speciesLock === "existing" ? t.spLock3 : "");
+  const st = $("fstains"); st.innerHTML = "";
+  FL.stains.forEach(x => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.id = "ft-" + x.id;
+    b.innerHTML = '<i></i><span></span>';
+    b.querySelector("i").style.background = x.color ? x.color : "linear-gradient(135deg,#e9d3ae,#d8b27c)";
+    b.querySelector("span").textContent = x[lang] + (x.add && S.o.stain ? " +$" + x.add.toFixed(2) + "/" + t.sqft : "");
+    b.setAttribute("aria-pressed", x.id === S.st);
+    b.disabled = !S.o.stain;
+    b.onclick = () => { fSt = x.id; fRender(); };
+    st.appendChild(b);
+  });
+  const dark = ["provincial","swalnut","jacobean","ebony","early"].includes(S.st);
+  $("stHint").textContent = !S.o.stain ? t.stNo : ((S.sp === "fir" || S.sp === "maple") && dark ? t.blotch : "");
+  const tot = $("ftotal");
+  const rows = [[t.base, S.o.base]];
+  if (S.spAdd) rows.push([t.spAdd + " (" + S.spObj[lang] + ", " + Math.round(S.o.newSqft * (1 + FL.waste)) + " " + t.sqft + ")", S.spAdd]);
+  if (S.stAdd) rows.push([t.stAdd + " (" + S.stObj[lang] + ", " + S.o.finishSqft + " " + t.sqft + ")", S.stAdd]);
+  tot.innerHTML = "";
+  rows.forEach(r => { const d = document.createElement("div"); d.className = "trow"; d.innerHTML = "<span></span><span></span>"; d.children[0].textContent = r[0]; d.children[1].textContent = money(r[1]); tot.appendChild(d); });
+  const d = document.createElement("div"); d.className = "trow sum"; d.innerHTML = "<span></span><span></span>"; d.children[0].textContent = t.total; d.children[1].textContent = money(S.total); tot.appendChild(d);
+  $("swName").textContent = S.o.id === "3" ? t.existing : (S.spObj[lang] + " · " + S.stObj[lang]);
+  $("swNote").textContent = S.o.id === "3" ? "" : (S.o.speciesLock === "fir" ? "" : "");
+  const ol = $("scopeList"); ol.innerHTML = "";
+  S.o.scope[lang].forEach(([h, txt]) => { const li = document.createElement("li"); li.innerHTML = "<b></b><span></span>"; li.children[0].textContent = h; li.children[1].textContent = txt; ol.appendChild(li); });
+  $("scopeNote").textContent = S.o.note[lang];
+  fDraw();
+}
+
+let lang = "en", closet = "c1", variant = "a", idx = 0;
+try { const s = localStorage.getItem("closetLang"); if (s === "ru" || s === "en") lang = s; } catch (e) {}
+
+const $ = id => document.getElementById(id);
+
+function readHash(){
+  if (location.hash === "#floor"){ closet = "floor"; return; }
+  const m = location.hash.match(/^#closet([12])-([a-e])$/);
+  if (m){ closet = "c" + m[1]; variant = m[2]; idx = 0; }
+}
+function writeHash(){
+  const h = closet === "floor" ? "#floor" : "#closet" + closet.slice(1) + "-" + variant;
+  if (location.hash !== h) history.replaceState(null, "", h);
+}
+
+function render(){
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  $("t-title").textContent = t.title; $("t-sub").textContent = t.sub;
+  $("t-3d").textContent = t.t3d; $("t-3dtext").textContent = t.t3dtext; $("t-foot").textContent = t.foot;
+  $("lbClose").textContent = t.close;
+  $("l-en").setAttribute("aria-pressed", lang === "en"); $("l-ru").setAttribute("aria-pressed", lang === "ru");
+
+  const tabs = $("tabs"); tabs.innerHTML = "";
+  ["c1","c2","floor"].forEach(c => {
+    const b = document.createElement("button");
+    b.className = "tab"; b.type = "button"; b.setAttribute("role","tab"); b.id = "tab-" + c;
+    b.setAttribute("aria-selected", c === closet);
+    b.innerHTML = "<b></b><span></span>";
+    const lbl = c === "floor" ? FT[lang].tab : t[c];
+    b.querySelector("b").textContent = lbl[0]; b.querySelector("span").textContent = lbl[1];
+    b.onclick = () => { closet = c; variant = "a"; idx = 0; writeHash(); render(); };
+    tabs.appendChild(b);
+  });
+
+  const isFloor = closet === "floor";
+  $("variants").style.display = isFloor ? "none" : "";
+  document.querySelector(".viewer").style.display = isFloor ? "none" : "";
+  document.querySelector(".three").style.display = isFloor ? "none" : "";
+  $("floorSec").style.display = isFloor ? "flex" : "none";
+  if (isFloor){ fRender(); return; }
+  const vs = $("variants"); vs.innerHTML = "";
+  ["a","b","c","d","e"].forEach(v => {
+    const b = document.createElement("button");
+    b.className = "vbtn"; b.type = "button"; b.id = "v-" + v;
+    b.textContent = D[closet][v][lang].name;
+    b.setAttribute("aria-pressed", v === variant);
+    b.onclick = () => { variant = v; idx = 0; writeHash(); render(); };
+    vs.appendChild(b);
+  });
+
+  const V = D[closet][variant], L = V[lang];
+  if (idx >= V.imgs.length) idx = 0;
+  $("mainImg").src = "img/" + V.imgs[idx] + ".jpg";
+  $("mainImg").alt = L.name + " — " + L.caps[idx];
+  $("cap").textContent = L.caps[idx];
+
+  const th = $("thumbs"); th.innerHTML = "";
+  V.imgs.forEach((k, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.id = "th-" + i;
+    b.setAttribute("aria-current", i === idx); b.setAttribute("aria-label", L.caps[i]);
+    const im = document.createElement("img"); im.src = "img/" + k + ".jpg"; im.alt = "";
+    b.appendChild(im); b.onclick = () => { idx = i; render(); };
+    th.appendChild(b);
+  });
+
+  $("vTitle").textContent = L.name; $("vDesc").textContent = L.desc;
+  const ul = $("vList"); ul.innerHTML = "";
+  L.list.forEach(s => { const li = document.createElement("li"); li.textContent = s; ul.appendChild(li); });
+
+  const mv = $("mvHost").querySelector("model-viewer");
+  if (!$("load3d").disabled){
+    $("load3d").textContent = mv ? t.reload : t.load;
+    $("load3d").hidden = !!(mv && mv.dataset.key === closet + variant);
+  }
+}
+
+$("load3d").onclick = () => {
+  const host = $("mvHost");
+  let mv = host.querySelector("model-viewer");
+  if (!mv){
+    mv = document.createElement("model-viewer");
+    mv.setAttribute("camera-controls", "");
+    mv.setAttribute("touch-action", "pan-y");
+    mv.setAttribute("shadow-intensity", "0.6");
+    mv.setAttribute("exposure", "1.05");
+    mv.setAttribute("camera-orbit", "0deg 55deg auto");
+    host.appendChild(mv);
+  }
+  const key = closet + variant;
+  mv.setAttribute("alt", D[closet][variant][lang].name);
+  $("load3d").disabled = true; $("load3d").textContent = lang === "ru" ? "Загрузка…" : "Loading…";
+  loadModel(key).then(url => { mv.dataset.key = key; mv.setAttribute("src", url); $("load3d").disabled = false; render(); })
+    .catch(() => { $("load3d").disabled = false; $("load3d").textContent = lang === "ru" ? "Не удалось загрузить 3D-модель. Попробуйте ещё раз" : "Could not load the 3D model. Try again"; });
+};
+const modelCache = {};
+async function loadModel(key){ return "models/" + key + ".glb"; }
+
+function openLb(){ $("lbImg").src = $("mainImg").src; $("lbImg").alt = $("mainImg").alt; $("lb").dataset.open = "true"; $("lbClose").focus(); }
+function closeLb(){ $("lb").dataset.open = "false"; $("main").focus(); }
+$("main").onclick = openLb;
+$("main").onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openLb(); } };
+$("lbClose").onclick = closeLb;
+$("lb").onclick = e => { if (e.target.id === "lb") closeLb(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("lb").dataset.open === "true") closeLb(); });
+
+function setLang(l){ lang = l; try { localStorage.setItem("closetLang", l); } catch (e) {} render(); }
+$("l-en").onclick = () => setLang("en");
+$("l-ru").onclick = () => setLang("ru");
+
+window.addEventListener("hashchange", () => { readHash(); render(); });
+readHash(); render();
+
+
+</script>
+</body>
+</html>
