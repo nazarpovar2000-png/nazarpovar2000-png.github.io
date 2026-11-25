@@ -469,7 +469,10 @@ function render(){
   document.querySelector(".viewer").style.display = isFloor ? "none" : "";
   document.querySelector(".three").style.display = isFloor ? "none" : "";
   $("floorSec").style.display = isFloor ? "flex" : "none";
-  if (isFloor){ fRender(); return; }
+  if (isFloor){
+    $("t-foot").textContent = lang === "ru" ? "Цены рассчитаны на 310 кв. футов. Окончательная цена подтверждается после осмотра на месте." : "Prices are based on 310 sq ft. Final price is confirmed after an on-site inspection.";
+    fRender(); return;
+  }
   const vs = $("variants"); vs.innerHTML = "";
   ["a","b","c","d","e"].forEach(v => {
     const b = document.createElement("button");
