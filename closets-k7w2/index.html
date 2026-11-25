@@ -249,19 +249,19 @@ const FL = {
   species: [
     {id:"fir",       img:"fir",       add:0.00, en:"Douglas fir",  ru:"Ель (Douglas fir)"},
     {id:"red_oak",   img:"red_oak",   add:0.00, en:"Red oak",      ru:"Красный дуб"},
-    {id:"white_oak", img:"white_oak", add:0.00, en:"White oak",    ru:"Белый дуб"},
-    {id:"maple",     img:"maple",     add:0.00, en:"Hard maple",   ru:"Клён"},
-    {id:"hickory",   img:"hickory",   add:0.00, en:"Hickory",      ru:"Гикори"},
-    {id:"walnut",    img:"walnut",    add:0.00, en:"Walnut",       ru:"Орех"}
+    {id:"white_oak", img:"white_oak", add:2.00, en:"White oak",    ru:"Белый дуб"},
+    {id:"maple",     img:"maple",     add:1.50, en:"Hard maple",   ru:"Клён"},
+    {id:"hickory",   img:"hickory",   add:1.50, en:"Hickory",      ru:"Гикори"},
+    {id:"walnut",    img:"walnut",    add:5.00, en:"Walnut",       ru:"Орех"}
   ],
   stains: [
     {id:"natural",   color:null,      add:0.00, en:"Natural",        ru:"Натуральный"},
-    {id:"golden",    color:"#d9a35a", add:0.00, en:"Golden Oak",     ru:"Golden Oak"},
-    {id:"early",     color:"#a87040", add:0.00, en:"Early American", ru:"Early American"},
-    {id:"provincial",color:"#8f5c36", add:0.00, en:"Provincial",     ru:"Provincial"},
-    {id:"swalnut",   color:"#7a4f30", add:0.00, en:"Special Walnut", ru:"Special Walnut"},
-    {id:"jacobean",  color:"#4f3726", add:0.00, en:"Jacobean",       ru:"Jacobean"},
-    {id:"ebony",     color:"#352a24", add:0.00, en:"Ebony",          ru:"Ebony"}
+    {id:"golden",    color:"#d9a35a", add:1.00, en:"Golden Oak",     ru:"Golden Oak"},
+    {id:"early",     color:"#a87040", add:1.00, en:"Early American", ru:"Early American"},
+    {id:"provincial",color:"#8f5c36", add:1.00, en:"Provincial",     ru:"Provincial"},
+    {id:"swalnut",   color:"#7a4f30", add:1.00, en:"Special Walnut", ru:"Special Walnut"},
+    {id:"jacobean",  color:"#4f3726", add:1.00, en:"Jacobean",       ru:"Jacobean"},
+    {id:"ebony",     color:"#352a24", add:1.25, en:"Ebony",          ru:"Ebony"}
   ],
   options: [
     { id:"1", base:5700, newSqft:130, finishSqft:310, speciesLock:"fir", stain:true,
@@ -327,12 +327,12 @@ const FL = {
 const FT = {
   en:{tab:["Floor","Hallway + master bedroom · 310 sq ft"], optT:"Estimate option", spT:"Wood species", stT:"Finish color", scopeT:"Scope of work",
       spLock1:"Option #1 laces new boards into the existing fir floor, so the species stays Douglas fir.", spLock3:"Repairs keep the existing floor.",
-      stNo:"No refinishing in this option.", base:"Base price", spAdd:"Species upgrade", stAdd:"Stain color", total:"Estimate total",
+      stNo:"No refinishing in this option.", base:"Base price", spAdd:"Species upgrade", stAdd:"Stain color", total:"Total",
       blotch:"Fir and maple can look blotchy with darker stains; we test a sample board first.", existing:"Existing floor (no change)",
       vis:"Preview on your floor plan, top view. Colors are approximate; final color is approved on a sample board.", sqft:"sq ft"},
   ru:{tab:["Пол","Коридор + спальня · 310 кв. футов"], optT:"Вариант эстимейта", spT:"Порода дерева", stT:"Цвет покрытия", scopeT:"Объём работ",
       spLock1:"В варианте #1 новая доска вплетается в старый еловый пол, поэтому порода — ель.", spLock3:"Ремонт сохраняет существующий пол.",
-      stNo:"В этом варианте шлифовки и лака нет.", base:"Базовая цена", spAdd:"Доплата за породу", stAdd:"Морилка", total:"Итого по эстимейту",
+      stNo:"В этом варианте шлифовки и лака нет.", base:"Базовая цена", spAdd:"Доплата за породу", stAdd:"Морилка", total:"Итого",
       blotch:"Ель и клён с тёмной морилкой могут ложиться пятнами; сначала делаем пробу на доске.", existing:"Существующий пол (без изменений)",
       vis:"Предпросмотр на плане вашего пола, вид сверху. Цвета примерные; окончательный цвет утверждается на пробной доске.", sqft:"кв. футов"}
 };
@@ -415,17 +415,12 @@ function fRender(){
   const dark = ["provincial","swalnut","jacobean","ebony","early"].includes(S.st);
   $("stHint").textContent = !S.o.stain ? t.stNo : ((S.sp === "fir" || S.sp === "maple") && dark ? t.blotch : "");
   const tot = $("ftotal");
-  const rows = [];
+  const rows = [[t.base, S.o.base]];
   if (S.spAdd) rows.push([t.spAdd + " (" + S.spObj[lang] + ", " + Math.round(S.o.newSqft * (1 + FL.waste)) + " " + t.sqft + ")", S.spAdd]);
   if (S.stAdd) rows.push([t.stAdd + " (" + S.stObj[lang] + ", " + S.o.finishSqft + " " + t.sqft + ")", S.stAdd]);
   tot.innerHTML = "";
   rows.forEach(r => { const d = document.createElement("div"); d.className = "trow"; d.innerHTML = "<span></span><span></span>"; d.children[0].textContent = r[0]; d.children[1].textContent = money(r[1]); tot.appendChild(d); });
-  if (S.o.id !== "3" && (S.sp !== "fir" || S.st !== "natural")){
-    const n = document.createElement("p"); n.className = "hint";
-    n.textContent = lang === "ru" ? "Цена эстимейта — для ели (Douglas fir) с натуральным покрытием. Другие породы и цвета показаны для примера, их цена считается отдельно по запросу." : "The estimate price is for Douglas fir with a natural finish. Other species and colors are shown as a preview and are priced separately on request.";
-    tot.appendChild(n);
-  }
-  const d = document.createElement("div"); d.className = "trow sum"; d.innerHTML = "<span></span><span></span>"; d.children[0].textContent = t.total; d.children[1].textContent = money(S.o.base); tot.appendChild(d);
+  const d = document.createElement("div"); d.className = "trow sum"; d.innerHTML = "<span></span><span></span>"; d.children[0].textContent = t.total; d.children[1].textContent = money(S.total); tot.appendChild(d);
   $("swName").textContent = S.o.id === "3" ? t.existing : (S.spObj[lang] + " · " + S.stObj[lang]);
   $("swNote").textContent = S.o.id === "3" ? "" : (S.o.speciesLock === "fir" ? "" : "");
   const ol = $("scopeList"); ol.innerHTML = "";
@@ -547,8 +542,7 @@ function setLang(l){ lang = l; try { localStorage.setItem("closetLang", l); } ca
 $("l-en").onclick = () => setLang("en");
 $("l-ru").onclick = () => setLang("ru");
 
-window.addEventListener("hashchange", () => { readHash(); render(); });
-readHash(); render();
+window.addEventListener("hashchange", () => { readHash(); render();
 
 // Visit log (owner's own visits are skipped: open the page once with ?owner=1 on each of your devices)
 (function logVisit(){
@@ -576,7 +570,10 @@ readHash(); render();
     headers: { "apikey": "sb_publishable_BxrxaE95_p7IXEEfwZmYhA_G9mDDQ_H", "Content-Type": "application/json", "Prefer": "return=minimal" },
     body: JSON.stringify(row)
   }).catch(() => {});
-})();
+})(); });
+readHash(); render();
+
+
 </script>
 </body>
 </html>
