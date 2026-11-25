@@ -72,6 +72,18 @@ model-viewer{width:100%; height:min(70vh,560px); background:var(--bg); border-ra
 .lb img{max-width:100%; max-height:100%; border-radius:8px}
 .lb button{position:absolute; top:12px; right:12px; border:0; background:#fff; color:#111; border-radius:999px; padding:8px 14px; font:600 15px var(--body); cursor:pointer}
 
+
+.vest{display:flex; flex-direction:column; gap:8px; border-top:1px solid var(--line); padding-top:12px}
+.vest:empty{display:none}
+.vest .vprice{display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-family:var(--display); font-size:22px; font-variant-numeric:tabular-nums}
+.vest .vprice small{font-family:var(--body); font-size:14px; color:var(--muted); font-weight:600}
+.vest details{font-size:14px}
+.vest summary{cursor:pointer; font-weight:600; color:var(--accent)}
+.vest ol{margin:8px 0 0; padding-left:20px; display:flex; flex-direction:column; gap:6px}
+.vest li b{display:block; color:var(--ink)}
+.vest li span{color:var(--muted)}
+.vest .vnote{font-size:13px; color:var(--muted); margin:0}
+
 /* ---- Floor section ---- */
 .tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:560px){ .tabs{grid-template-columns:1fr} }
@@ -140,6 +152,7 @@ button:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
       <h2 id="vTitle"></h2>
       <p id="vDesc"></p>
       <ul id="vList"></ul>
+      <div id="vEst" class="vest"></div>
     </aside>
   </div>
 
@@ -240,6 +253,54 @@ const D = {
   }
 };
 
+
+
+// ================= CLOSET ESTIMATES (options D and E) =================
+const EST = {
+  c1: { num: 4, price: 2450, variants: ["d","e"],
+    en: { title: "Closet #1 – Custom MDF Shelving & Painting", items: [
+      ["Materials & custom fabrication", "Supply MDF boards and installation materials; measure, cut and fabricate custom MDF shelves on-site; prepare shelf edges and supports."],
+      ["Shelving installation", "Install custom MDF shelves to the approved layout; install mounting cleats and shelf supports; level, align and fasten."],
+      ["Caulking & surface preparation", "Caulk gaps between shelves and walls; fill nail holes, joints and imperfections; sand and prepare for paint."],
+      ["Priming, painting & cleanup", "Prime MDF surfaces; paint all shelves, edges and exposed parts; final touch-ups and cleanup."]],
+      note: "Labor and standard materials included. Final shelving layout and paint color to be approved by the customer before installation." },
+    ru: { title: "Гардеробная 1 – полки из MDF на заказ и покраска", items: [
+      ["Материалы и изготовление", "Плиты MDF и монтажные материалы; замер, раскрой и изготовление полок на месте; подготовка кромок и опор."],
+      ["Монтаж полок", "Установка полок по утверждённой схеме; крепёжные планки и опоры; выравнивание и надёжное крепление."],
+      ["Герметизация и подготовка", "Герметик в щели между полками и стенами; шпаклёвка отверстий и стыков; шлифовка под покраску."],
+      ["Грунт, покраска и уборка", "Грунтовка MDF; покраска всех полок, кромок и видимых деталей; финальная подкраска и уборка."]],
+      note: "Работа и стандартные материалы включены. Окончательная схема полок и цвет краски утверждаются заказчиком до монтажа." } },
+  c2: { num: 5, price: 2920, variants: ["d","e"],
+    en: { title: "Closet #2 – Custom MDF Shelving & Painting", items: [
+      ["Materials & custom fabrication", "Supply MDF boards and installation materials; measure, cut and fabricate shelving components; prepare shelf sections, vertical dividers and supports."],
+      ["Custom shelving installation", "Install shelving to the approved layout: horizontal shelves, vertical dividers and mounting supports; secure, level and align for a built-in look."],
+      ["Caulking & surface preparation", "Caulk visible joints and gaps to walls; fill nail holes, seams and imperfections; sand and prepare for paint."],
+      ["Priming, painting & cleanup", "Prime exposed MDF; professional interior paint and finish coats; detailed touch-ups and final cleanup."]],
+      note: "Labor and standard materials included. Final shelving layout, dimensions and paint color to be approved by the customer before installation." },
+    ru: { title: "Гардеробная 2 – полки из MDF на заказ и покраска", items: [
+      ["Материалы и изготовление", "Плиты MDF и монтажные материалы; замер, раскрой и изготовление деталей; секции полок, вертикальные стойки и опоры."],
+      ["Монтаж полок", "Установка по утверждённой схеме: горизонтальные полки, вертикальные стойки и крепления; выравнивание под встроенный вид."],
+      ["Герметизация и подготовка", "Герметик в видимые стыки и щели у стен; шпаклёвка отверстий и швов; шлифовка под покраску."],
+      ["Грунт, покраска и уборка", "Грунтовка MDF; профессиональная интерьерная краска в несколько слоёв; подкраска и финальная уборка."]],
+      note: "Работа и стандартные материалы включены. Окончательная схема, размеры и цвет краски утверждаются заказчиком до монтажа." } }
+};
+function renderEst(){
+  const box = $("vEst"); box.innerHTML = "";
+  const e = EST[closet];
+  if (!e || !e.variants.includes(variant)) return;
+  const L = e[lang];
+  const pr = document.createElement("div"); pr.className = "vprice";
+  pr.innerHTML = "<small></small><span></span>";
+  pr.children[0].textContent = (lang === "ru" ? "Эстимейт #" : "Estimate #") + e.num;
+  pr.children[1].textContent = "$" + e.price.toLocaleString("en-US");
+  box.appendChild(pr);
+  const det = document.createElement("details");
+  const sm = document.createElement("summary"); sm.textContent = L.title; det.appendChild(sm);
+  const ol = document.createElement("ol");
+  L.items.forEach(([h, t]) => { const li = document.createElement("li"); li.innerHTML = "<b></b><span></span>"; li.children[0].textContent = h; li.children[1].textContent = t; ol.appendChild(li); });
+  det.appendChild(ol); box.appendChild(det);
+  const n = document.createElement("p"); n.className = "vnote"; n.textContent = L.note; box.appendChild(n);
+}
 
 // ================= FLOOR =================
 const FL = {
@@ -477,7 +538,8 @@ function render(){
   ["a","b","c","d","e"].forEach(v => {
     const b = document.createElement("button");
     b.className = "vbtn"; b.type = "button"; b.id = "v-" + v;
-    b.textContent = D[closet][v][lang].name;
+    const ev = EST[closet] && EST[closet].variants.includes(v) ? " · $" + EST[closet].price.toLocaleString("en-US") : "";
+    b.textContent = D[closet][v][lang].name + ev;
     b.setAttribute("aria-pressed", v === variant);
     b.onclick = () => { variant = v; idx = 0; writeHash(); render(); };
     vs.appendChild(b);
@@ -501,6 +563,7 @@ function render(){
   $("vTitle").textContent = L.name; $("vDesc").textContent = L.desc;
   const ul = $("vList"); ul.innerHTML = "";
   L.list.forEach(s => { const li = document.createElement("li"); li.textContent = s; ul.appendChild(li); });
+  renderEst();
 
   const mv = $("mvHost").querySelector("model-viewer");
   if (!$("load3d").disabled){
