@@ -23,6 +23,8 @@ h1{font-size:20px;line-height:1.15;margin:0;font-weight:600}
 .sub{margin:4px 0 0;color:var(--mut);font-size:13px}
 .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:12px}
 .tabs button{padding:0 6px;min-height:36px}
+.tomodel{position:fixed;right:14px;bottom:14px;z-index:6;background:var(--acc);color:#241711;border-color:var(--acc);font-weight:600;border-radius:999px;padding:0 16px;min-height:42px;box-shadow:0 4px 14px rgba(0,0,0,.4)}.tomodel[hidden]{display:none}
+.langs{display:flex;gap:2px;padding:2px;border-radius:999px;background:rgba(127,127,127,.14)}.langs button{min-height:28px;padding:0 10px;font-size:12.5px;border-radius:999px;border-color:transparent;background:transparent}.langs button[aria-pressed=true]{background:var(--acc);color:#241711}
 .secs{display:flex;gap:4px;margin-top:12px;padding:3px;border-radius:12px;background:rgba(127,127,127,.14)}.secs button{flex:1;min-height:40px;font-size:15px;font-weight:600;border-color:transparent;background:transparent}.secs button[aria-pressed=true]{background:var(--acc);color:#241711}
 .hbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px}.hbar button{min-height:38px}.hbtn{padding:0 12px}.hbtn[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#241711}
 .tabs{grid-template-columns:repeat(auto-fit,minmax(78px,1fr))!important}
@@ -78,7 +80,7 @@ button[aria-pressed=true]{background:var(--acc);color:#241711;border-color:var(-
 .lightbar button{background:rgba(35,22,15,.85);backdrop-filter:blur(6px);border-radius:999px;font-size:13px;min-height:34px;padding:0 12px}
 .lightbar button[aria-pressed=true]{background:var(--acc)}
 #load{position:fixed;inset:0;display:grid;place-items:center;color:var(--mut);pointer-events:none}
-@media(max-width:760px){.lightbar{bottom:calc(48% + 8px)}.lightbar span{display:none}#c{width:100%;height:52%}.side{top:52%;width:100%;height:48%;border-left:0;border-top:1px solid var(--line)}.views{max-width:calc(100% - 24px);flex-wrap:nowrap;overflow-x:auto}.views button{flex:none}.hd{padding:10px 14px 8px}.sub{display:none}h1{font-size:17px}.tabs{margin-top:8px}.body{padding:12px 14px 20px}}
+@media(max-width:760px){html,body{height:auto;overflow-x:hidden;overflow-y:auto}.lightbar{bottom:auto;top:calc(52svh - 46px)}.lightbar span{display:none}#c{width:100%;height:52svh}.side{position:relative;top:auto;right:auto;margin-top:52svh;width:100%;height:auto;min-height:48svh;z-index:3;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -6px 18px rgba(0,0,0,.35)}.side .body{overflow:visible;flex:none}.views{max-width:calc(100% - 24px);flex-wrap:nowrap;overflow-x:auto}.views button{flex:none}.hd{padding:10px 14px 8px}.sub{display:none}h1{font-size:17px}.tabs{margin-top:8px}.body{padding:12px 14px 20px}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/","three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/","three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.10.0/build/index.module.js","three-gpu-pathtracer":"https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.28/build/index.module.js"}}</script>
 </head>
@@ -97,13 +99,14 @@ button[aria-pressed=true]{background:var(--acc);color:#241711;border-color:var(-
 </div>
 <aside class="side">
   <div class="hd">
-    <h1>Конструктор кухни</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><h1>Конструктор кухни</h1><div class="langs" id="langs"><button data-lang="ru">RU</button><button data-lang="en">EN</button></div></div>
     <div class="hbar"><button id="estBtn" class="hbtn">Смета</button><button id="galBtn" class="hbtn">Рендеры</button><button id="renderBtn" class="rbtn">Рендер</button></div>
     <p class="sub">Выберите образец, и он сразу появится на модели. <button id="reset" style="min-height:28px;font-size:12.5px;padding:0 9px;margin-left:4px">Вернуть оригинал</button></p>
     <div class="secs" id="secs"><button data-sec="kit">Кухня</button><button data-sec="isl">Остров</button><button data-sec="desk">Ниша</button></div>
     <div class="tabs" role="tablist" id="tabs"></div>
   </div>
   <div class="body" id="body"></div>
+  <button id="toModel" class="tomodel" hidden>↑ Модель</button>
 </aside>
 <script type="module">
 import * as THREE from 'three';
@@ -714,6 +717,162 @@ function buildHood(id){
   else if (hoodExtra(id) !== false && id !== 'wood-taper'){ }
   if (id === 'wood-taper'){ profileHood(0, ZONES.up.V, false); B(hd, 1.915, 2.685, 1.5, 1.62, 0, .55, ZONES.up.H); under(); }
 }
+
+// ---------- RU / EN ----------
+const EN = {
+'Конструктор кухни': 'Kitchen Designer', 'Выберите образец, и он сразу появится на модели.': 'Pick a sample and it shows up on the model right away.',
+'Вернуть оригинал': 'Reset to original', 'Смета': 'Estimate', 'Рендеры': 'Renders', 'Рендер': 'Render', 'Рендер…': 'Rendering…',
+'Кухня': 'Kitchen', 'Остров': 'Island', 'Ниша': 'Nook', 'Шкафы': 'Cabinets', 'Ручки': 'Hardware', 'Вытяжка': 'Hood', 'Фартук': 'Backsplash', 'Пол': 'Floor', 'Свет': 'Light',
+'Цвет': 'Color', 'Панель': 'Panel', 'Цвет и стол': 'Color & desk', '↑ Модель': '↑ Model',
+'Общий вид': 'Overview', 'Плита и шкафы': 'Range & cabinets', 'Со стороны стульев': 'Seating side', 'Сверху': 'Top view', 'Стены': 'Walls', 'Свет:': 'Light:',
+'Светло': 'Bright', 'День': 'Day', 'Вечер': 'Evening', 'Лампы': 'Lamps', 'Загружаю 3D-сцену…': 'Loading 3D scene…',
+'Что красим на кухне': 'What to paint in the kitchen', 'Верх и низ': 'Upper & lower', 'Верхние': 'Upper', 'Нижние': 'Lower', 'Сейчас:': 'Now:', 'Сейчас': 'Now',
+'Верх': 'Upper', 'Низ': 'Lower', 'Sherwin-Williams, краска Emerald': 'Sherwin-Williams Emerald paint',
+'Оригинал': 'Original', 'Белые': 'Whites', 'Бежевые и серые': 'Beiges & grays', 'Зелёные': 'Greens', 'Синие': 'Blues', 'Тёмные': 'Darks',
+'Оригинал: эспрессо': 'Original: espresso', 'эспрессо': 'espresso', 'дерево, как сейчас': 'wood, as now', 'эспрессо (как на фото)': 'espresso (as in the photo)',
+'Текущие фасады: тёмная морилка по дереву.': 'Current fronts: dark wood stain.',
+'Для шкафов в линейке Emerald у Sherwin-Williams есть Emerald Urethane Trim Enamel (satin или semi-gloss): твёрдая моющаяся эмаль. Образец цвета можно заказать на сайте.': 'For cabinets, Sherwin-Williams has Emerald Urethane Trim Enamel (satin or semi-gloss): a hard, washable enamel. You can order a color sample on their site.',
+'Цвета для шкафов на сайте SW': 'Cabinet colors on the SW site',
+'Цвета на экране приблизительные: Sherwin-Williams не публикует точные значения для экрана. Смотрите живой образец при свете вашей кухни.': 'On-screen colors are approximate: Sherwin-Williams does not publish exact screen values. Check a real sample in your kitchen light.',
+'Ручки на верхних и нижних шкафах кухни.': 'Pulls on the upper and lower kitchen cabinets.', 'Как на кухне': 'Same as kitchen', 'Свои ручки': 'Own hardware',
+'Готовые варианты и где купить': 'Ready options and where to buy', 'Покрытие': 'Finish', 'Своя комбинация': 'Custom combo', 'Открыть в': 'Open on', 'кнобы Massey': 'Massey knobs',
+'Форма и покрытие выбраны вручную. Похожие ручки есть у Amerock и Top Knobs почти во всех покрытиях.': 'Shape and finish chosen by hand. Amerock and Top Knobs have similar pulls in almost every finish.',
+'Рейлинг': 'Bar pull', 'Прямоугольная скоба': 'Square pull', 'Рифлёный рейлинг': 'Knurled bar', 'Дуга': 'Arch pull', 'Ракушки + кнобы': 'Cup pulls + knobs', 'Круглые кнобы': 'Round knobs',
+'Шестигранные кнобы': 'Hex knobs', 'T-кнобы': 'T-knobs', 'Торцевые (edge)': 'Edge pulls', 'Деревянные': 'Wood pulls', 'С мрамором': 'With marble', 'Стекло + металл': 'Glass + metal',
+'Матовый никель': 'Brushed nickel', 'Полированный никель': 'Polished nickel', 'Матовый чёрный': 'Matte black', 'Латунь (unlacquered)': 'Brass (unlacquered)', 'Шампань / honey bronze': 'Champagne / honey bronze',
+'Сатиновая медь': 'Satin copper', 'Латунь': 'Brass', 'Чёрный': 'Black', 'Белый': 'White', 'Дуб': 'Oak', 'Орех': 'Walnut',
+'см. на сайте': 'see site', 'недорого': 'budget', 'премиум': 'premium', 'набор на всю кухню': 'set for the whole kitchen', 'ракушка от $17, кноб $15': 'cup from $17, knob $15',
+'Рейлинги из матового металла, как сейчас.': 'Brushed metal bar pulls, as now.', 'Ravinte, набор 30 шт., 5"': 'Ravinte, set of 30, 5"', 'Amerock Carrione 96 мм': 'Amerock Carrione 96 mm', 'Amerock Esquire 128 мм': 'Amerock Esquire 128 mm',
+'Domino: «акцентные». Чёрный с латунью.': 'Domino: "accent". Black with brass.', 'Domino: «лучшие в целом». 11 покрытий, 12 размеров.': 'Domino: "best overall". 11 finishes, 12 sizes.',
+'Domino: индастриал. Ручка с насечкой «cross-knurl», есть латунь и дымчатая бронза.': 'Domino: industrial. Cross-knurl pull, comes in brass and smoked bronze.', 'Domino: классика. Литая бронза, брашированная.': 'Domino: classic. Cast bronze, brushed.',
+'Domino: лучший вариант по цене. Матовый чёрный.': 'Domino: best value. Matte black.', 'Domino: минимализм. Рифлёная цельная латунь в чёрном, 7 длин, 4 покрытия.': 'Domino: minimalist. Knurled solid brass in black, 7 lengths, 4 finishes.',
+'Domino: натуральный дуб. Тёплый акцент для светлых фасадов.': 'Domino: natural oak. A warm accent for light fronts.', 'HGTV. Белый мрамор с сатиновым никелем, есть чёрный мрамор.': 'HGTV. White marble with satin nickel, black marble available.',
+'HGTV. Классическая дуга, железо.': 'HGTV. Classic arch, iron.', 'HGTV. Покрытие honey bronze, 5 размеров.': 'HGTV. Honey bronze finish, 5 sizes.', 'HGTV. Полированный никель.': 'HGTV. Polished nickel.',
+'HGTV. Почти незаметные, на торце фасада.': 'HGTV. Nearly invisible, on the edge of the front.', 'HGTV. Ракушки на ящики, кнобы на дверцы. Цельная латунь.': 'HGTV. Cups on drawers, knobs on doors. Solid brass.',
+'HGTV. Стеклянный стержень с латунью.': 'HGTV. Glass rod with brass.', 'HGTV. Цельная латунь, oil-rubbed bronze.': 'HGTV. Solid brass, oil-rubbed bronze.', 'HGTV. Шестигранник, сатиновое золото или матовый чёрный.': 'HGTV. Hexagon, satin gold or matte black.',
+'HGTV: недорогая современная скоба. Также $10 на Wayfair и $18 в Lowe’s.': 'HGTV: affordable modern pull. Also $10 at Wayfair and $18 at Lowe’s.', 'Форма как у оригинала, матовый чёрный металл.': 'Same shape as the original, matte black metal.',
+'Оригинал': 'Original', 'Можно купить': 'Ready-made', 'Кастомные (на заказ)': 'Custom (made to order)', 'Как сейчас': 'As now', 'Покупная': 'Ready-made', 'Кастомная': 'Custom',
+'пирамида': 'pyramid', 'прямоугольная': 'rectangular', 'стекло': 'glass', 'чёрное стекло': 'black glass', 'та же форма': 'same shape', 'МДФ': 'MDF', 'дерево': 'wood', 'штукатурка': 'plaster',
+'Кастомный короб делает столяр (МДФ, дерево) или гипсокартонщик (штукатурка). Внутри ставят встраиваемый мотор (range hood insert) под ширину короба. Короба из МДФ красятся в цвет верхних шкафов.': 'A custom hood box is built by a carpenter (MDF, wood) or a drywall installer (plaster). A range hood insert sized to the box goes inside. MDF boxes are painted to match the upper cabinets.',
+'Пирамида в чёрном': 'Black pyramid', 'Пирамидальная каминная вытяжка из нержавейки.': 'Stainless pyramid chimney hood.', 'Cosmo 30" со стеклянным козырьком': 'Cosmo 30" with glass canopy',
+'МДФ + стальная полоса': 'MDF + steel band', 'МДФ: изгиб с карнизом': 'MDF: curve with crown', 'МДФ: каминная полка на кронштейнах': 'MDF: mantel on corbels', 'МДФ: короб с шейкер-панелью': 'MDF: box with shaker panel',
+'МДФ: прямой конус с поясом': 'MDF: straight taper with band', 'МДФ: шиплап (горизонтальные доски)': 'MDF: shiplap (horizontal boards)', 'Белый дуб: вертикальные рейки': 'White oak: vertical slats', 'Белый дуб: изгиб': 'White oak: curve',
+'Белый дуб: короб с полкой': 'White oak: box with shelf', 'Орех: короб с рейками': 'Walnut: slatted box', 'Штукатурка + латунная полоса': 'Plaster + brass band', 'Штукатурка, плавный изгиб': 'Plaster, soft curve', 'Штукатурка, прямой конус': 'Plaster, straight taper',
+'BestReviews. 3 скорости, с воздуховодом или без. Самая близкая замена текущей.': 'BestReviews. 3 speeds, ducted or ductless. The closest replacement for the current one.', 'BestReviews. Закалённое стекло + нержавейка.': 'BestReviews. Tempered glass + stainless.',
+'Мощная, под газовую плиту.': 'Powerful, suited to a gas range.', 'Управление жестом, LED.': 'Gesture control, LED.', '950 CFM, около $1,399': '950 CFM, about $1,399',
+'Гладкий короб в цвет шкафов и полоса из чёрной стали внизу.': 'Smooth box in the cabinet color with a black steel band at the bottom.', 'Изгиб и латунная планка внизу. Хорошо с латунными ручками.': 'Curve with a brass strip at the bottom. Goes well with brass pulls.',
+'Изогнутый короб, облицованный шпоном белого дуба, с дубовым поясом.': 'Curved box in white oak veneer with an oak band.', 'Короб из гипсокартона со штукатуркой, красится в цвет стен.': 'Plastered drywall box, painted the wall color.',
+'Короб с полкой-«мантелом» и двумя фигурными кронштейнами.': 'Box with a mantel shelf and two shaped corbels.', 'Короб, обшитый горизонтальными МДФ-досками с зазором. Цвет верхних шкафов.': 'Box clad in gapped horizontal MDF boards. Upper cabinet color.',
+'Короб, обшитый рейками из белого дуба (fluted / slat). Тёплый акцент к любой краске.': 'Box clad in white oak slats (fluted / slat). A warm accent for any paint.', 'Наклонный короб с нижним поясом.': 'Sloped box with a bottom band.',
+'Плавный изгиб, сверху карниз. Цвет верхних шкафов.': 'Soft curve with crown on top. Upper cabinet color.', 'Покрашенный МДФ в цвет верхних шкафов, с карнизом и нижним поясом.': 'Painted MDF in the upper cabinet color, with crown and a bottom band.',
+'Прямой дубовый короб с массивной полкой снизу.': 'Straight oak box with a solid shelf at the bottom.', 'Строгая трапеция до потолка.': 'Clean trapezoid up to the ceiling.', 'Тёмный орех, вертикальные рейки, латунная планка.': 'Dark walnut, vertical slats, brass strip.',
+'Плитка Floor & Decor': 'Floor & Decor tile', 'Открыть на Floor & Decor': 'Open on Floor & Decor', 'Раздел «Backsplash» на Floor & Decor': 'Backsplash section on Floor & Decor',
+'Цвет и рисунок плитки переданы приблизительно (часть цветов угадана по названию). Цены с сайта Floor & Decor, ноябрь 2026.': 'Tile color and pattern are approximate (some colors guessed from the name). Prices from the Floor & Decor site, November 2026.',
+'Оригинал: линейная стеклянная мозаика': 'Original: linear glass mosaic', 'Самая похожая на текущую плитку': 'Closest to the current tile', 'Villa Artisan Frost, вертикально': 'Villa Artisan Frost, vertical', 'Villa Zellige Oat, ёлочкой': 'Villa Zellige Oat, herringbone',
+'Меньше швов, спокойнее.': 'Fewer grout lines, calmer look.',
+'Полы Floor & Decor': 'Floor & Decor flooring', 'Оригинал: тёмное дерево': 'Original: dark wood', 'Ближе всего к вашему нынешнему полу': 'Closest to your current floor',
+'LVP: водостойкий виниловый ламинат. Керамогранит под дерево самый прочный. Инженерная доска: настоящий дуб. Цены за кв. фут, ноябрь 2026.': 'LVP: waterproof luxury vinyl plank. Wood-look porcelain is the toughest. Engineered wood: real oak. Prices per sq ft, November 2026.',
+'Делается из МДФ и готового молдинга (например, panel moulding 1–1½") в любом строительном магазине, потом красится вместе со шкафами.': 'Made from MDF and ready-made molding (e.g. 1–1½" panel moulding) from any home store, then painted with the cabinets.',
+'Цвет панели': 'Panel color', 'Или свой цвет Sherwin-Williams': 'Or your own Sherwin-Williams color', 'Выбрано:': 'Selected:', 'Выбрано': 'Selected', 'Молдинг: ширина': 'Molding: width', 'Молдинг: цвет': 'Molding: color',
+'Молдинги-рамки': 'Picture-frame moldings', 'Другие стили': 'Other styles', 'Тонкий 1"': 'Thin 1"', 'Средний 1½"': 'Medium 1½"', 'Широкий 2¼"': 'Wide 2¼"', 'Как панель': 'Same as panel',
+'Белая (как сейчас)': 'White (as now)', 'В цвет острова': 'Island color', 'Как верхние': 'Same as upper', 'Как нижние': 'Same as lower', 'Белый дуб': 'White oak',
+'Гладкая панель': 'Flat panel', 'Как сейчас: ровная панель с плинтусом.': 'As now: flat panel with baseboard.', 'Шейкер-панели': 'Shaker panels', 'Рамочные панели с утопленной серединой, как фасады шкафов.': 'Frame panels with recessed centers, like the cabinet fronts.',
+'Ложные фасады': 'Faux doors', 'Панели повторяют двери шкафов, остров выглядит как мебель со всех сторон.': 'Panels repeat the cabinet doors so the island looks like furniture from every side.',
+'Бидборд (узкая вагонка)': 'Beadboard', 'Вертикальная узкая вагонка, коттеджный стиль.': 'Vertical narrow beadboard, cottage style.', 'Шиплап (горизонтальные доски)': 'Shiplap (horizontal boards)', 'Горизонтальные доски с зазором.': 'Horizontal boards with gaps.',
+'Рифлёная (fluted)': 'Fluted', 'Вертикальные полукруглые рейки, современный тренд.': 'Vertical half-round reeds, a current trend.', 'Рейки на тёмной подложке': 'Slats on dark backing', 'Вертикальные рейки с тёмными зазорами, акцентная стена.': 'Vertical slats with dark gaps, accent-wall look.',
+'Вейнскот: квадраты сверху': 'Wainscot: squares on top', 'Вертикальные планки с верхней рейкой, фермерский стиль.': 'Vertical boards with a top rail, farmhouse style.', 'Шейкер + дубовые вставки': 'Shaker + oak inserts',
+'Рамка в выбранном цвете, утопленные вставки из белого дуба: акцентный вариант.': 'Frame in the chosen color with recessed white oak inserts: an accent option.',
+'Рамки, 4 панели': 'Frames, 4 panels', 'Классика: четыре одинаковые рамки из молдинга.': 'Classic: four equal molding frames.', 'Рамки, 6 узких панелей': 'Frames, 6 narrow panels', 'Частый ритм, вытянутые рамки.': 'Tight rhythm, tall frames.',
+'Рамки, 3 широкие панели': 'Frames, 3 wide panels', 'Крупные двойные рамки.': 'Large double frames.', 'Двойная рамка, 4 панели': 'Double frame, 4 panels', 'Рамка, а внутри ещё одна рамка.': 'A frame with another frame inside.',
+'Двойная рамка, 6 панелей': 'Double frame, 6 panels', 'Узкие двойные рамки.': 'Narrow double frames.', 'Двойная рамка, 3 панели': 'Double frame, 3 panels', 'Тройная рамка, 3 панели': 'Triple frame, 3 panels',
+'Три вложенные рамки, самый нарядный вариант.': 'Three nested frames, the dressiest option.', 'Два ряда рамок': 'Two rows of frames', 'Сверху низкие рамки, снизу высокие, 4 колонки.': 'Short frames on top, tall below, 4 columns.',
+'Два ряда, снизу двойные': 'Two rows, double below', 'Сверху одинарные, снизу двойные рамки.': 'Single frames on top, double below.', 'Сетка квадратов': 'Grid of squares', 'Два ряда одинаковых квадратиков.': 'Two rows of equal squares.',
+'Сетка двойных квадратов': 'Grid of double squares', 'Квадраты с внутренней рамкой.': 'Squares with an inner frame.', 'Ряд маленьких квадратов сверху и рамки снизу.': 'A row of small squares on top and frames below.',
+'Рамки со скруглёнными углами': 'Frames with rounded corners', 'Мягкие скругления, 4 панели.': 'Soft rounded corners, 4 panels.', 'Двойные со скруглением': 'Double, rounded', 'Внешняя прямая, внутренняя скруглённая.': 'Outer square, inner rounded.',
+'Арки': 'Arches', 'Рамки с арочным верхом.': 'Frames with arched tops.', 'Двойные арки': 'Double arches', 'Арка в арке.': 'An arch within an arch.', 'Рамка с ромбом': 'Frame with diamond', 'Внутри каждой рамки ромб из молдинга.': 'A molding diamond inside each frame.',
+'Рамка с квадратом в центре': 'Frame with center square', 'Высокая рамка и маленький квадрат внутри.': 'A tall frame with a small square inside.', 'Широкая – узкая – широкая': 'Wide – narrow – wide', 'Чередование широких и узких рамок.': 'Alternating wide and narrow frames.',
+'Ритм с двойными рамками': 'Rhythm with double frames', 'Широкие рамки двойные, узкие одинарные.': 'Wide frames double, narrow ones single.',
+'Светодиодная подсветка': 'LED lighting', 'Цвет света': 'Light color', 'Свет в комнате': 'Room light', '2700K тёплый': '2700K warm', '3000K мягкий': '3000K soft', '4000K нейтральный': '4000K neutral', '5000K холодный': '5000K cool',
+'Под верхними шкафами': 'Under upper cabinets', 'Лента под шкафами освещает столешницу и фартук.': 'Strip under the cabinets lights the countertop and backsplash.', 'Под столешницей острова (со стороны стульев)': 'Under the island top (seating side)',
+'Лента под свесом подсвечивает панель острова.': 'Strip under the overhang lights the island panel.', 'Под островом снизу (цоколь)': 'Island toe kick', 'Мягкое свечение на полу вокруг острова.': 'Soft glow on the floor around the island.',
+'Цоколь нижних шкафов у стены': 'Toe kick of the wall base cabinets', 'Свечение под нижними шкафами.': 'Glow under the base cabinets.',
+'Этот же переключатель есть внизу над моделью. Подсветку лучше всего видно в режимах «Вечер» и «Лампы».': 'The same switch is at the bottom of the model. LEDs show best in Evening and Lamps modes.',
+'Для кухни обычно берут ленту 2700–3000K в алюминиевом профиле с рассеивателем, под шкафами ближе к передней кромке.': 'Kitchens usually use 2700–3000K strip in an aluminum channel with a diffuser, under the cabinets near the front edge.',
+'Цвет шкафов острова': 'Island cabinet color', 'Встроенный стол с верхними шкафами': 'Built-in desk with upper cabinets',
+'Ниша с четырьмя дверцами сверху, столешницей и двумя ящиками, как на вашем фото. Стоит у стены напротив кухни. Размеры примерные. Ручки для ниши выбираются во вкладке «Ручки» этого раздела.': 'A nook with four upper doors, a desktop and two drawers, as in your photo. It stands on the wall opposite the kitchen. Sizes are approximate. Nook hardware is chosen in this section’s Hardware tab.',
+'Показать нишу': 'Show nook', 'Скрыть': 'Hide', 'Цвет шкафов ниши': 'Nook cabinet color', 'Столешница': 'Desktop',
+'Кремовый кварц (как сейчас)': 'Cream quartz (as now)', 'Белый кварц': 'White quartz', 'Под мрамор (Calacatta)': 'Marble look (Calacatta)', 'Массив дуба': 'Solid oak', 'Массив ореха': 'Solid walnut', 'Чёрный кварц': 'Black quartz',
+'Смета на покраску': 'Painting estimate', 'Смета на покраску шкафов': 'Cabinet painting estimate',
+'Фасады (дверцы и ящики) посчитаны по модели автоматически. Количество и цены можно поменять, всё сохраняется.': 'Fronts (doors and drawers) are counted from the model automatically. You can change counts and prices; everything is saved.',
+'Цены': 'Prices', 'Покраска фасада, за штуку': 'Front painting, each', 'Покраска шкафа внутри, за фасад': 'Cabinet interior painting, per front', 'Кухня, верхние шкафы': 'Kitchen, upper cabinets', 'Кухня, нижние шкафы': 'Kitchen, lower cabinets',
+'красим': 'paint', 'фасадов': 'fronts', '+ внутри': '+ interior', '(ниша скрыта)': '(nook hidden)', 'Доплаты': 'Extras', 'Шкаф со встроенным холодильником': 'Built-in fridge cabinet', 'Панели и шкаф над холодильником': 'Panels and the cabinet above the fridge',
+'Защита помещения': 'Room protection', 'Плёнка и защита от пыли': 'Plastic sheeting and dust protection', 'Укрытие от краски': 'Covering against paint overspray', 'Итого': 'Total', 'Скопировать смету': 'Copy estimate', 'Пересчитать по модели': 'Recount from model',
+'«Внутри» считается так же по числу фасадов: 12 фасадов × $150. Цены за dust и paint containment впишите свои.': '“Interior” is also counted per front: 12 fronts × $150. Enter your own prices for dust and paint containment.',
+'покраска внутри': 'interior painting', 'Скопировано': 'Copied',
+'Сохранённые рендеры': 'Saved renders', 'Рендеры хранятся в вашем аккаунте Claude и видны на любом устройстве': 'Renders are stored in your Claude account and visible on any device', 'Рендеры хранятся в этом браузере': 'Renders are stored in this browser',
+'Пока пусто. Нажмите «Рендер» вверху: каждая картинка сохранится здесь вместе с дизайном, и к любому варианту можно будет вернуться.': 'Empty for now. Press Render at the top: each image is saved here with its design, and you can go back to any version.',
+'Последний': 'Latest', 'Предыдущий': 'Previous', '← Предыдущий': '← Previous', 'Следующий →': 'Next →', 'Закрыть': 'Close', 'Скачать': 'Download', 'Удалить': 'Delete', 'Вернуть этот дизайн': 'Restore this design', 'Скопировать код дизайна': 'Copy design code',
+'Сохранено': 'Saved', 'Сохранено во вкладке «Рендеры».': 'Saved to Renders.', 'Готовлю картинку, несколько секунд': 'Preparing the image, a few seconds', 'Удерживайте картинку, чтобы сохранить': 'Press and hold the image to save it',
+'Не удалось, удерживайте картинку': 'Failed, press and hold the image', 'Не удалось, вот код ниже': 'Failed, here is the code below',
+'Сохранить картинку: «Скачать» или удерживайте её (на компьютере правая кнопка мыши). Для фотореалистичного рендера пришлите мне код дизайна.': 'To save the image: press Download or press and hold it (right-click on a computer). For a photoreal render, send me the design code.',
+'острове': 'island', 'нише': 'nook', 'как сейчас': 'as now', 'около $5–10 за шт.': 'about $5–10 each', 'от $26.97': 'from $26.97',
+'Фасады': 'Fronts', 'Ящики': 'Drawers', 'Отмена': 'Cancel'
+};
+const WORDS = [['инженерная доска', 'engineered wood'], ['«французская ёлка»', 'chevron'], ['керамогранит', 'porcelain'], ['керамика', 'ceramic'], ['стекло', 'glass'], ['мрамор', 'marble'], ['под дерево', 'wood-look'],
+  ['вертикальный стек', 'vertical stack'], ['та же плитка', 'same tile'], ['ёлочкой', 'herringbone'], ['ёлочка', 'herringbone'], ['вертикально', 'vertical'], ['за кв. фут', 'per sq ft'], ['за шт.', 'each'], ['за лист', 'per sheet'], ['панели', 'panels'], ['лист', 'sheet'],
+  ['тёмно-коричневый', 'dark brown'], ['светлый блонд', 'light blonde'], ['средний бежевый', 'medium beige'], ['блонд', 'blonde'],
+  ['около', 'about'], ['от ', 'from '], ['мм', 'mm'], ['шт.', 'pcs'], ['набор', 'set']];
+const PFX = { 'Верх': 'Upper', 'Низ': 'Lower', 'Остров': 'Island', 'Фартук': 'Backsplash', 'Пол': 'Floor', 'Ниша': 'Nook', 'Сейчас': 'Now', 'Выбрано': 'Selected', 'Оригинал': 'Original', 'Итого': 'Total' };
+const CYR = /[А-Яа-яЁё]/;
+function trText(s){
+  if (!CYR.test(s)) return s;
+  const m0 = s.match(/^(\s*)([\s\S]*?)(\s*)$/), a = m0[1], t = m0[2], z = m0[3];
+  return a + trCore(t) + z;
+}
+function trCore(t){
+  if (EN[t] !== undefined) return EN[t];
+  const t2 = t.replace(/[.]$/, ''); if (t2 !== t && EN[t2] !== undefined) return EN[t2] + '.';
+  let m;
+  if (t.includes(' · ')) return t.split(' · ').map(trCore).join(' · ');
+  if ((m = t.match(/^по модели: (\d+) фасадов$/))) return `from model: ${m[1]} fronts`;
+  if ((m = t.match(/^Сохранённые рендеры \((\d+)\)$/))) return `Saved renders (${m[1]})`;
+  if ((m = t.match(/^\(до (\d+) последних\)\. (.*)$/))) return `(up to ${m[1]} latest). Click an image to open it, restore that design, download or delete it.`;
+  if ((m = t.match(/^Своя комбинация: форма \(в покрытии «(.+)»\)$/))) return `Custom combo: shape (in ${trCore(m[1])} finish)`;
+  if ((m = t.match(/^Сейчас на (острове|нише) такие же ручки, как на кухне: (.+)\. Нажмите «Свои ручки», чтобы выбрать отдельно\.$/))) return `The ${m[1] === 'острове' ? 'island' : 'nook'} now has the same hardware as the kitchen: ${trCore(m[2])}. Press “Own hardware” to choose separately.`;
+  if ((m = t.match(/^Сейчас: (.+?)\. Панель со стороны стульев настраивается во вкладке «Панель»\.$/))) return `Now: ${trCore(m[1])}. The seating-side panel is set in the Panel tab.`;
+  if ((m = t.match(/^Открыть в (.+)$/))) return 'Open on ' + m[1];
+  if ((m = t.match(/^(.+): (\d+) фасадов × (.+)$/))) return `${trCore(m[1])}: ${m[2]} fronts × ${m[3]}`;
+  if ((m = t.match(/^(.+?) фасадов × (.+)$/))) return `${m[1]} fronts × ${m[2]}`;
+  if ((m = t.match(/^([А-Яа-яЁё ]+): ([\s\S]+)$/)) && (PFX[m[1]] || EN[m[1]])) return (PFX[m[1]] || EN[m[1]]) + ': ' + trCore(m[2]);
+  if ((m = t.match(/^(.+), (\$[\d.,–]+.*)$/)) && CYR.test(m[1])) return trCore(m[1]) + ', ' + trCore(m[2]);
+  if (EN[t + '.'] !== undefined) return EN[t + '.'].replace(/\.$/, '');
+  let r = t; for (const [ru, en] of WORDS) r = r.replace(new RegExp('(?<![А-Яа-яЁё])' + ru.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![А-Яа-яЁё])', 'g'), en);
+  return r;
+}
+let LANG = (() => { try { return localStorage.getItem('kitchenLang') === 'en' ? 'en' : 'ru'; } catch (e){ return 'ru'; } })();
+const RU_OF = new WeakMap(), EN_OF = new WeakMap();
+function trNode(n){
+  let ru = RU_OF.get(n); if (ru === undefined || (n.data !== ru && n.data !== EN_OF.get(n))){ ru = n.data; RU_OF.set(n, ru); }
+  const want = LANG === 'en' ? trText(ru) : ru; EN_OF.set(n, want); if (n.data !== want) n.data = want;
+}
+const ATTRS = ['title', 'placeholder', 'aria-label'];
+function trEl(el){ for (const k of ATTRS){ if (!el.hasAttribute(k)) continue; const key = '_ru_' + k; const v = el.getAttribute(k);
+  if (el[key] === undefined || (v !== el[key] && v !== el['_en_' + k])) el[key] = v; const want = LANG === 'en' ? trText(el[key]) : el[key]; el['_en_' + k] = want; if (v !== want) el.setAttribute(k, want); } }
+function trTree(root){
+  if (root.nodeType === 3){ if (!root.parentElement || !root.parentElement.closest('script,style')) trNode(root); return; }
+  if (root.nodeType !== 1 || root.matches('script,style')) return; trEl(root);
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT); let n;
+  while ((n = w.nextNode())){ if (n.nodeType === 3){ if (!n.parentElement.closest('script,style')) trNode(n); } else trEl(n); }
+}
+new MutationObserver(ms => { for (const m of ms){ if (m.type === 'characterData') trNode(m.target); else if (m.type === 'attributes') trEl(m.target); else m.addedNodes.forEach(trTree); } })
+  .observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+window.trText = trText;
+const L = s => LANG === 'en' ? trText(s) : s;
+function setLang(l){ LANG = l === 'en' ? 'en' : 'ru'; try { localStorage.setItem('kitchenLang', LANG); } catch (e) {} document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === LANG)); document.title = L('Конструктор кухни'); trTree(document.body); }
+window.setLang = setLang;
+document.getElementById('langs').addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b) setLang(b.dataset.lang); });
+setLang(LANG);
 // --- floors ---
 const FW = RX1 - RX0, FH = RZ1;
 fl.geometry.dispose(); fl.geometry = new THREE.PlaneGeometry(FW, FH);
@@ -1065,7 +1224,7 @@ function estText(){ const e = st.est, { rows, total } = estCalc(), L = ['Сме�
   for (const r of rows){ const z = e.z[r.k]; if (!z.on || !r.n) continue; L.push(`${r.t}: ${r.n} фасадов × ${money(e.price)} = ${money(r.n * e.price)}`); if (z.inside) L.push(`  покраска внутри: ${r.n} × ${money(e.inPrice)} = ${money(r.n * e.inPrice)}`); }
   if (e.fr.on) L.push(`Шкаф со встроенным холодильником: ${money(+e.fr.p || 0)}`);
   if (e.dust.on) L.push(`Dust containment: ${money(+e.dust.p || 0)}`); if (e.pc.on) L.push(`Paint containment: ${money(+e.pc.p || 0)}`);
-  L.push(`Итого: ${money(total)}`); return L.join('\n'); }
+  L.push(`Итого: ${money(total)}`); return LANG === 'en' ? L.map(trText).join('\n') : L.join('\n'); }
 function estHTML(){ const e = st.est, { rows, total } = estCalc();
   return `<div class="card" style="margin:0 0 4px"><b>Смета на покраску</b><p>Фасады (дверцы и ящики) посчитаны по модели автоматически. Количество и цены можно поменять, всё сохраняется.</p></div>
   <h2>Цены</h2><div class="est"><div class="r"><b>Покраска фасада, за штуку</b><input type="number" min="0" step="5" data-ep="price" value="${e.price}"></div>
@@ -1209,6 +1368,9 @@ body.addEventListener('input', e => { const i = e.target, d = i.dataset, E = st.
   else if (d.ez){ const z = E.z[d.ez]; if (d.f === 'n') z.n = i.value === '' ? null : Math.round(num()); else z[d.f] = i.checked; }
   else if (d.ec){ if (d.f === 'p') E[d.ec].p = num(); else E[d.ec].on = i.checked; }
   else return; save(); estUpdate(); });
+{ const tm = document.getElementById('toModel'), mq = matchMedia('(max-width:760px)');
+  const upd = () => { tm.hidden = !mq.matches || scrollY < innerHeight * .3; }; addEventListener('scroll', upd, { passive: true }); mq.addEventListener('change', upd); upd();
+  tm.addEventListener('click', () => scrollTo({ top: 0, behavior: 'smooth' })); }
 HW.push({ id: 'custom', style: 'bar', fin: 'nickel', name: 'Своя комбинация', note: 'Форма и покрытие выбраны вручную. Похожие ручки есть у Amerock и Top Knobs почти во всех покрытиях.' });
 document.getElementById('reset').addEventListener('click', () => { st = { ...structuredClone(DEF), tab: st.tab, sec: st.sec, secTab: st.secTab, est: st.est }; save(); applyAll(); render(); });
 for (const k of ['wall', 'up', 'isl']) if (!PAINTS.some(x => x.id === st[k])) st[k] = 'orig';
