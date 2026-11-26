@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Конструктор кухни</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: спокойный, как образцы в мебельном салоне
+   IDEA: стол с образцами — веер красок, планка ручек, пластины плитки
+   PICTURE: сама 3D-кухня, всё меняется прямо на ней
+   COLOUR and TYPE: эспрессо #23160f, крем #efe6d2, латунь #c9a45c; Commissioner
+   LAYOUT: сцена слева, панель образцов справа 380px; на телефоне сцена сверху, панель снизу */
+:root{color-scheme:dark;--bg:#1d1410;--panel:#23160f;--line:rgba(239,230,210,.14);--ink:#efe6d2;--mut:#bfae92;--acc:#c9a45c}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:15px/1.45 Commissioner,system-ui,sans-serif}
+#c{position:fixed;left:0;top:0;width:calc(100% - 380px);height:100%;display:block;touch-action:none}
+.side{position:fixed;right:0;top:0;width:380px;height:100%;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column}
+.hd{padding:16px 18px 10px;border-bottom:1px solid var(--line)}
+h1{font-size:20px;line-height:1.15;margin:0;font-weight:600}
+.sub{margin:4px 0 0;color:var(--mut);font-size:13px}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-top:12px}
+.tabs button{padding:0 6px;min-height:36px}
+.secs{display:flex;gap:4px;margin-top:12px;padding:3px;border-radius:12px;background:rgba(127,127,127,.14)}.secs button{flex:1;min-height:40px;font-size:15px;font-weight:600;border-color:transparent;background:transparent}.secs button[aria-pressed=true]{background:var(--acc);color:#241711}
+.hbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px}.hbar button{min-height:38px}.hbtn{padding:0 12px}.hbtn[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#241711}
+.tabs{grid-template-columns:repeat(auto-fit,minmax(78px,1fr))!important}
+.rbtn{background:var(--acc);color:#241711;border-color:var(--acc);font-weight:600;padding:0 18px}
+.rbtn:hover{background:#d8b56c}
+#rov{position:fixed;inset:0;background:rgba(15,10,7,.55);display:grid;place-items:center;z-index:10;padding:16px}
+#rov[hidden]{display:none}
+.rbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(360px,100%)}
+.rbox.wide{width:min(1100px,100%);max-height:100%;overflow:auto}
+.rbox img{width:100%;max-height:72vh;object-fit:contain;background:#000;border-radius:8px;display:block}
+.rbox p{color:var(--mut);font-size:13.5px;margin:10px 0}
+.rbar{height:6px;background:rgba(239,230,210,.12);border-radius:3px;overflow:hidden;margin-bottom:12px}.rbar i{display:block;height:100%;width:0;background:var(--acc)}
+.rrow{display:flex;gap:8px;flex-wrap:wrap}
+.rlink{display:inline-flex;align-items:center;padding:0 12px;min-height:36px;border:1px solid var(--line);border-radius:8px;color:var(--ink);text-decoration:none;font-size:14px}
+.rgal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rgal button{display:block;padding:0;text-align:left;overflow:hidden;min-height:0}
+.rgal img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
+.rgal span{display:block;padding:6px 8px 0;font-size:12.5px}
+.rgal span.rd{padding:2px 8px 8px;color:var(--mut);font-size:11.5px;line-height:1.35}
+.body{flex:1;overflow-y:auto;padding:14px 18px 24px}
+h2{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--mut)}
+h2:first-child{margin-top:0}
+button{font:inherit;font-size:14px;color:var(--ink);background:rgba(239,230,210,.07);border:1px solid var(--line);border-radius:10px;min-height:40px;padding:0 12px;cursor:pointer}
+button:hover{background:rgba(239,230,210,.14)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+button[aria-pressed=true]{background:var(--acc);color:#241711;border-color:var(--acc)}
+.seg{display:flex;gap:4px}.seg button{flex:1}
+.sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
+.sw button{display:flex;flex-direction:column;align-items:stretch;padding:6px;gap:5px;text-align:left;font-size:12px;line-height:1.2;min-height:0}
+.sw i{display:block;height:44px;border-radius:6px;border:1px solid rgba(0,0,0,.25);background-size:cover}
+.sw small{color:inherit;opacity:.75}
+.list{display:flex;flex-direction:column;gap:6px}
+.list button{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:center;text-align:left;padding:7px 9px;min-height:56px}
+.list button i{width:76px;height:56px;border-radius:6px;background-size:cover;border:1px solid rgba(0,0,0,.3)}
+.list b{font-weight:600;font-size:14px;display:block}.list span{font-size:12.5px;opacity:.8}
+.dots{display:grid;grid-template-columns:repeat(auto-fill,minmax(30px,1fr));gap:6px}.dots button{min-height:30px;height:30px;padding:0;border-radius:50%;border:2px solid rgba(0,0,0,.3)}.dots button[aria-pressed=true]{outline:2px solid var(--acc);outline-offset:2px;border-color:#000}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{border-radius:999px;display:flex;align-items:center;gap:7px}
+.chips i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.4)}
+.card{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.18);font-size:13.5px}
+.card b{display:block;font-size:15px}.card p{margin:6px 0 0;color:var(--mut)}
+.card a{color:var(--acc)}
+.est{display:grid;gap:8px}.est .r{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line,rgba(127,127,127,.25));border-radius:10px}
+.est .r b{font-weight:600}.est .r small{color:var(--mut);font-size:12px}.est .sum{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+.est label{display:flex;align-items:center;gap:6px;font-size:13px}.est .opts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.est input[type=number]{width:76px;min-height:32px;padding:0 8px;font:inherit;border-radius:8px;border:1px solid var(--line,rgba(127,127,127,.35));background:transparent;color:inherit}
+.est .tot{display:flex;justify-content:space-between;align-items:baseline;padding:12px;border-radius:10px;background:rgba(127,127,127,.12);font-size:15px}.est .tot b{font-size:22px}
+.note{font-size:12.5px;color:var(--mut);margin-top:14px}
+.views{position:fixed;left:12px;top:12px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 404px)}
+.views button{background:rgba(35,22,15,.85);backdrop-filter:blur(6px);border-radius:999px;font-size:13px;min-height:36px}
+.views button[aria-pressed=true]{background:var(--acc)}
+.lightbar{position:fixed;left:12px;bottom:12px;display:flex;align-items:center;gap:6px;z-index:2}
+.lightbar span{font-size:12.5px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);margin-right:2px}
+.lightbar button{background:rgba(35,22,15,.85);backdrop-filter:blur(6px);border-radius:999px;font-size:13px;min-height:34px;padding:0 12px}
+.lightbar button[aria-pressed=true]{background:var(--acc)}
+#load{position:fixed;inset:0;display:grid;place-items:center;color:var(--mut);pointer-events:none}
+@media(max-width:760px){.lightbar{bottom:calc(48% + 8px)}.lightbar span{display:none}#c{width:100%;height:52%}.side{top:52%;width:100%;height:48%;border-left:0;border-top:1px solid var(--line)}.views{max-width:calc(100% - 24px);flex-wrap:nowrap;overflow-x:auto}.views button{flex:none}.hd{padding:10px 14px 8px}.sub{display:none}h1{font-size:17px}.tabs{margin-top:8px}.body{padding:12px 14px 20px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/","three/examples/jsm/":"https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/","three-mesh-bvh":"https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.10.0/build/index.module.js","three-gpu-pathtracer":"https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.28/build/index.module.js"}}</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="load">Загружаю 3D-сцену…</div>
+<div class="lightbar" id="lightbar" role="group" aria-label="Свет"><span>Свет:</span><button data-light="bright" aria-pressed="true">Светло</button><button data-light="day" aria-pressed="false">День</button><button data-light="evening" aria-pressed="false">Вечер</button><button data-light="lamps" aria-pressed="false">Лампы</button></div>
+<div class="views" id="views">
+  <button data-v="overview" aria-pressed="true">Общий вид</button>
+  <button data-v="wall" aria-pressed="false">Плита и шкафы</button>
+  <button data-v="island" aria-pressed="false">Остров</button>
+  <button data-v="seats" aria-pressed="false">Со стороны стульев</button>
+  <button data-v="nook" aria-pressed="false">Ниша</button>
+  <button data-v="top" aria-pressed="false">Сверху</button>
+  <button id="walls" aria-pressed="true">Стены</button>
+</div>
+<aside class="side">
+  <div class="hd">
+    <h1>Конструктор кухни</h1>
+    <div class="hbar"><button id="estBtn" class="hbtn">Смета</button><button id="galBtn" class="hbtn">Рендеры</button><button id="renderBtn" class="rbtn">Рендер</button></div>
+    <p class="sub">Выберите образец, и он сразу появится на модели. <button id="reset" style="min-height:28px;font-size:12.5px;padding:0 9px;margin-left:4px">Вернуть оригинал</button></p>
+    <div class="secs" id="secs"><button data-sec="kit">Кухня</button><button data-sec="isl">Остров</button><button data-sec="desk">Ниша</button></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+  </div>
+  <div class="body" id="body"></div>
+</aside>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
+{
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.92;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1d1410);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 60);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 0.8; controls.maxDistance = 14;
+
+// ---------- procedural textures ----------
+function rnd(seed){ let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function canvasTex(w, h, draw, srgb = true){
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t;
+}
+function woodDraw(base, seed){ return (g, w, h) => {
+  const r = rnd(seed); g.fillStyle = base; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 260; i++){ const x = r() * w, lw = 0.5 + r() * 3, a = 0.04 + r() * 0.12;
+    g.strokeStyle = r() > .5 ? `rgba(15,7,4,${a})` : `rgba(95,55,35,${a*0.6})`; g.lineWidth = lw; g.beginPath();
+    let xx = x; g.moveTo(xx, 0); for (let y = 0; y <= h; y += 16){ xx += (r() - .5) * 2.2; g.lineTo(xx, y); } g.stroke(); }
+  for (let k = 0; k < 3; k++){ const cx = r() * w, cy = r() * h; for (let j = 6; j > 0; j--){ g.strokeStyle = `rgba(20,9,5,${0.08})`; g.lineWidth = 1.2; g.beginPath(); g.ellipse(cx, cy, j * 2.2, j * 7, 0, 0, Math.PI * 2); g.stroke(); } }
+}; }
+const woodTexV = canvasTex(512, 512, woodDraw('#26150f', 7));
+const woodTexH = woodTexV.clone(); woodTexH.center.set(.5, .5); woodTexH.rotation = Math.PI / 2; woodTexH.needsUpdate = true;
+const quartzTex = canvasTex(512, 512, (g, w, h) => { const r = rnd(3); g.fillStyle = '#e8ddc3'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 5000; i++){ const v = r(); g.fillStyle = v > .7 ? 'rgba(255,252,240,.7)' : v > .35 ? 'rgba(200,185,155,.55)' : 'rgba(150,135,110,.35)'; const s = .6 + r() * 1.8; g.fillRect(r() * w, r() * h, s, s); } });
+const tileTex = canvasTex(1024, 512, (g, w, h) => { const r = rnd(11); g.fillStyle = '#6b6754'; g.fillRect(0, 0, w, h);
+  const rows = 12, rh = h / rows, pal = ['#8f8a70', '#9a9479', '#847f66', '#a19b80', '#8a8469', '#7b765f'];
+  for (let i = 0; i < rows; i++){ let x = -r() * 120; while (x < w){ const tw = 70 + r() * 230; const col = pal[Math.floor(r() * pal.length)];
+      const gr = g.createLinearGradient(0, i * rh, 0, (i + 1) * rh); gr.addColorStop(0, col); gr.addColorStop(.45, '#b3ad94'); gr.addColorStop(.6, col); gr.addColorStop(1, col);
+      g.fillStyle = gr; g.fillRect(x + 1.5, i * rh + 1.5, tw - 3, rh - 3); x += tw; } } });
+const floorTex = canvasTex(1024, 1024, (g, w, h) => { const r = rnd(5); const n = 8, pw = w / n;
+  for (let i = 0; i < n; i++){ let y = -r() * h; while (y < h){ const L = 300 + r() * 500; const l = 13 + r() * 6;
+      g.fillStyle = `hsl(${18 + r() * 8},${24 + r() * 10}%,${l}%)`; g.fillRect(i * pw, y, pw, L);
+      for (let k = 0; k < 40; k++){ g.fillStyle = `rgba(${r() > .6 ? '120,85,60' : '10,5,3'},${.05 + r() * .1})`; g.fillRect(i * pw + r() * pw, y + r() * L, 1 + r() * 2, 10 + r() * 80); }
+      g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(i * pw, y, pw, 2); y += L; }
+    g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(i * pw, 0, 2, h); } });
+const blindsTex = canvasTex(64, 256, (g, w, h) => { for (let y = 0; y < h; y += 8){ g.fillStyle = '#f4f1ea'; g.fillRect(0, y, w, 6); g.fillStyle = '#b8b2a6'; g.fillRect(0, y + 6, w, 2); } });
+
+// ---------- materials ----------
+const M = {
+  woodV: new THREE.MeshStandardMaterial({ name: 'Espresso_wood_V', map: woodTexV, roughness: .55, metalness: 0 }),
+  woodH: new THREE.MeshStandardMaterial({ name: 'Espresso_wood_H', map: woodTexH, roughness: .55, metalness: 0 }),
+  carcass: new THREE.MeshStandardMaterial({ name: 'Espresso_carcass', color: 0x2c1912, roughness: .7 }),
+  kick: new THREE.MeshStandardMaterial({ name: 'Toe_kick', color: 0x1c100b, roughness: .9 }),
+  quartz: new THREE.MeshStandardMaterial({ name: 'Cream_quartz', map: quartzTex, roughness: .28 }),
+  steel: new THREE.MeshStandardMaterial({ name: 'Stainless', color: 0xc9cbcc, metalness: 1, roughness: .32 }),
+  steelDark: new THREE.MeshStandardMaterial({ name: 'Stainless_dark', color: 0x8d9093, metalness: 1, roughness: .4 }),
+  pull: new THREE.MeshStandardMaterial({ name: 'Brushed_pull', color: 0xd6d6d2, metalness: 1, roughness: .25 }),
+  black: new THREE.MeshStandardMaterial({ name: 'Black_glass', color: 0x0b0b0c, roughness: .12, metalness: .2 }),
+  matteBlack: new THREE.MeshStandardMaterial({ name: 'Cast_iron', color: 0x161616, roughness: .75 }),
+  tile: new THREE.MeshStandardMaterial({ name: 'Glass_tile', map: tileTex, roughness: .12, metalness: .05 }),
+  wall: new THREE.MeshStandardMaterial({ name: 'Wall_beige', color: 0xe6dcc6, roughness: .92 }),
+  trim: new THREE.MeshStandardMaterial({ name: 'White_trim', color: 0xf3f0ea, roughness: .55 }),
+  panel: new THREE.MeshStandardMaterial({ name: 'Island_back_panel', color: 0xe3dac8, roughness: .7 }),
+  floor: new THREE.MeshStandardMaterial({ name: 'Dark_wood_floor', map: floorTex, roughness: .45 }),
+  blinds: new THREE.MeshStandardMaterial({ name: 'Window_blinds', map: blindsTex, emissive: 0xffffff, emissiveMap: blindsTex, emissiveIntensity: .35, roughness: .9 }),
+  brass: new THREE.MeshStandardMaterial({ name: 'Brass', color: 0xc9a45c, metalness: 1, roughness: .3 }),
+  glass: new THREE.MeshStandardMaterial({ name: 'Pendant_glass', color: 0xffffff, transparent: true, opacity: .22, roughness: .05, metalness: 0, side: THREE.DoubleSide }),
+};
+floorTex.repeat.set(1, 1);
+
+// ---------- zones (cabinet finish per area) ----------
+function mkZone(n){ return { V: M.woodV.clone(), H: M.woodH.clone(), carc: M.carcass.clone() }; }
+const ZONES = { run: mkZone('run'), up: mkZone('up'), isl: mkZone('isl') }; let Z = ZONES.run;
+ZONES.up.V.name = 'Upper_finish_V'; ZONES.up.H.name = 'Upper_finish_H';
+ZONES.isl.V.name = 'Island_finish_V'; ZONES.isl.H.name = 'Island_finish_H'; ZONES.run.V.name = 'Lower_finish_V'; ZONES.run.H.name = 'Lower_finish_H';
+const PULLS = [];
+// ---------- helpers ----------
+const root = new THREE.Group(); root.name = 'Kitchen'; scene.add(root);
+function B(g, x0, x1, y0, y1, z0, z1, mat, name){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), mat);
+  m.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); m.castShadow = m.receiveShadow = true; if (name) m.name = name; g.add(m); return m;
+}
+function cyl(g, r, h, mat, x, y, z, axis = 'y', seg = 16){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat); m.position.set(x, y, z);
+  if (axis === 'x') m.rotation.z = Math.PI / 2; if (axis === 'z') m.rotation.x = Math.PI / 2; m.castShadow = true; g.add(m); return m;
+}
+function bar(g, cx, cy, z, len, vertical){
+  const p = new THREE.Group(); p.name = 'Bar_pull';
+  cyl(p, .0065, len, M.pull, 0, 0, .03, 'y', 12);
+  const off = len / 2 - .03; cyl(p, .0045, .03, M.pull, 0, off, .015, 'z', 10); cyl(p, .0045, .03, M.pull, 0, -off, .015, 'z', 10);
+  if (!vertical) p.rotation.z = Math.PI / 2; p.position.set(cx, cy, z); g.add(p);
+}
+// Shaker door/drawer front, facing +z, back face at z0
+function front(g, x0, x1, y0, y1, z0, pull){
+  const d = new THREE.Group(); d.name = 'Shaker_front'; d.userData.zone = Object.keys(ZONES).find(k => ZONES[k] === Z); const t = .019, fw = Math.min(.068, (y1 - y0) * .26, (x1 - x0) * .2);
+  B(d, x0 + fw, x1 - fw, y0 + fw, y1 - fw, z0, z0 + t - .007, Z.V);
+  B(d, x0, x0 + fw, y0, y1, z0, z0 + t, Z.V); B(d, x1 - fw, x1, y0, y1, z0, z0 + t, Z.V);
+  B(d, x0 + fw, x1 - fw, y0, y0 + fw, z0, z0 + t, Z.H); B(d, x0 + fw, x1 - fw, y1 - fw, y1, z0, z0 + t, Z.H);
+  if (pull){ const L = pull.len || (pull.v ? .2 : Math.min(.3, (x1 - x0) * .5));
+    const px = pull.x === 'l' ? x0 + .045 : pull.x === 'r' ? x1 - .045 : (x0 + x1) / 2;
+    const py = pull.y === 'top' ? y1 - .045 - L / 2 : pull.y === 'bot' ? y0 + .045 + L / 2 : (y0 + y1) / 2;
+    const e = { g: d, x0, x1, y0, y1, px, py, z: z0 + t, L, v: !!pull.v, yt: pull.y, xt: pull.x, c: new THREE.Group() };
+    e.zone = d.userData.zone; e.c.name = 'Hardware'; d.add(e.c); PULLS.push(e); }
+  g.add(d); return d;
+}
+const G = .0015; // reveal gap
+const D = .58, TOP0 = .876, TOP1 = .906, KICK = .10;
+function carcass(g, x0, x1, top = TOP0){ B(g, x0, x1, KICK, top, 0, D, Z.carc); B(g, x0, x1, 0, KICK, 0, D - .07, M.kick); }
+function baseCab(g, x0, x1, kind){
+  const c = new THREE.Group(); c.name = 'Base_' + kind; carcass(c, x0, x1, kind === 'doors' ? .62 : TOP0); const xm = (x0 + x1) / 2;
+  if (kind === 'drawer+doors'){
+    front(c, x0 + G, x1 - G, .72, TOP0 - .008, D, { y: 'c' });
+    front(c, x0 + G, xm - G, KICK + .005, .72 - .003, D, { v: 1, x: 'r', y: 'top' });
+    front(c, xm + G, x1 - G, KICK + .005, .72 - .003, D, { v: 1, x: 'l', y: 'top' });
+  } else if (kind === 'doors'){
+    front(c, x0 + G, xm - G, KICK + .005, TOP0 - .008, D, { v: 1, x: 'r', y: 'top' });
+    front(c, xm + G, x1 - G, KICK + .005, TOP0 - .008, D, { v: 1, x: 'l', y: 'top' });
+  } else if (kind === 'drawers3'){
+    front(c, x0 + G, x1 - G, KICK + .005, .40, D, { y: 'c' });
+    front(c, x0 + G, x1 - G, .403, .712, D, { y: 'c' });
+    front(c, x0 + G, x1 - G, .715, TOP0 - .008, D, { y: 'c' });
+  } else if (kind === 'microwave'){
+    front(c, x0 + G, x1 - G, KICK + .005, .465, D, { y: 'c' });
+    const mw = new THREE.Group(); mw.name = 'Microwave_drawer';
+    B(mw, x0 + .01, x1 - .01, .47, TOP0 - .012, D - .01, D + .02, M.steel);
+    B(mw, x0 + .07, x1 - .07, .53, .77, D + .02, D + .023, M.black);
+    for (let i = 0; i < 9; i++) B(mw, x0 + .06 + i * .055, x0 + .09 + i * .055, .79, .84, D + .02, D + .022, M.matteBlack);
+    for (let i = 0; i < 9; i++) B(mw, x0 + .06 + i * .055, x0 + .09 + i * .055, .485, .515, D + .02, D + .022, M.matteBlack);
+    c.add(mw);
+  }
+  g.add(c);
+}
+function dishwasher(g, x0, x1){
+  const d = new THREE.Group(); d.name = 'Dishwasher';
+  B(d, x0, x1, 0, KICK, 0, D - .07, M.kick);
+  B(d, x0 + .004, x1 - .004, KICK + .005, TOP0 - .006, .02, D + .02, M.steel);
+  B(d, x0 + .004, x1 - .004, .80, TOP0 - .006, D + .02, D + .024, M.black);
+  const h = cyl(d, .009, x1 - x0 - .12, M.pull, (x0 + x1) / 2, .765, D + .055, 'x'); h.name = 'DW_handle';
+  B(d, x0 + .06, x0 + .072, .755, .775, D + .02, D + .055, M.pull); B(d, x1 - .072, x1 - .06, .755, .775, D + .02, D + .055, M.pull);
+  g.add(d);
+}
+function upperCab(g, x0, x1, y0, y1, depth){
+  const c = new THREE.Group(); c.name = 'Upper_cabinet'; const xm = (x0 + x1) / 2; const zPrev = Z; Z = ZONES.up;
+  B(c, x0, x1, y0, y1, 0, depth, Z.carc);
+  front(c, x0 + G, xm - G, y0 + .003, y1 - .003, depth, { v: 1, x: 'r', y: 'bot' });
+  front(c, xm + G, x1 - G, y0 + .003, y1 - .003, depth, { v: 1, x: 'l', y: 'bot' });
+  Z = zPrev; g.add(c);
+}
+
+// ---------- room ----------
+const RX0 = -0.45, RX1 = 5.2, RZ1 = 5.6, H = 2.62;
+const room = new THREE.Group(); room.name = 'Room'; root.add(room);
+const fl = new THREE.Mesh(new THREE.PlaneGeometry(RX1 - RX0, RZ1), M.floor);
+fl.geometry.attributes.uv.array.forEach((v, i, a) => { a[i] = v * (i % 2 ? RZ1 : RX1 - RX0) / 1.2; });
+fl.rotation.x = -Math.PI / 2; fl.position.set((RX0 + RX1) / 2, 0, RZ1 / 2); fl.receiveShadow = true; fl.name = 'Floor'; room.add(fl);
+const walls = new THREE.Group(); walls.name = 'Walls'; room.add(walls);
+function wall(w, h, holes, mat = M.wall){
+  const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(w, 0); s.lineTo(w, h); s.lineTo(0, h); s.closePath();
+  for (const [a, b, c, d] of holes){ const p = new THREE.Path(); p.moveTo(a, c); p.lineTo(b, c); p.lineTo(b, d); p.lineTo(a, d); p.closePath(); s.holes.push(p); }
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(s), mat); m.receiveShadow = true; return m;
+}
+// back wall z=0 (door at x 3.85..4.75)
+const bw = wall(RX1 - RX0, H, [[3.85 - RX0, 4.75 - RX0, 0, 2.03]]); bw.position.set(RX0, 0, 0); bw.name = 'Wall_back'; walls.add(bw);
+// left wall x=RX0 (window at z 1.3..2.5)
+const lw = wall(RZ1, H, [[RZ1 - 2.5, RZ1 - 1.3, .9, 2.2]]); lw.rotation.y = Math.PI / 2; lw.position.set(RX0, 0, RZ1); lw.name = 'Wall_left'; walls.add(lw);
+// right wall x=RX1 (door at z 1.0..1.9)
+const rw = wall(RZ1, H, [[1.0, 1.9, 0, 2.03]]); rw.rotation.y = -Math.PI / 2; rw.position.set(RX1, 0, 0); rw.name = 'Wall_right'; walls.add(rw);
+const ceil = new THREE.Mesh(new THREE.PlaneGeometry(RX1 - RX0, RZ1), M.wall); ceil.rotation.x = Math.PI / 2; ceil.position.set((RX0 + RX1) / 2, H, RZ1 / 2); ceil.name = 'Ceiling'; walls.add(ceil);
+const fw2 = wall(RX1 - RX0, H, []); fw2.rotation.y = Math.PI; fw2.position.set(RX1, 0, RZ1); fw2.name = 'Wall_front'; walls.add(fw2);
+for (const [x, z] of [[1.0, 1.2], [2.3, 1.2], [3.4, 1.2], [1.4, 3.6], [3.2, 3.6]]){ const d = new THREE.Mesh(new THREE.CircleGeometry(.07, 24), new THREE.MeshStandardMaterial({ name: 'Recessed_light', color: 0xffffff, emissive: 0xfff1d6, emissiveIntensity: 2 })); d.rotation.x = Math.PI / 2; d.position.set(x, H - .003, z); walls.add(d); }
+// window
+B(walls, RX0 - .02, RX0 + .02, .86, .9, 1.26, 2.54, M.trim); B(walls, RX0 - .02, RX0 + .02, 2.2, 2.24, 1.26, 2.54, M.trim);
+B(walls, RX0 - .02, RX0 + .02, .9, 2.2, 1.26, 1.3, M.trim); B(walls, RX0 - .02, RX0 + .02, .9, 2.2, 2.5, 2.54, M.trim);
+const bl = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.3), M.blinds); bl.rotation.y = Math.PI / 2; bl.position.set(RX0 - .005, 1.55, 1.9); bl.name = 'Window'; walls.add(bl);
+// doors
+function doorLeaf(g, w, h, name){ const d = new THREE.Group(); d.name = name;
+  B(d, 0, w, 0, h, 0, .035, M.trim); B(d, .1, w - .1, h * .55, h - .12, .035, .04, M.trim); B(d, .1, w - .1, .12, h * .5, .035, .04, M.trim);
+  cyl(d, .025, .02, M.steel, w - .08, 1.0, .05, 'z'); B(d, w - .17, w - .08, .99, 1.01, .055, .07, M.steel); g.add(d); return d; }
+const d1 = doorLeaf(walls, .9, 2.03, 'Door_back'); d1.position.set(3.85, 0, -.03);
+B(walls, 3.78, 3.85, 0, 2.03, 0, .02, M.trim); B(walls, 4.75, 4.82, 0, 2.03, 0, .02, M.trim); B(walls, 3.78, 4.82, 2.03, 2.1, 0, .02, M.trim);
+const d2 = doorLeaf(walls, .9, 2.03, 'Door_right'); d2.rotation.y = -Math.PI / 2; d2.position.set(RX1 + .03, 0, 1.0);
+B(walls, RX1 - .02, RX1, 0, 2.03, .93, 1.0, M.trim); B(walls, RX1 - .02, RX1, 0, 2.03, 1.9, 1.97, M.trim); B(walls, RX1 - .02, RX1, 2.03, 2.1, .93, 1.97, M.trim);
+// baseboards
+B(walls, 3.59, 3.78, 0, .1, 0, .015, M.trim); B(walls, 4.82, RX1, 0, .1, 0, .015, M.trim);
+B(walls, RX0, RX0 + .015, 0, .1, 0, RZ1, M.trim); B(walls, RX1 - .015, RX1, 0, .1, 1.97, RZ1, M.trim); B(walls, RX1 - .015, RX1, 0, .1, 0, .93, M.trim);
+// soffit over cabinet run
+B(walls, RX0, 3.62, 2.29, H, 0, .36, M.wall, 'Soffit'); B(walls, RX0 + .4, 1.01, 2.29, H, .36, .68, M.wall, 'Soffit_fridge');
+
+// ---------- back wall cabinet run (faces +z) ----------
+const run = new THREE.Group(); run.name = 'Back_run'; root.add(run);
+// fridge (built-in look, side-by-side)
+const fr = new THREE.Group(); fr.name = 'Fridge'; run.add(fr);
+B(fr, .06, .95, .02, 1.78, .02, .70, M.steelDark);
+B(fr, .06, .5, .03, 1.78, .70, .75, M.steel); B(fr, .505, .95, .03, 1.78, .70, .75, M.steel);
+B(fr, .14, .40, 1.02, 1.38, .75, .752, M.black);
+cyl(fr, .011, 1.05, M.pull, .465, 1.1, .79, 'y'); cyl(fr, .011, 1.05, M.pull, .54, 1.1, .79, 'y');
+B(fr, .458, .472, .6, .62, .75, .79, M.pull); B(fr, .458, .472, 1.58, 1.60, .75, .79, M.pull);
+B(fr, .533, .547, .6, .62, .75, .79, M.pull); B(fr, .533, .547, 1.58, 1.60, .75, .79, M.pull);
+B(run, .96, 1.01, 0, 2.29, 0, .68, ZONES.up.V, 'Fridge_end_panel');
+upperCab(run, .03, .96, 1.84, 2.29, .64);
+B(run, .03, .96, 1.80, 1.84, .58, .66, ZONES.up.H, 'Fridge_cab_rail');
+// bases
+baseCab(run, 1.01, 1.92, 'drawer+doors');
+baseCab(run, 2.68, 3.59, 'drawer+doors');
+B(run, 3.59, 3.61, 0, TOP0, 0, D + .02, Z.V, 'End_panel');
+B(run, 1.01, 1.92, TOP0, TOP1, 0, .635, M.quartz, 'Counter_L'); B(run, 2.68, 3.61, TOP0, TOP1, 0, .635, M.quartz, 'Counter_R');
+// backsplash (one big canvas covering 2.6 x .65 m)
+const BS_W = 2.6, BS_H = .65;
+const bspMat = new THREE.MeshStandardMaterial({ name: 'Backsplash_tile', roughness: .12 });
+const bspMat2 = bspMat.clone(); bspMat2.name = 'Backsplash_tile_hood';
+const bsp = new THREE.Mesh(new THREE.PlaneGeometry(2.6, .474), bspMat); bsp.position.set(1.01 + 1.3, TOP1 + .237, .004); bsp.receiveShadow = true; bsp.name = 'Backsplash'; run.add(bsp);
+const bsp2 = new THREE.Mesh(new THREE.PlaneGeometry(.76, .17), bspMat2); bsp2.position.set(2.30, 1.38 + .085, .004); bsp2.name = 'Backsplash_hood'; run.add(bsp2);
+// uppers
+upperCab(run, 1.01, 1.92, 1.38, 2.29, .31);
+upperCab(run, 2.68, 3.59, 1.38, 2.29, .31);
+// range (slide-in, gas)
+const rg = new THREE.Group(); rg.name = 'Gas_range'; run.add(rg);
+B(rg, 1.925, 2.675, 0, .9, .02, .64, M.steel);
+B(rg, 1.925, 2.675, .9, .918, .02, .66, M.black);
+B(rg, 1.93, 2.67, .8, .9, .64, .665, M.black);
+for (let i = 0; i < 5; i++) cyl(rg, .018, .025, M.steel, 2.05 + i * .125, .85, .675, 'z');
+B(rg, 1.93, 2.67, .18, .79, .64, .68, M.steel); B(rg, 2.02, 2.58, .33, .64, .68, .683, M.black);
+cyl(rg, .011, .64, M.pull, 2.3, .75, .715, 'x'); B(rg, 1.99, 2.0, .74, .76, .68, .715, M.pull); B(rg, 2.6, 2.61, .74, .76, .68, .715, M.pull);
+B(rg, 1.93, 2.67, .02, .17, .64, .675, M.steel); cyl(rg, .009, .5, M.pull, 2.3, .12, .70, 'x');
+for (const [x, z] of [[2.07, .2], [2.53, .2], [2.07, .48], [2.53, .48], [2.30, .34]]){ cyl(rg, .045, .015, M.matteBlack, x, .925, z, 'y', 20); cyl(rg, .03, .012, M.matteBlack, x, .935, z, 'y', 20); }
+for (const x of [1.95, 2.15, 2.30, 2.45, 2.65]) B(rg, x - .007, x + .007, .935, .955, .05, .63, M.matteBlack);
+for (const z of [.06, .34, .62]) B(rg, 1.94, 2.66, .935, .955, z - .007, z + .007, M.matteBlack);
+const hd = new THREE.Group(); hd.name = 'Range_hood'; run.add(hd);
+
+Z = ZONES.isl;
+// ---------- island (local front faces +z, rotated to face back wall) ----------
+const isl = new THREE.Group(); isl.name = 'Island'; isl.rotation.y = Math.PI; isl.position.set(3.29, 0, 2.305); root.add(isl);
+B(isl, 0, .04, KICK, TOP0, 0, D + .02, Z.V, 'Filler');
+baseCab(isl, .04, .49, 'drawers3');
+dishwasher(isl, .49, 1.10);
+baseCab(isl, 1.10, 2.01, 'doors');
+baseCab(isl, 2.01, 2.62, 'microwave');
+B(isl, 2.62, 2.66, KICK, TOP0, 0, D + .02, Z.V, 'Filler');
+B(isl, -.02, 0, 0, TOP0, -.03, D + .02, Z.V, 'Island_end'); B(isl, 2.66, 2.68, 0, TOP0, -.03, D + .02, Z.V, 'Island_end');
+B(isl, -.02, 2.68, 0, TOP0, -.05, -.03, M.panel, 'Island_seat_panel');
+B(isl, -.02, 2.68, 0, .1, -.065, -.05, M.trim, 'Island_baseboard');
+// countertop with sink cut-out
+{ const s = new THREE.Shape(); s.moveTo(-.11, -.34); s.lineTo(2.79, -.34); s.lineTo(2.79, .635); s.lineTo(-.11, .635); s.closePath();
+  const h = new THREE.Path(); h.moveTo(1.18, .1); h.lineTo(1.93, .1); h.lineTo(1.93, .53); h.lineTo(1.18, .53); h.closePath(); s.holes.push(h);
+  const geo = new THREE.ExtrudeGeometry(s, { depth: .03, bevelEnabled: true, bevelThickness: .002, bevelSize: .002, bevelSegments: 1 });
+  const top = new THREE.Mesh(geo, M.quartz); top.rotation.x = Math.PI / 2; top.position.y = TOP1; top.castShadow = top.receiveShadow = true; top.name = 'Island_top'; isl.add(top); }
+// sink bowl
+{ const sk = new THREE.Group(); sk.name = 'Undermount_sink'; const sm = M.steel;
+  B(sk, 1.18, 1.93, .66, .668, .1, .53, sm); B(sk, 1.17, 1.18, .66, TOP0, .1, .53, sm); B(sk, 1.93, 1.94, .66, TOP0, .1, .53, sm);
+  B(sk, 1.17, 1.94, .66, TOP0, .09, .1, sm); B(sk, 1.17, 1.94, .66, TOP0, .53, .54, sm);
+  cyl(sk, .045, .004, M.steelDark, 1.555, .67, .3, 'y', 24); isl.add(sk);
+  // pull-down faucet
+  const f = new THREE.Group(); f.name = 'Faucet';
+  cyl(f, .028, .05, M.steel, 1.555, TOP1 + .025, .04); cyl(f, .014, .48, M.steel, 1.555, TOP1 + .29, .04);
+  const coil = new THREE.Mesh(new THREE.TorusKnotGeometry(.02, .004, 120, 6, 1, 14), M.steel); coil.scale.set(1, 4, 1); coil.position.set(1.555, TOP1 + .42, .04); f.add(coil);
+  const arc = new THREE.Mesh(new THREE.TorusGeometry(.12, .012, 10, 24, Math.PI), M.steel); arc.rotation.y = -Math.PI / 2; arc.position.set(1.555, TOP1 + .53, .16); f.add(arc);
+  cyl(f, .016, .16, M.steel, 1.555, TOP1 + .45, .28); isl.add(f); }
+
+// pendants
+for (const x of [1.3, 2.6]){ const p = new THREE.Group(); p.name = 'Pendant';
+  cyl(p, .004, .55, M.brass, x, H - .275, 2.17); cyl(p, .065, .38, M.glass, x, H - .74, 2.17, 'y', 24); cyl(p, .07, .02, M.brass, x, H - .54, 2.17, 'y', 24);
+  cyl(p, .012, .25, M.brass, x, H - .75, 2.17); root.add(p);
+  const L = new THREE.PointLight(0xffd9a8, 1.2, 4, 2); L.position.set(x, H - .8, 2.17); scene.add(L); }
+
+// ---------- desk nook (built-in desk with upper cabinets, from Nazar's photo), wall opposite the kitchen ----------
+ZONES.desk = mkZone('desk'); ZONES.desk.V.name = 'Desk_finish_V'; ZONES.desk.H.name = 'Desk_finish_H';
+M.deskTop = M.quartz.clone(); M.deskTop.name = 'Desk_top';
+const nook = new THREE.Group(); nook.name = 'Desk_nook'; nook.rotation.y = Math.PI; nook.position.set(3.85, 0, RZ1); root.add(nook);
+{ const zPrev = Z; Z = ZONES.desk; const NW = 1.45, ND = .62;
+  B(nook, -.12, 0, 0, H, 0, ND + .02, M.wall, 'Nook_return_L'); B(nook, NW, NW + .12, 0, H, 0, ND + .02, M.wall, 'Nook_return_R');
+  B(nook, -.135, -.12, 0, .1, 0, ND + .03, M.trim); B(nook, NW + .12, NW + .135, 0, .1, 0, ND + .03, M.trim);
+  const UY0 = 1.42, UY1 = 2.30, UD = .33;
+  for (const [a, b] of [[0, .72], [.72, 1.44]]){ const c = new THREE.Group(); c.name = 'Desk_upper'; B(c, a, b, UY0, UY1, 0, UD, Z.carc); const m = (a + b) / 2;
+    front(c, a + G, m - G, UY0 + .003, UY1 - .003, UD, { v: 1, x: 'r', y: 'bot' }); front(c, m + G, b - G, UY0 + .003, UY1 - .003, UD, { v: 1, x: 'l', y: 'bot' }); nook.add(c); }
+  const TY = .76, AP = .15;
+  B(nook, 0, NW, TY - AP, TY, 0, ND - .03, Z.carc, 'Desk_apron');
+  front(nook, .01 + G, NW / 2 - G, TY - AP + .005, TY - .006, ND - .03, { y: 'c' }); front(nook, NW / 2 + G, NW - .01 - G, TY - AP + .005, TY - .006, ND - .03, { y: 'c' });
+  B(nook, -.0, NW, TY, TY + .03, 0, ND, M.deskTop, 'Desk_top');
+  Z = zPrev; }
+
+// ---------- lights ----------
+scene.add(new THREE.HemisphereLight(0xfff3e0, 0x3a2a20, .9));
+const sun = new THREE.DirectionalLight(0xfff0dc, 1.6); sun.position.set(3.5, 6, 4.5); sun.target.position.set(1.8, 0, 1.5);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: .5, far: 15 }); sun.shadow.bias = -.0004; sun.shadow.normalBias = .02;
+scene.add(sun, sun.target);
+for (const x of [1.46, 3.13]){ const s = new THREE.SpotLight(0xffe2b8, 3, 2.2, Math.PI / 3, .8, 2); s.position.set(x, 1.36, .2); s.target.position.set(x, .9, .35); scene.add(s, s.target); }
+for (const [x, z] of [[1.0, 1.2], [2.3, 1.2], [3.4, 1.2], [1.4, 3.6], [3.2, 3.6]]){ const s = new THREE.SpotLight(0xffe7c4, 6, 5, Math.PI / 2.6, .9, 1.6); s.position.set(x, H - .02, z); s.target.position.set(x, 0, z); scene.add(s, s.target); }
+
+// ================= CONFIGURATOR =================
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const SW_URL = 'https://www.sherwin-williams.com/en-us/color/room-paint-colors/kitchen-paint-colors/tab/kitchen-cabinet-colors';
+const FD_URL = 'https://www.flooranddecor.com/explore-backsplashes';
+// --- Sherwin-Williams colours (hex = screen approximation) ---
+const PAINTS = [
+  { id: 'orig', g: 'Оригинал', name: 'Оригинал: эспрессо', code: 'дерево, как сейчас', wood: true },
+  { id: '7006', g: 'Белые', name: 'Extra White', code: 'SW 7006', hex: '#eeefea' },
+  { id: '7005', g: 'Белые', name: 'Pure White', code: 'SW 7005', hex: '#edece6' },
+  { id: '7004', g: 'Белые', name: 'Snowbound', code: 'SW 7004', hex: '#edeae5' },
+  { id: '7008', g: 'Белые', name: 'Alabaster', code: 'SW 7008', hex: '#edeae0' },
+  { id: '7551', g: 'Белые', name: 'Greek Villa', code: 'SW 7551', hex: '#f0ece2' },
+  { id: '7012', g: 'Белые', name: 'Creamy', code: 'SW 7012', hex: '#efe8db' },
+  { id: '7042', g: 'Белые', name: 'Shoji White', code: 'SW 7042', hex: '#e6dfd3' },
+  { id: '9109', g: 'Бежевые и серые', name: 'Natural Linen', code: 'SW 9109', hex: '#dfd3c3' },
+  { id: '6106', g: 'Бежевые и серые', name: 'Kilim Beige', code: 'SW 6106', hex: '#d7c5ae' },
+  { id: '7036', g: 'Бежевые и серые', name: 'Accessible Beige', code: 'SW 7036', hex: '#d1c7b8' },
+  { id: '7037', g: 'Бежевые и серые', name: 'Balanced Beige', code: 'SW 7037', hex: '#c0b2a2' },
+  { id: '9166', g: 'Бежевые и серые', name: 'Drift of Mist', code: 'SW 9166', hex: '#dcd8d0' },
+  { id: '7029', g: 'Бежевые и серые', name: 'Agreeable Gray', code: 'SW 7029', hex: '#d1cbc1' },
+  { id: '7043', g: 'Бежевые и серые', name: 'Worldly Gray', code: 'SW 7043', hex: '#cec6bb' },
+  { id: '7016', g: 'Бежевые и серые', name: 'Mindful Gray', code: 'SW 7016', hex: '#bcb7ad' },
+  { id: '7017', g: 'Бежевые и серые', name: 'Dorian Gray', code: 'SW 7017', hex: '#aca79e' },
+  { id: '7047', g: 'Бежевые и серые', name: 'Porpoise', code: 'SW 7047', hex: '#6b645b' },
+  { id: '7019', g: 'Бежевые и серые', name: 'Gauntlet Gray', code: 'SW 7019', hex: '#78736e' },
+  { id: '6204', g: 'Зелёные', name: 'Sea Salt', code: 'SW 6204', hex: '#cdd2ca' },
+  { id: '6184', g: 'Зелёные', name: 'Austere Gray', code: 'SW 6184', hex: '#bebfb2' },
+  { id: '9130', g: 'Зелёные', name: 'Evergreen Fog', code: 'SW 9130', hex: '#95978a' },
+  { id: '9131', g: 'Зелёные', name: 'Cornwall Slate', code: 'SW 9131', hex: '#8f918a' },
+  { id: '6208', g: 'Зелёные', name: 'Pewter Green', code: 'SW 6208', hex: '#5e6259' },
+  { id: '6187', g: 'Зелёные', name: 'Rosemary', code: 'SW 6187', hex: '#64695e' },
+  { id: '7061', g: 'Зелёные', name: 'Night Owl', code: 'SW 7061', hex: '#5f5e55' },
+  { id: '6994', g: 'Зелёные', name: 'Greenblack', code: 'SW 6994', hex: '#373a36' },
+  { id: '9141', g: 'Синие', name: 'Waterloo', code: 'SW 9141', hex: '#536376' },
+  { id: '0032', g: 'Синие', name: 'Needlepoint Navy', code: 'SW 0032', hex: '#546270' },
+  { id: '7620', g: 'Синие', name: 'Seaworthy', code: 'SW 7620', hex: '#314d58' },
+  { id: '9177', g: 'Синие', name: 'Salty Dog', code: 'SW 9177', hex: '#234058' },
+  { id: '9178', g: 'Синие', name: 'In the Navy', code: 'SW 9178', hex: '#283849' },
+  { id: '6244', g: 'Синие', name: 'Naval', code: 'SW 6244', hex: '#2f3d4c' },
+  { id: '7048', g: 'Тёмные', name: 'Urbane Bronze', code: 'SW 7048', hex: '#54504a' },
+  { id: '7020', g: 'Тёмные', name: 'Black Fox', code: 'SW 7020', hex: '#4f4842' },
+  { id: '7674', g: 'Тёмные', name: 'Peppercorn', code: 'SW 7674', hex: '#585858' },
+  { id: '7069', g: 'Тёмные', name: 'Iron Ore', code: 'SW 7069', hex: '#434341' },
+  { id: '9154', g: 'Тёмные', name: 'Perle Noir', code: 'SW 9154', hex: '#4f4d51' },
+  { id: '6990', g: 'Тёмные', name: 'Caviar', code: 'SW 6990', hex: '#313031' },
+  { id: '6258', g: 'Тёмные', name: 'Tricorn Black', code: 'SW 6258', hex: '#2f2f30' },
+];
+// --- hardware ---
+const FIN = {
+  nickel: { name: 'Матовый никель', hex: '#c9c9c4', m: 1, r: .3 },
+  chrome: { name: 'Полированный никель', hex: '#e6e8ea', m: 1, r: .08 },
+  black: { name: 'Матовый чёрный', hex: '#1d1d1d', m: .4, r: .55 },
+  brass: { name: 'Латунь (unlacquered)', hex: '#c7a35a', m: 1, r: .28 },
+  champ: { name: 'Шампань / honey bronze', hex: '#b39a73', m: 1, r: .3 },
+  copper: { name: 'Сатиновая медь', hex: '#b87a55', m: 1, r: .32 },
+  bronze: { name: 'Oil-rubbed bronze', hex: '#3d2b20', m: .7, r: .4 },
+};
+const STYLES = { bar: 'Рейлинг', square: 'Прямоугольная скоба', knurl: 'Рифлёный рейлинг', arch: 'Дуга', cup: 'Ракушки + кнобы', knob: 'Круглые кнобы', hexknob: 'Шестигранные кнобы', tbar: 'T-кнобы', edge: 'Торцевые (edge)', wood: 'Деревянные', marble: 'С мрамором', glass: 'Стекло + металл' };
+const HW = [
+  { id: 'orig', style: 'bar', fin: 'nickel', name: 'Оригинал', note: 'Рейлинги из матового металла, как сейчас.' },
+  { id: 'amerock-bar', style: 'bar', fin: 'bronze', name: 'Amerock Bar Pulls', price: 'около $5–10 за шт.', shop: 'Home Depot', url: 'https://www.homedepot.com/p/Amerock-Bar-Pulls-3-in-76-mm-Center-to-Center-Oil-Rubbed-Bronze-Cabinet-Drawer-Pull-BP40515ORB/100530765', note: 'Domino: «лучшие в целом». 11 покрытий, 12 размеров.' },
+  { id: 'esquire', style: 'square', fin: 'nickel', name: 'Amerock Esquire 128 мм', price: 'от $8 за шт.', shop: 'Home Depot', url: 'https://www.homedepot.com/p/Amerock-Esquire-5-1-16-in-128mm-Modern-Satin-Nickel-Oil-Rubbed-Bronze-Bar-Cabinet-Pull-BP36558G10ORB/207009476', note: 'HGTV: недорогая современная скоба. Также $10 на Wayfair и $18 в Lowe’s.' },
+  { id: 'ravinte', style: 'square', fin: 'black', name: 'Ravinte, набор 30 шт., 5"', price: 'набор на всю кухню', shop: 'Amazon', url: 'https://www.amazon.com/Ravinte-Kitchen-Hardware-Cabinets-Cupboard/dp/B07WXNZMXJ', note: 'Domino: лучший вариант по цене. Матовый чёрный.' },
+  { id: 'davenport', style: 'bar', fin: 'champ', name: 'Top Knobs Davenport Bar Pull', price: '$19 за шт.', shop: 'Wayfair', url: 'https://www.wayfair.com/home-improvement/pdp/top-knobs-davenport-bar-pull-tokn3279.html', note: 'HGTV. Покрытие honey bronze, 5 размеров.' },
+  { id: 'cody', style: 'knurl', fin: 'black', name: 'CB2 Cody Black Handle', price: 'см. на сайте', shop: 'CB2', url: 'https://www.cb2.com/cody-black-handle-10/s161073', note: 'Domino: минимализм. Рифлёная цельная латунь в чёрном, 7 длин, 4 покрытия.' },
+  { id: 'bpunch', style: 'knurl', fin: 'brass', name: 'Buster + Punch Pull Bar', price: 'премиум', shop: 'Buster + Punch', url: 'https://www.busterandpunch.com/shop/cabinet-hardware/pull-bar/pull-bar-plate-smoked-bronze/', note: 'Domino: индастриал. Ручка с насечкой «cross-knurl», есть латунь и дымчатая бронза.' },
+  { id: 'franklin', style: 'arch', fin: 'black', name: 'Franklin Brass Iron Handle Pull', price: '$16', shop: 'Amazon', url: 'https://www.amazon.com/Franklin-Brass-P29614K-SI-B-Furniture-Hardware/dp/B00MX66DTQ', note: 'HGTV. Классическая дуга, железо.' },
+  { id: 'emerson', style: 'arch', fin: 'bronze', name: 'Rejuvenation Emerson Drawer Pull', price: 'от $26.97', shop: 'Rejuvenation', url: 'https://www.rejuvenation.com/catalog/collections/emerson-drawer-pull/products/61d4a7b6fc1ebcf13d700271', note: 'HGTV. Цельная латунь, oil-rubbed bronze.' },
+  { id: 'vernon', style: 'cup', fin: 'brass', name: 'Rejuvenation Vernon + Massey', price: 'ракушка от $17, кноб $15', shop: 'Rejuvenation', url: 'https://www.rejuvenation.com/catalog/collections/vernon-bin-pull/products/5cd1a60af2dd87463180787e', url2: 'https://www.rejuvenation.com/products/massey-round-cabinet-knob/', note: 'HGTV. Ракушки на ящики, кнобы на дверцы. Цельная латунь.' },
+  { id: 'empire', style: 'cup', fin: 'champ', name: 'Rocky Mountain Empire Bin Pull', price: 'премиум', shop: 'Knobs.co', url: 'https://www.knobs.co/rocky-mountain-ck20311-ted-boerner-empire-bin-cabinet-pull-4-1/', note: 'Domino: классика. Литая бронза, брашированная.' },
+  { id: 'massey', style: 'knob', fin: 'chrome', name: 'Rejuvenation Massey Round Knob', price: '$15 за шт.', shop: 'Rejuvenation', url: 'https://www.rejuvenation.com/products/massey-round-cabinet-knob/', note: 'HGTV. Полированный никель.' },
+  { id: 'gliderite', style: 'hexknob', fin: 'brass', name: 'Gliderite Geometric Knob', price: '$7 за шт.', shop: 'Wayfair', url: 'https://www.wayfair.com/home-improvement/pdp/gliderite-hardware-geometric-knob-hbty1264.html', note: 'HGTV. Шестигранник, сатиновое золото или матовый чёрный.' },
+  { id: 'forge', style: 'tbar', fin: 'black', name: 'Forge Hardware Studio T-bar', price: 'см. на сайте', shop: 'Forge Hardware Studio', url: 'https://www.forgehardwarestudio.com/collections/bronze-and-black-hardware/products/matte-black-and-satin-brass-round-t-bar-fonce-cabinet-knobs-and-drawer-pulls?variant=29382830686278', note: 'Domino: «акцентные». Чёрный с латунью.' },
+  { id: 'edge', style: 'edge', fin: 'nickel', name: 'Rejuvenation Large Drawer Edge Pull', price: 'от $45 за шт.', shop: 'Rejuvenation', url: 'https://www.rejuvenation.com/catalog/collections/large-drawer-edge-pull/products/59c1412d793a1b3677485108', note: 'HGTV. Почти незаметные, на торце фасада.' },
+  { id: 'hickory', style: 'wood', fin: 'nickel', name: 'Hickory Hardware Natural Woodcraft', price: 'недорого', shop: 'Hickory Hardware', url: 'https://hickoryhardware.com/collections/96mm/products/hickory-hardware-natural-woodcraft-cabinet-pull-p687', note: 'Domino: натуральный дуб. Тёплый акцент для светлых фасадов.' },
+  { id: 'carrione', style: 'marble', fin: 'nickel', name: 'Amerock Carrione 96 мм', price: '$25 (Home Depot), $32 (Lowe’s)', shop: 'Home Depot', url: 'https://www.homedepot.com/p/Amerock-Carrione-3-3-4-in-96-mm-Center-to-Center-Marble-White-Satin-Nickel-Drawer-Pull-BP36648MWG10/306069885', note: 'HGTV. Белый мрамор с сатиновым никелем, есть чёрный мрамор.' },
+  { id: 'ckp', style: 'glass', fin: 'brass', name: 'CKP Glass and Brass Pull', price: '$35', shop: 'Amazon', url: 'https://www.amazon.com/dp/B07DHWS1HK/', note: 'HGTV. Стеклянный стержень с латунью.' },
+];
+// --- hoods ---
+const HOODS = [
+  { id: 'orig', name: 'Оригинал', kind: 'Как сейчас', note: 'Пирамидальная каминная вытяжка из нержавейки.' },
+  { id: 'broan', name: 'Broan-NuTone BWP2304SS', kind: 'Покупная · пирамида', price: '450 CFM', shop: 'Amazon', url: 'https://www.amazon.com/dp/B08DP5LS45/', note: 'BestReviews. 3 скорости, с воздуховодом или без. Самая близкая замена текущей.' },
+  { id: 'pyr-black', name: 'Пирамида в чёрном', kind: 'Покупная · пирамида', price: 'та же форма', note: 'Форма как у оригинала, матовый чёрный металл.' },
+  { id: 'cosmo-glass', name: 'Cosmo 30" со стеклянным козырьком', kind: 'Покупная · стекло', price: '460 CFM', shop: 'Amazon', url: 'https://www.amazon.com/dp/B01DMZ0XOC/', note: 'BestReviews. Закалённое стекло + нержавейка.' },
+  { id: 'ciarra-black', name: 'CIARRA CAB75502-N-OW', kind: 'Покупная · чёрное стекло', price: '650 CFM, $399.99', shop: 'CIARRA', url: 'https://us.ciarraappliances.com/products/ciarra-30-inch-wave-touch-control-glass-wall-mount-range-hood-cab75502-n-ow', note: 'Управление жестом, LED.' },
+  { id: 'ciarra-pro', name: 'CIARRA Professional CAS30313A-OW', kind: 'Покупная · прямоугольная', price: '950 CFM, около $1,399', shop: 'CIARRA', url: 'https://us.ciarraappliances.com/products/ciarra-professional-series-30-inch-wall-mount-range-hood-with-4-speed-levels-and-smart-control-cas30313a-ow', note: 'Мощная, под газовую плиту.' },
+  { id: 'plaster-curve', name: 'Штукатурка, плавный изгиб', kind: 'Кастомная · штукатурка', note: 'Короб из гипсокартона со штукатуркой, красится в цвет стен.' },
+  { id: 'plaster-brass', name: 'Штукатурка + латунная полоса', kind: 'Кастомная · штукатурка', note: 'Изгиб и латунная планка внизу. Хорошо с латунными ручками.' },
+  { id: 'plaster-taper', name: 'Штукатурка, прямой конус', kind: 'Кастомная · штукатурка', note: 'Строгая трапеция до потолка.' },
+  { id: 'wood-box', name: 'МДФ: короб с шейкер-панелью', kind: 'Кастомная · МДФ', note: 'Покрашенный МДФ в цвет верхних шкафов, с карнизом и нижним поясом.' },
+  { id: 'mdf-shiplap', name: 'МДФ: шиплап (горизонтальные доски)', kind: 'Кастомная · МДФ', note: 'Короб, обшитый горизонтальными МДФ-досками с зазором. Цвет верхних шкафов.' },
+  { id: 'mdf-corbel', name: 'МДФ: каминная полка на кронштейнах', kind: 'Кастомная · МДФ', note: 'Короб с полкой-«мантелом» и двумя фигурными кронштейнами.' },
+  { id: 'mdf-curve', name: 'МДФ: изгиб с карнизом', kind: 'Кастомная · МДФ', note: 'Плавный изгиб, сверху карниз. Цвет верхних шкафов.' },
+  { id: 'mdf-strap', name: 'МДФ + стальная полоса', kind: 'Кастомная · МДФ', note: 'Гладкий короб в цвет шкафов и полоса из чёрной стали внизу.' },
+  { id: 'wood-taper', name: 'МДФ: прямой конус с поясом', kind: 'Кастомная · МДФ', note: 'Наклонный короб с нижним поясом.' },
+  { id: 'oak-slat', name: 'Белый дуб: вертикальные рейки', kind: 'Кастомная · дерево', note: 'Короб, обшитый рейками из белого дуба (fluted / slat). Тёплый акцент к любой краске.' },
+  { id: 'oak-curve', name: 'Белый дуб: изгиб', kind: 'Кастомная · дерево', note: 'Изогнутый короб, облицованный шпоном белого дуба, с дубовым поясом.' },
+  { id: 'oak-box', name: 'Белый дуб: короб с полкой', kind: 'Кастомная · дерево', note: 'Прямой дубовый короб с массивной полкой снизу.' },
+  { id: 'walnut-box', name: 'Орех: короб с рейками', kind: 'Кастомная · дерево', note: 'Тёмный орех, вертикальные рейки, латунная планка.' },
+];
+// --- tiles (Floor & Decor) ---
+const IN = .0254;
+const ZEL_OAT = ['#e6dac4', '#dccfb6', '#efe4cf', '#d3c4a8', '#e9dcc0'], FROST = ['#eef0ec', '#e6e9e5', '#f4f5f1', '#dfe3df'];
+const TILES = [
+  { id: 'orig', name: 'Оригинал: линейная стеклянная мозаика', spec: 'как сейчас', pat: 'linear', th: .025, pal: ['#8f8a70', '#9a9479', '#847f66', '#a19b80', '#8a8469', '#7b765f'], grout: '#6b6754', gloss: .1 },
+  { id: 'misty', name: 'Misty Fjord Linear Glass Mosaic', spec: 'стекло, лист 12×14", $7.99 за лист', url: 'https://www.flooranddecor.com/glass-tile/misty-fjord-linear-glass-mosaic-101442119.html', pat: 'linear', th: .02, pal: ['#a7aea9', '#bfc5bf', '#8e9792', '#d2d6d0', '#9fa49e', '#7f8883'], grout: '#9a9d97', gloss: .08, note: 'Самая похожая на текущую плитку' },
+  { id: 'ibiza', name: 'Ibiza Linear Glass Mosaic', spec: 'стекло, лист 12×13", $16.99 за лист', url: 'https://www.flooranddecor.com/glass-tile/ibiza-linear-glass-mosaic-101442143.html', pat: 'linear', th: .02, pal: ['#e9e6df', '#d7d3ca', '#c4c0b6', '#f2f0eb', '#b9b4a9'], grout: '#cfcac0', gloss: .08 },
+  { id: 'zellige', name: 'Villa Zellige Oat High Gloss', spec: 'керамика 2½×8", $1.49 за шт.', pat: 'running', tw: 8 * IN, th: 2.5 * IN, pal: ZEL_OAT, grout: '#efe8da', gloss: .06, vary: .09, zel: 1 },
+  { id: 'zellige-hb', name: 'Villa Zellige Oat, ёлочкой', spec: 'та же плитка 2½×8", ёлочка 45°', pat: 'herring', tw: 8 * IN, th: 2.5 * IN, pal: ZEL_OAT, grout: '#efe8da', gloss: .06, vary: .09, zel: 1 },
+  { id: 'zforest', name: 'Zellige Forest', spec: 'керамика 5×5", $1.89 за шт.', url: 'https://www.flooranddecor.com/ceramic-tile/zellige-forest-ceramic-tile-101316792.html', pat: 'stack', tw: 5 * IN, th: 5 * IN, pal: ['#3e5c48', '#35513f', '#4a6a53', '#2f4838', '#557560'], grout: '#d9d5c8', gloss: .05, vary: .07, zel: 1 },
+  { id: 'zagave', name: 'Zellige Agave', spec: 'керамика 2½×8", $1.49 за шт.', url: 'https://www.flooranddecor.com/ceramic-tile/zellige-agave-ceramic-tile-101317022.html', pat: 'running', tw: 8 * IN, th: 2.5 * IN, pal: ['#8d9c86', '#7f8f79', '#9aa893', '#768670', '#a3b09c'], grout: '#dcd8cc', gloss: .05, vary: .07, zel: 1 },
+  { id: 'zglacier', name: 'Zellige Glacier', spec: 'керамика 2½×8", $1.49 за шт.', url: 'https://www.flooranddecor.com/ceramic-tile/zellige-glacier-ceramic-tile-101317089.html', pat: 'vstack', tw: 2.5 * IN, th: 8 * IN, pal: ['#c3d3d6', '#b3c7cc', '#d2dfe0', '#a9bec4'], grout: '#e3e3dd', gloss: .05, vary: .06, zel: 1 },
+  { id: 'zsky', name: 'Zellige Sky', spec: 'керамика 4×4", $1.19 за шт.', url: 'https://www.flooranddecor.com/ceramic-tile/zellige-sky-ceramic-tile-101074912.html', pat: 'stack', tw: 4 * IN, th: 4 * IN, pal: ['#7ea3bb', '#6f96b0', '#8daec4', '#6489a3'], grout: '#e0e0da', gloss: .05, vary: .07, zel: 1 },
+  { id: 'frost', name: 'Villa Artisan Frost High Gloss', spec: 'керамика 3×12", $0.99 за шт.', pat: 'running', tw: 12 * IN, th: 3 * IN, pal: FROST, grout: '#e8e8e2', gloss: .06, vary: .04, zel: 1 },
+  { id: 'vstack', name: 'Villa Artisan Frost, вертикально', spec: 'керамика 3×12", вертикальный стек', pat: 'vstack', tw: 3 * IN, th: 12 * IN, pal: FROST, grout: '#e8e8e2', gloss: .06, vary: .04, zel: 1 },
+  { id: 'subway', name: 'Festival Bright White Ice Subway', spec: 'керамика 3×6", $0.13 за шт.', pat: 'running', tw: 6 * IN, th: 3 * IN, pal: ['#f6f6f3'], grout: '#d9d8d2', gloss: .08, vary: .01 },
+  { id: 'brick', name: 'Villa Matte White Brick', spec: 'керамика 2½×10", $1.39 за шт.', pat: 'running', tw: 10 * IN, th: 2.5 * IN, pal: ['#efede6', '#e9e6de', '#f2f0ea'], grout: '#dcd8ce', gloss: .7, vary: .02 },
+  { id: 'labelle', name: 'La Belle Antique Blue (polished)', spec: 'керамика 3×12", $1.39 за шт.', url: 'https://www.flooranddecor.com/ceramic-tile/la-belle-antique-blue-ceramic-polished-tile-100507706.html', pat: 'running', tw: 12 * IN, th: 3 * IN, pal: ['#5d8196', '#52778d', '#6a8da1', '#4b6f85'], grout: '#d6d6d0', gloss: .06, vary: .05, zel: 1, crackle: 1 },
+  { id: 'seaside', name: 'Seaside Polished Ceramic', spec: 'керамика 4×16", $2.49 за шт.', url: 'https://www.flooranddecor.com/ceramic-tile/seaside-polished-ceramic-tile-100467729.html', pat: 'running', tw: 16 * IN, th: 4 * IN, pal: ['#7a9fae', '#6d94a4', '#86a9b6', '#638999'], grout: '#d8dcd8', gloss: .06, vary: .05, zel: 1 },
+  { id: 'puresky', name: 'Pure Sky Glass Tile', spec: 'стекло 3×12", $2.99 за шт.', url: 'https://www.flooranddecor.com/glass-tile/pure-sky-glass-tile-101328003.html', pat: 'running', tw: 12 * IN, th: 3 * IN, pal: ['#a9c6d2', '#9dbdca', '#b6d0da'], grout: '#dfe5e4', gloss: .04, vary: .03 },
+  { id: 'lapis', name: 'Lapis Agate Glass Tile', spec: 'стекло 4×16", $5.99 за шт.', url: 'https://www.flooranddecor.com/glass-tile/lapis-agate-glass-tile-101353316.html', pat: 'running', tw: 16 * IN, th: 4 * IN, pal: ['#2f4f7a', '#284670', '#3a5b86', '#223e63'], grout: '#9aa3ad', gloss: .04, vary: .05, mottle: 1 },
+  { id: 'hex', name: 'San Giorgio Marble Art Hexagon', spec: 'керамика, лист 12×12", $6.99 за лист', pat: 'hex', r: .033, pal: ['#f1efea', '#e9e7e2', '#f4f3ef'], grout: '#d6d3cc', gloss: .12, vary: .02, vein: 1 },
+  { id: 'orion', name: 'Bianco Orion Hexagon Marble', spec: 'мрамор, лист 12×13", $17.99 за кв. фут', url: 'https://www.flooranddecor.com/marble-stone/bianco-orion-hexagon-polished-marble-mosaic-101315109.html', pat: 'hex', r: .02, pal: ['#f0eeea', '#e6e3dd', '#f5f4f0'], grout: '#dedad3', gloss: .1, vary: .025, vein: 1 },
+  { id: 'hexblack', name: 'Festival Black Matte Hexagon', spec: 'керамогранит, лист 11×13", $4.99 за лист', pat: 'hex', r: .028, pal: ['#26272a', '#2c2d30', '#222326'], grout: '#56575a', gloss: .75, vary: .02 },
+  { id: 'penny', name: 'San Giorgio Calacatta Vecchia Penny', spec: 'керамика, лист 11×13", $7.99 за лист', pat: 'penny', r: .0095, pal: ['#efebe3', '#e7e1d6', '#f3f0ea', '#d9d1c2'], grout: '#d8d3c8', gloss: .15, vary: .02 },
+  { id: 'pennywhite', name: 'Unglazed White Penny Porcelain', spec: 'керамогранит, лист 11×11", $6.99 за лист', url: 'https://www.flooranddecor.com/porcelain-tile/unglazed-white-penny-porcelain-mosaic-100912211.html', pat: 'penny', r: .0095, pal: ['#f3f2ee', '#eeede8'], grout: '#cfccc4', gloss: .8, vary: .01 },
+  { id: 'vanilla', name: 'Vanilla Circle Honed Marble', spec: 'мрамор, лист 12×12", $17.99 за кв. фут', url: 'https://www.flooranddecor.com/marble-stone/vanilla-circle-honed-marble-mosaic-101239556.html', pat: 'penny', r: .016, pal: ['#e9e0cc', '#e2d7c0', '#efe7d5', '#d9cdb4'], grout: '#efe9dc', gloss: .55, vary: .03 },
+  { id: 'mirror', name: 'Antique Mirror Glass Tile', spec: 'стекло 4×12", $5.49 за шт.', url: 'https://www.flooranddecor.com/glass-tile/antique-mirror-glass-tile-101383271.html', pat: 'running', tw: 12 * IN, th: 4 * IN, pal: ['#b9b3a6', '#a8a295', '#c8c2b5', '#9d978a'], grout: '#8a8579', gloss: .05, vary: .05, metal: .85, mottle: 1 },
+  { id: 'ledger', name: 'Rock Ridge Coastal Bluff Ledger Panel', spec: 'мрамор, панели 6×24", $7.99 за кв. фут', pat: 'ledger', pal: ['#d8d2c6', '#c9c1b2', '#e3ded4', '#b8afa0', '#cfc8ba'], grout: '#8c8478', gloss: .8, vary: .06 },
+  { id: 'slab', name: 'Vetta Elements Luxe Sand 24×48', spec: 'керамогранит 24×48", $3.99 за кв. фут', pat: 'stack', tw: 48 * IN, th: 24 * IN, pal: ['#e4dccd', '#ded5c4'], grout: '#d2c9b8', gloss: .6, vary: .01, vein: 0, mottle: 0 },
+];
+// --- floors (Floor & Decor) ---
+const FLOORS = [
+  { id: 'orig', name: 'Оригинал: тёмное дерево', spec: 'как сейчас', orig: true },
+  { id: 'salem', name: 'NuCore Performance Salem', spec: 'LVP 11×48", тёмно-коричневый, $3.89 за кв. фут', url: 'https://www.flooranddecor.com/nucore-performance-flooring/salem-waterproof-rigid-core-luxury-vinyl-plank---cork-pad-101236255.html', pat: 'plank', w: 11 * IN, l: 48 * IN, pal: ['#4a3426', '#563c2b', '#3f2c20', '#5e4532'], r: .5, note: 'Ближе всего к вашему нынешнему полу' },
+  { id: 'tobacco', name: 'Tobacco Cask 10×60', spec: 'керамогранит под дерево, $4.49 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/tobacco-cask-wood-plank-matte-porcelain-tile-101076057.html', pat: 'plank', w: 10 * IN, l: 60 * IN, pal: ['#6b4a33', '#5f412c', '#77543b', '#553a28'], r: .6, grout: 1 },
+  { id: 'canterbury', name: 'Canterbury Honey 10×60', spec: 'керамогранит под дерево, $4.49 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/canterbury-honey-wood-plank-matte-porcelain-tile-101020303.html', pat: 'plank', w: 10 * IN, l: 60 * IN, pal: ['#a8784a', '#9b6d41', '#b38355', '#8f643b'], r: .6, grout: 1 },
+  { id: 'fable', name: 'Fable White Oak Wire-Brushed', spec: 'инженерная доска 7½", $4.99 за кв. фут', url: 'https://www.flooranddecor.com/engineered-hardwood-wood/fable-white-oak-wire-brushed-engineered-hardwood-100811793.html', pat: 'plank', w: 7.5 * IN, l: 1.4, pal: ['#9b7653', '#8d6a49', '#a8835f', '#7f5f42'], r: .5 },
+  { id: 'carpenter', name: 'Carpenter Ash 9×48', spec: 'керамогранит под дерево, $2.99 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/carpenter-ash-wood-plank-matte-porcelain-tile-101236925.html', pat: 'plank', w: 9 * IN, l: 48 * IN, pal: ['#b49572', '#a88a68', '#bfa07c', '#9d7f5f'], r: .6, grout: 1 },
+  { id: 'timber', name: 'NuCore Timber Creek', spec: 'LVP 9×60", средний бежевый, $3.59 за кв. фут', url: 'https://www.flooranddecor.com/nucore-flooring/timber-creek-waterproof-rigid-core-luxury-vinyl-plank---cork-pad-101070092.html', pat: 'plank', w: 9 * IN, l: 60 * IN, pal: ['#b5967a', '#a88b70', '#c0a185', '#9f8167'], r: .5 },
+  { id: 'cedar', name: 'NuCore Cedar Point', spec: 'LVP 7×48", светлый блонд, $2.49 за кв. фут', url: 'https://www.flooranddecor.com/nucore-flooring/cedar-point-waterproof-rigid-core-luxury-vinyl-plank---cork-pad-101076313.html', pat: 'plank', w: 7 * IN, l: 48 * IN, pal: ['#c7a679', '#bb9a6e', '#d1b186', '#b08f64'], r: .5 },
+  { id: 'hazel', name: 'NuCore Performance Hazelwood', spec: 'LVP 9×72", блонд, $4.29 за кв. фут', url: 'https://www.flooranddecor.com/nucore-performance-flooring/hazelwood-waterproof-rigid-core-luxury-vinyl-plank---cork-pad-101310613.html', pat: 'plank', w: 9 * IN, l: 72 * IN, pal: ['#c19d70', '#b59166', '#cba97c', '#a8865c'], r: .5 },
+  { id: 'woodville', name: 'Woodville Natural Beige 12×59', spec: 'керамогранит под дерево, $4.49 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/woodville-natural-wood-plank-matte-porcelain-tile-100581628.html', pat: 'plank', w: 12 * IN, l: 59 * IN, pal: ['#b89d7c', '#ad9273', '#c3a886', '#a28868'], r: .6, grout: 1 },
+  { id: 'andare', name: 'Andare Beige 10×60', spec: 'керамогранит под дерево, $4.99 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/andare-beige-wood-plank-matte-porcelain-tile-100994391.html', pat: 'plank', w: 10 * IN, l: 60 * IN, pal: ['#c2ab8e', '#b7a084', '#cbb597', '#ab957a'], r: .6, grout: 1 },
+  { id: 'greige', name: 'Soft Greige 6×40', spec: 'керамогранит под дерево, $3.22 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/soft-greige-wood-plank-matte-porcelain-tile-100105915.html', pat: 'plank', w: 6 * IN, l: 40 * IN, pal: ['#a59a8d', '#9a8f83', '#b0a597', '#8f8579'], r: .65, grout: 1 },
+  { id: 'lumber', name: 'Lumber Gray 6×24', spec: 'керамогранит под дерево, $2.49 за кв. фут', url: 'https://www.flooranddecor.com/porcelain-tile/lumber-gray-wood-plank-matte-porcelain-tile-100105873.html', pat: 'plank', w: 6 * IN, l: 24 * IN, pal: ['#8f8b85', '#85817b', '#9a958f', '#7b7771'], r: .65, grout: 1 },
+  { id: 'marley', name: 'Marley Herringbone White Oak', spec: 'инженерная доска ёлочкой 7½×30", $6.99 за кв. фут', url: 'https://www.flooranddecor.com/oak-wood/marley-herringbone-white-oak-engineered-hardwood-100944073.html', pat: 'herring', w: 7.5 * IN, l: 29.92 * IN, pal: ['#d1b48c', '#c6a880', '#dbbf98', '#bb9d76'], r: .5 },
+  { id: 'eiffel', name: 'Eiffel White Oak Chevron', spec: 'инженерная доска «французская ёлка» 5⅛×28½", $8.99 за кв. фут', url: 'https://www.flooranddecor.com/engineered-hardwood-wood/eiffel-white-oak-chevron-engineered-hardwood-101239523.html', pat: 'chevron', w: 5.125 * IN, l: 28.55 * IN, pal: ['#c9a77a', '#bd9b6f', '#d3b285', '#b18f64'], r: .5 },
+];
+// --- LED ---
+const TEMPS = { 2700: { name: '2700K тёплый', hex: '#ffb06a' }, 3000: { name: '3000K мягкий', hex: '#ffc58f' }, 4000: { name: '4000K нейтральный', hex: '#ffe3c4' }, 5000: { name: '5000K холодный', hex: '#fff3e6' } };
+const LEDS = [
+  { id: 'under', name: 'Под верхними шкафами', note: 'Лента под шкафами освещает столешницу и фартук.' },
+  { id: 'toe', name: 'Под островом снизу (цоколь)', note: 'Мягкое свечение на полу вокруг острова.' },
+  { id: 'top', name: 'Под столешницей острова (со стороны стульев)', note: 'Лента под свесом подсвечивает панель острова.' },
+  { id: 'wallToe', name: 'Цоколь нижних шкафов у стены', note: 'Свечение под нижними шкафами.' },
+];
+
+// --- tile texture painter (in metres; one canvas for the whole backsplash) ---
+function shade(hex, k){ const c = new THREE.Color(hex); const h = {}; c.getHSL(h); c.setHSL(h.h, h.s, Math.min(1, Math.max(0, h.l + k))); return '#' + c.getHexString(); }
+function paintTiles(o, Wm, Hm, ppm){
+  const cv = document.createElement('canvas'); cv.width = Math.round(Wm * ppm); cv.height = Math.round(Hm * ppm);
+  const g = cv.getContext('2d'), r = rnd(17), S = ppm, gap = Math.max(1, .0025 * S);
+  g.fillStyle = o.grout; g.fillRect(0, 0, cv.width, cv.height);
+  const col = () => shade(o.pal[Math.floor(r() * o.pal.length)], (r() - .5) * 2 * (o.vary || .03));
+  function glaze(x, y, w, h){ // highlight and edge shading
+    if (o.zel){ const gr = g.createRadialGradient(x + w * (.3 + r() * .4), y + h * (.3 + r() * .4), 1, x + w / 2, y + h / 2, Math.max(w, h) * .7);
+      gr.addColorStop(0, 'rgba(255,255,255,.22)'); gr.addColorStop(.6, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,.12)'); g.fillStyle = gr; g.fillRect(x, y, w, h); }
+    if (o.mottle){ for (let i = 0; i < 30; i++){ g.fillStyle = `rgba(${r() > .5 ? '60,50,35' : '255,250,235'},${.08 + r() * .12})`; g.beginPath(); g.arc(x + r() * w, y + r() * h, 2 + r() * 12, 0, 7); g.fill(); } }
+    if (o.gloss < .3 && !o.zel){ const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(255,255,255,.18)'); gr.addColorStop(.35, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,.06)'); g.fillStyle = gr; g.fillRect(x, y, w, h); }
+  }
+  function rect(x, y, w, h){ g.fillStyle = col(); g.fillRect(x + gap / 2, y + gap / 2, w - gap, h - gap); glaze(x + gap / 2, y + gap / 2, w - gap, h - gap); }
+  if (o.pat === 'linear'){ const rh = o.th * S; for (let y = 0; y < cv.height; y += rh){ let x = -r() * .1 * S; while (x < cv.width){ const w = (.05 + r() * .2) * S;
+      g.fillStyle = col(); g.fillRect(x + gap / 2, y + gap / 2, w - gap, rh - gap);
+      const gr = g.createLinearGradient(0, y, 0, y + rh); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.45, 'rgba(255,255,255,.25)'); gr.addColorStop(.6, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(x + gap / 2, y + gap / 2, w - gap, rh - gap); x += w; } } }
+  else if (o.pat === 'running' || o.pat === 'vstack' || o.pat === 'stack'){ const w = o.tw * S, h = o.th * S; let row = 0;
+    for (let y = cv.height; y > -h; y -= h, row++){ const off = o.pat === 'running' && row % 2 ? w / 2 : 0; for (let x = -off; x < cv.width; x += w) rect(x, y - h, w, h); } }
+  else if (o.pat === 'herring'){ const l = o.tw * S, w = o.th * S; g.save(); g.translate(cv.width / 2, cv.height / 2); g.rotate(Math.PI / 4);
+    const R = Math.hypot(cv.width, cv.height) / 2 + l * 2, N = Math.ceil(R / w) + 2, M2 = Math.ceil(R / l) + 2;
+    for (let k = -M2; k <= M2; k++) for (let n = -N; n <= N; n++){ const bx = n * w + k * l, by = n * w - k * l; if (Math.abs(bx) > R + l || Math.abs(by) > R + l) continue; rect(bx, by, l, w); rect(bx, by + w, w, l); }
+    g.restore(); }
+  else if (o.pat === 'hex'){ const R = o.r * S, dx = Math.sqrt(3) * R, dy = 1.5 * R;
+    for (let j = -1, y = 0; y < cv.height + R; j++, y = j * dy) for (let i = -1; i * dx < cv.width + dx; i++){ const cx = i * dx + (j % 2 ? dx / 2 : 0), cy = cv.height - y;
+      g.beginPath(); for (let a = 0; a < 6; a++){ const t = Math.PI / 6 + a * Math.PI / 3; g.lineTo(cx + (R - gap / 2) * Math.cos(t), cy + (R - gap / 2) * Math.sin(t)); } g.closePath(); g.fillStyle = col(); g.fill();
+      if (o.vein && r() > .35){ g.save(); g.clip(); g.strokeStyle = `rgba(110,110,115,${.25 + r() * .3})`; g.lineWidth = .6 + r() * 1.4; g.beginPath(); g.moveTo(cx - R, cy + (r() - .5) * R); g.bezierCurveTo(cx - R / 3, cy + (r() - .5) * R * 2, cx + R / 3, cy + (r() - .5) * R * 2, cx + R, cy + (r() - .5) * R); g.stroke(); g.restore(); } } }
+  else if (o.pat === 'penny'){ const R = o.r * S, dx = 2 * R + gap, dy = Math.sqrt(3) * (R + gap / 2);
+    for (let j = 0; j * dy < cv.height + R; j++) for (let i = -1; i * dx < cv.width + dx; i++){ g.fillStyle = col(); g.beginPath(); g.arc(i * dx + (j % 2 ? dx / 2 : 0), cv.height - j * dy, R, 0, 7); g.fill(); } }
+  else if (o.pat === 'ledger'){ let y = cv.height; while (y > 0){ const h = (.012 + r() * .035) * S; let x = -r() * .3 * S; while (x < cv.width){ const w = (.08 + r() * .3) * S; g.fillStyle = col(); g.fillRect(x + 1, y - h + 1, w - 2, h - 2);
+      const gr = g.createLinearGradient(0, y - h, 0, y); gr.addColorStop(0, 'rgba(255,255,255,.25)'); gr.addColorStop(.3, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,.3)'); g.fillStyle = gr; g.fillRect(x + 1, y - h + 1, w - 2, h - 2); x += w; } y -= h; } }
+  if (o.crackle){ g.strokeStyle = 'rgba(30,40,50,.18)'; g.lineWidth = 1; for (let i = 0; i < cv.width * cv.height / 1800; i++){ let x = r() * cv.width, y = r() * cv.height; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++){ x += (r() - .5) * 18; y += (r() - .5) * 18; g.lineTo(x, y); } g.stroke(); } }
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+let tileCache = {};
+function applyTile(id){
+  const o = TILES.find(t => t.id === id); let tex = tileCache[id];
+  if (!tex){ tex = paintTiles(o, BS_W, BS_H, 1100); tileCache[id] = tex; }
+  const t1 = tex.clone(); t1.repeat.set(1, .474 / BS_H); t1.offset.set(0, 0); t1.needsUpdate = true;
+  const t2 = tex.clone(); t2.repeat.set(.76 / BS_W, .17 / BS_H); t2.offset.set((2.30 - .38 - 1.01) / BS_W, .474 / BS_H); t2.needsUpdate = true;
+  for (const [m, t] of [[bspMat, t1], [bspMat2, t2]]){ if (m.map && m.map !== t) m.map.dispose(); m.map = t; m.roughness = o.gloss; m.metalness = o.metal || 0; m.needsUpdate = true; }
+}
+function tileThumb(o){ const t = paintTiles(o, .2, .16, 300); return t.image.toDataURL('image/jpeg', .8); }
+
+// --- paint ---
+function applyPaint(zone, id){
+  const p = PAINTS.find(x => x.id === id), z = ZONES[zone];
+  if (p.wood){ z.V.map = woodTexV; z.H.map = woodTexH; z.V.color.set(0xffffff); z.H.color.set(0xffffff); z.V.roughness = z.H.roughness = .55; z.carc.color.set(0x2c1912); }
+  else { z.V.map = z.H.map = null; z.V.color.set(p.hex); z.H.color.set(p.hex); z.V.roughness = z.H.roughness = .42; z.carc.color.set(shade(p.hex, -.06)); }
+  for (const m of [z.V, z.H, z.carc]) m.needsUpdate = true;
+}
+
+// --- hardware builder ---
+const hwMat = new THREE.MeshStandardMaterial({ name: 'Hardware' });
+function setFinish(f){ const F = FIN[f]; hwMat.color.set(F.hex); hwMat.metalness = F.m; hwMat.roughness = F.r; }
+let curM = hwMat;
+const HWM = { kit: hwMat.clone(), isl: hwMat.clone(), desk: hwMat.clone() }; HWM.isl.name = 'Hardware_island'; HWM.desk.name = 'Hardware_nook'; HWM.kit.name = 'Hardware_kitchen';
+function setFinishM(m, f){ const F = FIN[f]; m.color.set(F.hex); m.metalness = F.m; m.roughness = F.r; }
+function addM(p, geo, x, y, z){ const m = new THREE.Mesh(geo, curM); m.position.set(x, y, z); m.castShadow = true; p.add(m); return m; }
+const hwWood = new THREE.MeshStandardMaterial({ name: 'Pull_oak', color: 0xc49a6c, roughness: .6 });
+const hwMarble = new THREE.MeshStandardMaterial({ name: 'Pull_marble', color: 0xefebe5, roughness: .18 });
+const hwGlass = new THREE.MeshStandardMaterial({ name: 'Pull_glass', color: 0xe4eeee, transparent: true, opacity: .5, roughness: .03 });
+function addX(p, geo, mat, x, y, z){ const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; p.add(m); return m; }
+const BARLIKE = ['bar', 'square', 'knurl', 'arch', 'wood', 'marble', 'glass'];
+function buildPull(e, style){
+  e.c.clear(); curM = e.mat || hwMat; const p = new THREE.Group(); const drawer = !e.v; let { px, py } = e; const L = e.L;
+  if (BARLIKE.includes(style)){
+    const len = style === 'square' ? Math.min(L, .16) : style === 'marble' || style === 'glass' ? Math.min(L, .14) : style === 'arch' ? Math.min(L, .13) : style === 'wood' ? Math.min(L, .15) : L;
+    const off = len / 2 - .012, Z0 = .03;
+    const post = (mat = curM) => { for (const s of [-1, 1]){ const m = addX(p, new THREE.CylinderGeometry(.0045, .0045, .03, 10), mat, s * off, 0, .015); m.rotation.x = Math.PI / 2; } };
+    if (style === 'bar'){ addM(p, new THREE.CylinderGeometry(.0065, .0065, len, 12), 0, 0, Z0).rotation.z = Math.PI / 2; post(); }
+    else if (style === 'knurl'){ addM(p, new THREE.CylinderGeometry(.0075, .0075, len, 8), 0, 0, Z0).rotation.z = Math.PI / 2;
+      for (let x = -len / 2 + .01; x < len / 2 - .005; x += .012) addM(p, new THREE.TorusGeometry(.0076, .0009, 4, 8), x, 0, Z0).rotation.y = Math.PI / 2; post(); }
+    else if (style === 'square'){ addM(p, new THREE.BoxGeometry(len, .01, .01), 0, 0, Z0); for (const s of [-1, 1]) addM(p, new THREE.BoxGeometry(.01, .01, .03), s * off, 0, .015); }
+    else if (style === 'arch'){ const t = addM(p, new THREE.TorusGeometry(len / 2, .0055, 8, 28, Math.PI), 0, 0, 0); t.rotation.x = Math.PI / 2; t.scale.set(1, 1, .5);
+      for (const s of [-1, 1]) addM(p, new THREE.CylinderGeometry(.008, .008, .004, 14), s * len / 2, 0, .002).rotation.x = Math.PI / 2; }
+    else if (style === 'wood'){ addX(p, new THREE.CapsuleGeometry(.009, len - .018, 6, 12), hwWood, 0, 0, Z0 - .004).rotation.z = Math.PI / 2; post(hwWood); }
+    else if (style === 'marble'){ addX(p, new THREE.BoxGeometry(len - .03, .014, .012), hwMarble, 0, 0, Z0); for (const s of [-1, 1]) addM(p, new THREE.BoxGeometry(.016, .016, .014), s * (len / 2 - .008), 0, Z0); post(); }
+    else if (style === 'glass'){ addX(p, new THREE.CylinderGeometry(.008, .008, len - .03, 14), hwGlass, 0, 0, Z0).rotation.z = Math.PI / 2; for (const s of [-1, 1]) addM(p, new THREE.CylinderGeometry(.0095, .0095, .016, 14), s * (len / 2 - .008), 0, Z0).rotation.z = Math.PI / 2; post(); }
+    if (e.v){ p.rotation.z = Math.PI / 2; if (e.yt === 'top') py = e.y1 - .045 - len / 2; if (e.yt === 'bot') py = e.y0 + .045 + len / 2; }
+  } else if (style === 'knob' || style === 'hexknob' || (style === 'cup' && !drawer) || style === 'tbar'){
+    if (e.v){ py = e.yt === 'top' ? e.y1 - .07 : e.y0 + .07; }
+    if (style === 'tbar'){ addM(p, new THREE.CylinderGeometry(.005, .005, .03, 10), 0, 0, .015).rotation.x = Math.PI / 2; addM(p, new THREE.CylinderGeometry(.0065, .0065, .06, 12), 0, 0, .032).rotation.z = Math.PI / 2; }
+    else if (style === 'hexknob'){ addM(p, new THREE.CylinderGeometry(.005, .007, .02, 10), 0, 0, .01).rotation.x = Math.PI / 2; addM(p, new THREE.CylinderGeometry(.016, .016, .016, 6), 0, 0, .027).rotation.x = Math.PI / 2; }
+    else { addM(p, new THREE.CylinderGeometry(.006, .009, .022, 14), 0, 0, .011).rotation.x = Math.PI / 2; addM(p, new THREE.SphereGeometry(.016, 18, 12), 0, 0, .03).scale.z = .7; }
+  } else if (style === 'cup'){
+    addM(p, new THREE.BoxGeometry(.1, .012, .004), 0, .014, .002);
+    const cup = addM(p, new THREE.CylinderGeometry(.04, .04, .028, 20, 1, true, -Math.PI / 2, Math.PI), 0, 0, 0); cup.rotation.x = Math.PI / 2; cup.scale.set(1, 1, .55); cup.position.set(0, .006, .0);
+    curM.side = THREE.DoubleSide;
+  } else if (style === 'edge'){
+    const w = drawer ? .12 : .08; const yEdge = (e.yt === 'bot') ? e.y0 : e.y1; const sgn = (e.yt === 'bot') ? -1 : 1;
+    py = yEdge; px = drawer ? (e.x0 + e.x1) / 2 : px;
+    addM(p, new THREE.BoxGeometry(w, .003, .028), 0, sgn * .0015, -.004);
+    addM(p, new THREE.BoxGeometry(w, .018, .003), 0, sgn * .009, .011);
+  }
+  p.position.set(px, py, e.z); e.c.add(p);
+}
+const SEC_OF = { up: 'kit', run: 'kit', isl: 'isl', desk: 'desk' };
+// cfg: { kit: {style, fin}, isl: {...}, desk: {...} }
+function applyHW(cfg){ for (const k in HWM){ HWM[k].side = THREE.FrontSide; setFinishM(HWM[k], cfg[k].fin); HWM[k].needsUpdate = true; }
+  for (const e of PULLS){ const sec = SEC_OF[e.zone] || 'kit'; e.mat = HWM[sec]; buildPull(e, cfg[sec].style); } }
+
+// --- hoods ---
+const hoodMats = {
+  steel: M.steel,
+  black: new THREE.MeshStandardMaterial({ name: 'Hood_black', color: 0x1c1c1d, metalness: .5, roughness: .45 }),
+  glass: new THREE.MeshStandardMaterial({ name: 'Hood_glass', color: 0x9aa3a3, transparent: true, opacity: .45, roughness: .05, metalness: .1 }),
+  blackGlass: new THREE.MeshStandardMaterial({ name: 'Hood_black_glass', color: 0x0d0d0e, roughness: .06, metalness: .2 }),
+  plaster: new THREE.MeshStandardMaterial({ name: 'Hood_plaster', color: 0xeee8dc, roughness: .95 }),
+};
+function profileHood(pts, mat, curve){
+  const s = new THREE.Shape(); s.moveTo(0, 1.5); s.lineTo(.54, 1.5); s.lineTo(.54, 1.62);
+  if (curve) s.bezierCurveTo(.54, 1.85, .30, 1.9, .30, 2.29); else s.lineTo(.30, 2.29);
+  s.lineTo(0, 2.29); s.closePath();
+  const m = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: .76, bevelEnabled: false, curveSegments: 24 }), mat);
+  m.rotation.y = -Math.PI / 2; m.position.x = 2.68; m.castShadow = m.receiveShadow = true; hd.add(m); return m;
+}
+const oakTex = canvasTex(512, 512, woodDraw('#c9a77c', 21)); const walnutTex = canvasTex(512, 512, woodDraw('#5b3c28', 23));
+hoodMats.oak = new THREE.MeshStandardMaterial({ name: 'Hood_white_oak', map: oakTex, roughness: .6 });
+hoodMats.walnut = new THREE.MeshStandardMaterial({ name: 'Hood_walnut', map: walnutTex, roughness: .55 });
+function slats(x0, x1, y0, y1, z, mat, step = .03){ for (let x = x0; x < x1 - .005; x += step) B(hd, x + .002, Math.min(x + step - .004, x1), y0, y1, z, z + .018, mat); }
+function hoodExtra(id){
+  const U = ZONES.up, under = () => B(hd, 1.95, 2.65, 1.495, 1.502, .04, .5, M.black);
+  if (id === 'mdf-shiplap'){ B(hd, 1.93, 2.67, 1.5, 2.29, 0, .47, U.carc); for (let y = 1.5; y < 2.28; y += .1) B(hd, 1.925, 2.675, y + .006, Math.min(y + .1, 2.29), .45, .48, U.H); B(hd, 1.91, 2.69, 1.47, 1.53, 0, .51, U.H); under(); }
+  else if (id === 'mdf-corbel'){ B(hd, 1.95, 2.65, 1.62, 2.29, 0, .44, U.H); B(hd, 1.88, 2.72, 1.56, 1.62, 0, .52, U.H);
+    for (const x of [1.955, 2.605]){ const s = new THREE.Shape(); s.moveTo(0, 0); s.lineTo(.08, 0); s.quadraticCurveTo(.02, -.03, 0, -.16); s.closePath();
+      const m = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: .04, bevelEnabled: false, curveSegments: 12 }), U.H); m.rotation.y = -Math.PI / 2; m.position.set(x + .04, 1.56, .44); m.castShadow = true; hd.add(m); }
+    B(hd, 1.92, 2.68, 1.5, 1.56, 0, .44, U.carc); under(); }
+  else if (id === 'mdf-curve'){ profileHood(0, U.V, true); B(hd, 1.9, 2.70, 2.21, 2.29, 0, .36, U.H); B(hd, 1.905, 2.695, 1.47, 1.53, 0, .56, U.H); under(); }
+  else if (id === 'mdf-strap'){ B(hd, 1.93, 2.67, 1.5, 2.29, 0, .5, U.V); B(hd, 1.925, 2.675, 1.53, 1.6, 0, .505, hoodMats.black); under(); }
+  else if (id === 'oak-slat'){ B(hd, 1.93, 2.67, 1.5, 2.29, 0, .46, hoodMats.oak); slats(1.93, 2.67, 1.56, 2.29, .46, hoodMats.oak); B(hd, 1.91, 2.69, 1.5, 1.56, 0, .5, hoodMats.oak); under(); }
+  else if (id === 'oak-curve'){ profileHood(0, hoodMats.oak, true); B(hd, 1.905, 2.695, 1.5, 1.6, 0, .56, hoodMats.oak); under(); }
+  else if (id === 'oak-box'){ B(hd, 1.95, 2.65, 1.6, 2.29, 0, .44, hoodMats.oak); B(hd, 1.9, 2.7, 1.5, 1.6, 0, .52, hoodMats.oak); under(); }
+  else if (id === 'walnut-box'){ B(hd, 1.93, 2.67, 1.5, 2.29, 0, .46, hoodMats.walnut); slats(1.93, 2.67, 1.6, 2.29, .46, hoodMats.walnut, .04); B(hd, 1.915, 2.685, 1.56, 1.6, 0, .49, M.brass); B(hd, 1.915, 2.685, 1.5, 1.56, 0, .49, hoodMats.walnut); under(); }
+}
+function buildHood(id){
+  hd.clear(); const S = M.steel;
+  const pyramid = mat => { B(hd, 1.92, 2.68, 1.55, 1.60, 0, .5, mat);
+    const can = new THREE.Mesh(new THREE.CylinderGeometry(.2, .537, .22, 4, 1), mat); can.rotation.y = Math.PI / 4; can.castShadow = true;
+    const w = new THREE.Group(); w.add(can); w.position.set(2.30, 1.71, .25); w.scale.z = .66; hd.add(w);
+    B(hd, 2.16, 2.44, 1.80, 2.29, 0, .26, mat); for (let i = 0; i < 4; i++) B(hd, 2.19 + i * .02, 2.2 + i * .02, 1.565, 1.58, .5, .505, M.black); };
+  const under = () => B(hd, 1.95, 2.65, 1.495, 1.502, .04, .5, M.black);
+  if (id === 'orig' || id === 'broan') pyramid(S);
+  else if (id === 'pyr-black') pyramid(hoodMats.black);
+  else if (id === 'cosmo-glass' || id === 'ciarra-black'){
+    const blk = id === 'ciarra-black'; const body = blk ? hoodMats.black : S;
+    B(hd, 2.12, 2.48, 1.6, 2.29, 0, .26, body); B(hd, 2.06, 2.54, 1.56, 1.66, 0, .34, body);
+    const gl = new THREE.Mesh(new THREE.BoxGeometry(.76, .008, .5), blk ? hoodMats.blackGlass : hoodMats.glass); gl.position.set(2.30, 1.68, .26); gl.rotation.x = blk ? -.9 : .18; gl.castShadow = true; hd.add(gl);
+    if (blk){ gl.position.set(2.30, 1.75, .3); gl.scale.z = .75; }
+  }
+  else if (id === 'ciarra-pro'){ B(hd, 1.92, 2.68, 1.52, 1.64, 0, .55, S); B(hd, 2.12, 2.48, 1.64, 2.29, 0, .3, S); B(hd, 1.95, 2.65, 1.515, 1.52, .05, .52, M.black); for (let i = 0; i < 3; i++) B(hd, 2.24 + i * .05, 2.26 + i * .05, 1.57, 1.59, .55, .553, M.black); }
+  else if (id === 'plaster-curve' || id === 'plaster-brass'){ profileHood(0, hoodMats.plaster, true); under(); if (id === 'plaster-brass') B(hd, 1.915, 2.685, 1.585, 1.625, 0, .548, M.brass); }
+  else if (id === 'plaster-taper'){ profileHood(0, hoodMats.plaster, false); under(); }
+  else if (id === 'wood-box'){ const z = ZONES.up, zPrev = Z; Z = z; B(hd, 1.93, 2.67, 1.56, 2.23, 0, .48, z.carc); front(hd, 1.95, 2.65, 1.62, 2.18, .48); Z = zPrev; B(hd, 1.92, 2.68, 1.50, 1.58, 0, .52, z.H); B(hd, 1.92, 2.68, 2.23, 2.29, 0, .52, z.H); under(); }
+  else if (hoodExtra(id) !== false && id !== 'wood-taper'){ }
+  if (id === 'wood-taper'){ profileHood(0, ZONES.up.V, false); B(hd, 1.915, 2.685, 1.5, 1.62, 0, .55, ZONES.up.H); under(); }
+}
+// --- floors ---
+const FW = RX1 - RX0, FH = RZ1;
+fl.geometry.dispose(); fl.geometry = new THREE.PlaneGeometry(FW, FH);
+const floorOrig = floorTex; floorOrig.repeat.set(FW / 1.2, FH / 1.2);
+function drawPlank(g, r, x, y, w, h, base, porcelain){
+  g.fillStyle = shade(base, (r() - .5) * .07); g.fillRect(x, y, w, h);
+  const along = h >= w, Lg = along ? h : w, Wd = along ? w : h;
+  for (let i = 0; i < 26; i++){ const t = r() * Wd, a = .04 + r() * .1; g.strokeStyle = r() > .55 ? `rgba(255,240,215,${a * .7})` : `rgba(25,12,5,${a})`; g.lineWidth = .5 + r() * 1.6; g.beginPath();
+    let o = t; for (let s = 0; s <= Lg; s += Lg / 8){ o += (r() - .5) * 1.5; const px = along ? x + o : x + s, py = along ? y + s : y + o; s ? g.lineTo(px, py) : g.moveTo(px, py); } g.stroke(); }
+  if (r() > .7){ const kx = x + w * (.2 + r() * .6), ky = y + h * (.2 + r() * .6); for (let j = 5; j > 0; j--){ g.strokeStyle = 'rgba(30,15,5,.12)'; g.beginPath(); g.ellipse(kx, ky, along ? j * 1.5 : j * 5, along ? j * 5 : j * 1.5, 0, 0, 7); g.stroke(); } }
+  g.strokeStyle = porcelain ? 'rgba(90,80,70,.85)' : 'rgba(0,0,0,.45)'; g.lineWidth = porcelain ? 2.5 : 1.2; g.strokeRect(x, y, w, h);
+}
+function paintFloor(o, Wm, Hm, ppm){
+  const cv = document.createElement('canvas'); cv.width = Math.round(Wm * ppm); cv.height = Math.round(Hm * ppm);
+  const g = cv.getContext('2d'), r = rnd(31), S = ppm, base = () => o.pal[Math.floor(r() * o.pal.length)];
+  g.fillStyle = o.pal[0]; g.fillRect(0, 0, cv.width, cv.height);
+  if (o.pat === 'plank'){ const w = o.w * S, l = o.l * S;
+    for (let x = 0; x < cv.width; x += w){ let y = -r() * l; while (y < cv.height){ const len = l * (o.grout ? 1 : .55 + r() * .45); drawPlank(g, r, x, y, w, len, base(), o.grout); y += len; } } }
+  else if (o.pat === 'herring'){ const l = o.l * S, w = o.w * S; g.save(); g.translate(cv.width / 2, cv.height / 2); g.rotate(Math.PI / 4);
+    const R = Math.hypot(cv.width, cv.height) / 2 + l * 2, N = Math.ceil(R / w) + 2, M2 = Math.ceil(R / l) + 2;
+    for (let k = -M2; k <= M2; k++) for (let n = -N; n <= N; n++){ const bx = n * w + k * l, by = n * w - k * l; if (Math.abs(bx) > R + l || Math.abs(by) > R + l) continue; drawPlank(g, r, bx, by, l, w, base()); drawPlank(g, r, bx, by + w, w, l, base()); }
+    g.restore(); }
+  else if (o.pat === 'chevron'){ const cw = o.l * S * Math.SQRT1_2, w = o.w * S;
+    for (let c = 0; c * cw < cv.width; c++){ g.save(); g.beginPath(); g.rect(c * cw, 0, cw, cv.height); g.clip(); g.translate(c * cw + cw / 2, 0); g.rotate((c % 2 ? 1 : -1) * Math.PI / 4);
+      for (let y = -cv.height * 2; y < cv.height * 2; y += w) drawPlank(g, r, -cw, y, cw * 2, w, base()); g.restore(); } }
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+const floorCache = {};
+function applyFloor(id){
+  const o = FLOORS.find(f => f.id === id); let t = o.orig ? floorOrig : floorCache[id];
+  if (!t){ t = paintFloor(o, FW, FH, 260); floorCache[id] = t; }
+  M.floor.map = t; M.floor.roughness = o.orig ? .45 : o.r; M.floor.needsUpdate = true;
+}
+
+// --- LED lighting ---
+RectAreaLightUniformsLib.init();
+const ledMat = new THREE.MeshStandardMaterial({ name: 'LED_strip', color: 0x111111, emissive: 0xffc58f, emissiveIntensity: 4 });
+const ledGroups = {};
+function strip(key, x, y, z, w, d, I){
+  const grp = ledGroups[key] || (ledGroups[key] = new THREE.Group()); grp.name = 'LED_' + key;
+  const L = new THREE.RectAreaLight(0xffc58f, I, w, d); L.position.set(x, y, z); L.lookAt(x, y - 1, z); grp.add(L);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, .004, Math.max(d, .008)), ledMat); m.position.set(x, y + .002, z); grp.add(m);
+  grp.visible = false; scene.add(grp);
+}
+strip('under', 1.465, 1.374, .24, .84, .02, 110); strip('under', 3.135, 1.374, .24, .84, .02, 110);
+strip('toe', 1.96, .035, 1.785, 2.6, .02, 18); strip('toe', 1.96, .035, 2.39, 2.7, .02, 18);
+strip('top', 1.96, .872, 2.385, 2.72, .02, 60);
+strip('wallToe', 1.465, .035, .525, .9, .02, 18); strip('wallToe', 3.135, .035, .525, .9, .02, 18);
+const dimmables = []; scene.traverse(o => { if (o.isLight && !(o.isRectAreaLight)) dimmables.push([o, o.intensity]); });
+function applyLED(){
+  const c = TEMPS[st.temp].hex; ledMat.emissive.set(c);
+  for (const [k, g] of Object.entries(ledGroups)){ g.visible = !!st.leds[k]; g.traverse(o => { if (o.isRectAreaLight) o.color.set(c); }); }
+  applyLight();
+}
+// --- light modes: bright / day / evening / lamps ---
+const LIGHTS = { bright: 'Светло', day: 'День', evening: 'Вечер', lamps: 'Лампы' };
+function applyLight(){ const L = LIGHTS[st.light] ? st.light : 'bright'; st.night = L === 'evening' || L === 'lamps';
+  for (const [o, i] of dimmables){ const ceil = o.isSpotLight && o.position.y > H - .1, under = o.isSpotLight && !ceil, pend = o.isPointLight, hemi = o.isHemisphereLight, dir = o.isDirectionalLight;
+    const k = L === 'bright' ? (hemi ? 1.1 : dir ? 1 : ceil ? 1.2 : 1.15)
+      : L === 'day' ? 1
+      : L === 'evening' ? (hemi ? .3 : dir ? 0 : ceil ? .6 : pend ? 1.8 : under ? 1.3 : 1)
+      : (hemi ? .15 : dir ? 0 : ceil ? 1.9 : pend ? 2.6 : under ? 1.8 : 1);
+    o.intensity = i * k; }
+  scene.environmentIntensity = { bright: .8, day: .55, evening: .2, lamps: .14 }[L];
+  renderer.toneMappingExposure = { bright: 1, day: .92, evening: 1.08, lamps: 1.12 }[L];
+  M.blinds.emissiveIntensity = { bright: .5, day: .35, evening: .12, lamps: .03 }[L];
+  document.querySelectorAll('#lightbar button').forEach(b => b.setAttribute('aria-pressed', b.dataset.light === L));
+}
+document.getElementById('lightbar').addEventListener('click', e => { const b = e.target.closest('button[data-light]'); if (!b) return; st.light = b.dataset.light; applyLight(); save(); if (st.tab === 'led') render(); });
+
+// --- thumbnails (second small renderer) ---
+const TW = 168, TH = 120;
+const thumbR = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); thumbR.setSize(TW, TH); thumbR.setPixelRatio(1);
+thumbR.toneMapping = THREE.ACESFilmicToneMapping;
+const tScene = new THREE.Scene(); tScene.background = new THREE.Color(0x2b1d16);
+tScene.environment = new THREE.PMREMGenerator(thumbR).fromScene(new RoomEnvironment(), .04).texture;
+tScene.add(new THREE.HemisphereLight(0xfff3e0, 0x3a2a20, .6)); const tSun = new THREE.DirectionalLight(0xffffff, 1.1); tSun.position.set(1, 2, 3); tScene.add(tSun);
+const tCam = new THREE.PerspectiveCamera(30, TW / TH, .01, 20);
+const chipMat = new THREE.MeshStandardMaterial({ color: 0xd9d2c6, roughness: .5 });
+const thumbCache = {};
+function snap(obj, camPos, target, bg){
+  tScene.add(obj); tCam.position.set(...camPos); tCam.lookAt(...target); if (bg) tScene.background.set(bg);
+  thumbR.render(tScene, tCam); const url = thumbR.domElement.toDataURL('image/jpeg', .85); tScene.remove(obj); tScene.background.set(0x2b1d16); return url;
+}
+function hwThumb(style, fin){
+  const key = style + '|' + fin; if (thumbCache[key]) return thumbCache[key];
+  const prevSide = hwMat.side; setFinish(fin);
+  const o = new THREE.Group(); const chip = new THREE.Mesh(new THREE.BoxGeometry(.24, .16, .02), chipMat); chip.position.z = -.01; o.add(chip);
+  const e = { g: o, x0: -.12, x1: .12, y0: -.08, y1: .08, px: 0, py: 0, z: 0, L: .16, v: false, yt: 'c', c: new THREE.Group() }; o.add(e.c); buildPull(e, style);
+  const url = snap(o, [.06, .05, .25], [0, 0, .015]); hwMat.side = prevSide;
+  return (thumbCache[key] = url);
+}
+function hoodThumb(id){
+  const key = 'hood|' + id + '|' + st.up; if (thumbCache[key]) return thumbCache[key];
+  buildHood(id); const o = new THREE.Group(); const wall = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.2), M.wall); wall.position.set(2.3, 1.9, 0); o.add(wall);
+  for (const ch of [...hd.children]) o.add(ch.clone());
+  const url = snap(o, [2.95, 1.55, 1.75], [2.3, 1.9, .2]); return (thumbCache[key] = url);
+}
+function floorThumb(o){ const key = 'floor|' + o.id; if (thumbCache[key]) return thumbCache[key];
+  if (o.orig){ const c = document.createElement('canvas'); c.width = 150; c.height = 110; const g = c.getContext('2d'); g.drawImage(floorOrig.image, 0, 0, 380, 380, 0, 0, 150, 110); return (thumbCache[key] = c.toDataURL('image/jpeg', .8)); }
+  return (thumbCache[key] = paintFloor(o, .9, .66, 170).image.toDataURL('image/jpeg', .8)); }
+
+// --- island seating-side panel ---
+for (const n of ['Island_seat_panel', 'Island_baseboard']){ const o = isl.getObjectByName(n); if (o) o.parent.remove(o); }
+const PANELS = [
+  { id: 'flat', name: 'Гладкая панель', note: 'Как сейчас: ровная панель с плинтусом.' },
+  { id: 'shaker', name: 'Шейкер-панели', note: 'Рамочные панели с утопленной серединой, как фасады шкафов.' },
+  { id: 'doors', name: 'Ложные фасады', note: 'Панели повторяют двери шкафов, остров выглядит как мебель со всех сторон.' },
+  { id: 'twotone', name: 'Шейкер + дубовые вставки', note: 'Рамка в выбранном цвете, утопленные вставки из белого дуба: акцентный вариант.' },
+  { id: 'batten', name: 'Board and batten', note: 'Вертикальные планки с верхней рейкой, фермерский стиль.' },
+  { id: 'shiplap', name: 'Шиплап (горизонтальные доски)', note: 'Горизонтальные доски с зазором.' },
+  { id: 'beadboard', name: 'Бидборд (узкая вагонка)', note: 'Вертикальная узкая вагонка, коттеджный стиль.' },
+  { id: 'fluted', name: 'Рифлёная (fluted)', note: 'Вертикальные полукруглые рейки, современный тренд.' },
+  { id: 'slat', name: 'Рейки на тёмной подложке', note: 'Вертикальные рейки с тёмными зазорами, акцентная стена.' },
+];
+const MOLD = [
+  { id: 'picture', name: 'Рамки, 4 панели', note: 'Классика: четыре одинаковые рамки из молдинга.', n: 4 },
+  { id: 'picture3', name: 'Рамки, 3 широкие панели', note: 'Меньше швов, спокойнее.', n: 3 },
+  { id: 'picture6', name: 'Рамки, 6 узких панелей', note: 'Частый ритм, вытянутые рамки.', n: 6 },
+  { id: 'double', name: 'Двойная рамка, 4 панели', note: 'Рамка, а внутри ещё одна рамка.', n: 4, dbl: 1 },
+  { id: 'double3', name: 'Двойная рамка, 3 панели', note: 'Крупные двойные рамки.', n: 3, dbl: 1 },
+  { id: 'double6', name: 'Двойная рамка, 6 панелей', note: 'Узкие двойные рамки.', n: 6, dbl: 1 },
+  { id: 'triple', name: 'Тройная рамка, 3 панели', note: 'Три вложенные рамки, самый нарядный вариант.', n: 3, dbl: 2 },
+  { id: 'rhythm', name: 'Широкая – узкая – широкая', note: 'Чередование широких и узких рамок.', rhythm: 1 },
+  { id: 'rhythmDouble', name: 'Ритм с двойными рамками', note: 'Широкие рамки двойные, узкие одинарные.', rhythm: 1, dbl: 1 },
+  { id: 'tworow', name: 'Два ряда рамок', note: 'Сверху низкие рамки, снизу высокие, 4 колонки.', rows: [.32, .68], n: 4 },
+  { id: 'tworowDouble', name: 'Два ряда, снизу двойные', note: 'Сверху одинарные, снизу двойные рамки.', rows: [.32, .68], n: 4, dbl: 1 },
+  { id: 'wainscot', name: 'Вейнскот: квадраты сверху', note: 'Ряд маленьких квадратов сверху и рамки снизу.', wain: 1 },
+  { id: 'squares', name: 'Сетка квадратов', note: 'Два ряда одинаковых квадратиков.', grid: [8, 2] },
+  { id: 'squaresDouble', name: 'Сетка двойных квадратов', note: 'Квадраты с внутренней рамкой.', grid: [6, 2], dbl: 1 },
+  { id: 'rounded', name: 'Рамки со скруглёнными углами', note: 'Мягкие скругления, 4 панели.', n: 4, r: .05 },
+  { id: 'roundedDouble', name: 'Двойные со скруглением', note: 'Внешняя прямая, внутренняя скруглённая.', n: 4, dbl: 1, r: .05, rIn: 1 },
+  { id: 'arch', name: 'Арки', note: 'Рамки с арочным верхом.', n: 4, arch: 1 },
+  { id: 'archDouble', name: 'Двойные арки', note: 'Арка в арке.', n: 4, arch: 1, dbl: 1 },
+  { id: 'diamond', name: 'Рамка с ромбом', note: 'Внутри каждой рамки ромб из молдинга.', n: 4, diamond: 1 },
+  { id: 'centerSquare', name: 'Рамка с квадратом в центре', note: 'Высокая рамка и маленький квадрат внутри.', n: 4, center: 1 },
+];
+const MW = { thin: { name: 'Тонкий 1"', w: .02 }, mid: { name: 'Средний 1½"', w: .03 }, wide: { name: 'Широкий 2¼"', w: .045 } };
+const MCOL = { same: 'Как панель', white: 'Белый', oak: 'Дуб', black: 'Чёрный', brass: 'Латунь' };
+const moldBlack = new THREE.MeshStandardMaterial({ name: 'Molding_black', color: 0x1c1c1c, roughness: .5 });
+function ringGeo(x0, x1, y0, y1, w, r, arch){
+  const path = (p, a0, a1, b0, b1, rr) => { const W = a1 - a0;
+    if (arch){ const ah = Math.min(W / 2, (b1 - b0) * .45); p.moveTo(a0, b0); p.lineTo(a1, b0); p.lineTo(a1, b1 - ah); p.absellipse((a0 + a1) / 2, b1 - ah, W / 2, ah, 0, Math.PI, false); p.lineTo(a0, b0); return; }
+    rr = Math.max(0, Math.min(rr, W / 2 - .001, (b1 - b0) / 2 - .001));
+    p.moveTo(a0 + rr, b0); p.lineTo(a1 - rr, b0); if (rr) p.quadraticCurveTo(a1, b0, a1, b0 + rr); p.lineTo(a1, b1 - rr); if (rr) p.quadraticCurveTo(a1, b1, a1 - rr, b1);
+    p.lineTo(a0 + rr, b1); if (rr) p.quadraticCurveTo(a0, b1, a0, b1 - rr); p.lineTo(a0, b0 + rr); if (rr) p.quadraticCurveTo(a0, b0, a0 + rr, b0); };
+  const s = new THREE.Shape(); path(s, x0, x1, y0, y1, r); const h = new THREE.Path(); path(h, x0 + w, x1 - w, y0 + w, y1 - w, Math.max(0, r - w)); s.holes.push(h);
+  return new THREE.ExtrudeGeometry(s, { depth: w * .35, bevelEnabled: true, bevelThickness: w * .25, bevelSize: w * .18, bevelSegments: 2, curveSegments: 16 });
+}
+function frameR(g, x0, x1, y0, y1, w, mat, r = 0, arch = false, z = .02){ const m = new THREE.Mesh(ringGeo(x0, x1, y0, y1, w, r, arch), mat); m.position.z = z + w * .25; m.castShadow = m.receiveShadow = true; g.add(m); }
+function diamondGeo(cx, cy, hw, hh, w){ const s = new THREE.Shape(); s.moveTo(cx, cy - hh); s.lineTo(cx + hw, cy); s.lineTo(cx, cy + hh); s.lineTo(cx - hw, cy); s.closePath();
+  const k = w * 1.5, h = new THREE.Path(); h.moveTo(cx, cy - hh + k); h.lineTo(cx - hw + k, cy); h.lineTo(cx, cy + hh - k); h.lineTo(cx + hw - k, cy); h.closePath(); s.holes.push(h);
+  return new THREE.ExtrudeGeometry(s, { depth: w * .35, bevelEnabled: true, bevelThickness: w * .25, bevelSize: w * .18, bevelSegments: 2 }); }
+function buildMolding(o, g, T, W, PH){
+  const w = MW[st.mw].w, gap = Math.max(.045, w * 2.2), L = .05, R = W - .05, B0 = .17, T0 = PH - .07;
+  const nest = (x0, x1, y0, y1, depth, r, arch, rIn) => { frameR(g, x0, x1, y0, y1, w, T, rIn ? 0 : r, arch);
+    for (let k = 1; k <= depth; k++){ const ins = k * (w + Math.max(.035, w * 1.6)); if (x1 - x0 - 2 * ins < .06 || y1 - y0 - 2 * ins < .06) break; frameR(g, x0 + ins, x1 - ins, y0 + ins, y1 - ins, w * .8, T, rIn ? Math.max(r, .05) : r, arch); } };
+  const cols = (n, x0 = L, x1 = R) => { const cw = (x1 - x0 - gap * (n - 1)) / n; return [...Array(n)].map((_, i) => [x0 + i * (cw + gap), x0 + i * (cw + gap) + cw]); };
+  if (o.grid){ const [c, rN] = o.grid, rh = (T0 - B0 - gap * (rN - 1)) / rN; for (const [a, b] of cols(c)) for (let j = 0; j < rN; j++) nest(a, b, B0 + j * (rh + gap), B0 + j * (rh + gap) + rh, o.dbl || 0, 0, false); return; }
+  if (o.wain){ for (const [a, b] of cols(4)){ nest(a, b, B0, .56, o.dbl || 0); for (const [c2, d2] of cols(2, a, b)) frameR(g, c2, d2, .56 + gap, T0, w * .9, T); } return; }
+  if (o.rows){ const hTot = T0 - B0 - gap, h1 = hTot * o.rows[1]; for (const [a, b] of cols(o.n)){ nest(a, b, B0, B0 + h1, o.dbl || 0); frameR(g, a, b, B0 + h1 + gap, T0, w, T); } return; }
+  if (o.rhythm){ const units = [2, 1, 2, 1, 2], tot = R - L - gap * 4, u = tot / 8; let x = L; for (const k of units){ const cw = u * k; nest(x, x + cw, B0, T0, k === 2 ? (o.dbl || 0) : 0); x += cw + gap; } return; }
+  for (const [a, b] of cols(o.n)){ nest(a, b, B0, T0, o.dbl || 0, o.r || 0, !!o.arch, !!o.rIn);
+    if (o.diamond){ const m = new THREE.Mesh(diamondGeo((a + b) / 2, (B0 + T0) / 2, (b - a) / 2 - .06, (T0 - B0) / 2 - .06, w * .8), T); m.position.z = .02 + w * .2; m.castShadow = true; g.add(m); }
+    if (o.center){ const s = Math.min(b - a, T0 - B0) * .35, cx = (a + b) / 2, cy = (B0 + T0) / 2; frameR(g, cx - s / 2, cx + s / 2, cy - s / 2, cy + s / 2, w * .8, T); } }
+}
+
+const DTOPS = { quartz: { name: 'Кремовый кварц (как сейчас)', hex: '#e9dfca' }, white: { name: 'Белый кварц', hex: '#f3f2ee' }, marble: { name: 'Под мрамор (Calacatta)', hex: '#efece6' }, oak: { name: 'Массив дуба', hex: '#b88a57' }, walnut: { name: 'Массив ореха', hex: '#6b4a33' }, black: { name: 'Чёрный кварц', hex: '#232325' } };
+let marbleTex = null;
+function applyDeskTop(id){ const m = M.deskTop, o = DTOPS[id] || DTOPS.quartz;
+  if (id === 'quartz'){ m.map = quartzTex; m.color.set(0xffffff); m.roughness = .28; }
+  else if (id === 'marble'){ if (!marbleTex){ marbleTex = canvasTex(512, 256, (g, w, h) => { g.fillStyle = '#efece6'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(120,115,110,.35)'; for (let i = 0; i < 9; i++){ g.lineWidth = .6 + Math.random() * 2; g.beginPath(); let x = Math.random() * w, y = 0; g.moveTo(x, y); while (y < h){ x += (Math.random() - .45) * 40; y += 12 + Math.random() * 20; g.lineTo(x, y); } g.stroke(); } }); }
+    m.map = marbleTex; m.color.set(0xffffff); m.roughness = .2; }
+  else { m.map = null; m.color.set(o.hex); m.roughness = id === 'oak' || id === 'walnut' ? .5 : .25; }
+  m.needsUpdate = true; }
+const PFIN = { orig: 'Белая (как сейчас)', isl: 'В цвет острова', up: 'Как верхние', wall: 'Как нижние', oak: 'Белый дуб', walnut: 'Орех' };
+const backV = new THREE.MeshStandardMaterial({ name: 'Island_back_paint', roughness: .42 });
+const slatDark = new THREE.MeshStandardMaterial({ name: 'Slat_backing', color: 0x1a1512, roughness: .8 });
+function panelMats(f){
+  if (f === 'orig') return [M.panel, M.panel, M.trim];
+  if (ZONES[f === 'wall' ? 'run' : f]) { const z = ZONES[f === 'wall' ? 'run' : f]; return [z.V, z.H, z.H]; }
+  if (f === 'oak' || f === 'walnut') return [hoodMats[f], hoodMats[f], hoodMats[f]];
+  const p = PAINTS.find(x => x.id === f); backV.color.set(p ? p.hex : '#e3dac8'); return [backV, backV, backV];
+}
+const bp = new THREE.Group(); bp.name = 'Island_back_panel'; bp.rotation.y = Math.PI; bp.position.set(2.68, 0, -.03); isl.add(bp);
+function buildPanel(style, fin, g){
+  g.clear(); let [V, Hm, T] = panelMats(fin); if (st.mcol !== 'same') T = st.mcol === 'white' ? M.trim : st.mcol === 'oak' ? hoodMats.oak : st.mcol === 'black' ? moldBlack : M.brass; const mo = MOLD.find(x => x.id === style); const W = 2.7, PH = TOP0, F = .02; const box = (x0, x1, y0, y1, z0, z1, m) => B(g, x0, x1, y0, y1, z0, z1, m);
+  const frame = (x0, x1, y0, y1, w, d, m) => { box(x0, x0 + w, y0, y1, F, F + d, m); box(x1 - w, x1, y0, y1, F, F + d, m); box(x0 + w, x1 - w, y0, y0 + w, F, F + d, m); box(x0 + w, x1 - w, y1 - w, y1, F, F + d, m); };
+  const base = () => box(0, W, 0, .1, F, F + .016, T);
+  box(0, W, 0, PH, 0, F, style === 'slat' ? slatDark : V);
+  if (mo){ base(); buildMolding(mo, g, T, W, PH); }
+  else if (style === 'flat') base();
+  else if (style === 'shaker' || style === 'twotone'){ const n = 4, rw = .075; box(0, W, 0, .1, F, F + .02, Hm); box(0, W, PH - .075, PH, F, F + .02, Hm);
+    for (let i = 0; i <= n; i++){ const x = i * (W - rw) / n; box(x, x + rw, .1, PH - .075, F, F + .02, V); }
+    if (style === 'twotone') for (let i = 0; i < n; i++){ const x0 = i * (W - rw) / n + rw, x1 = (i + 1) * (W - rw) / n; box(x0, x1, .1, PH - .075, F - .002, F + .004, hoodMats.oak); } }
+  else if (style === 'doors'){ box(0, W, 0, .1, F, F + .01, slatDark); const zPrev = Z; Z = ZONES[fin === 'up' ? 'up' : fin === 'wall' ? 'run' : 'isl']; const n = 8, dw = W / n;
+    for (let i = 0; i < n; i++) front(g, i * dw + .0015, (i + 1) * dw - .0015, .105, PH - .008, F); Z = zPrev; }
+  else if (style === 'batten'){ base(); for (let x = 0; x <= W - .06; x += (W - .06) / 6) box(x, x + .06, .1, PH - .08, F, F + .016, T); box(0, W, PH - .09, PH, F, F + .02, T); }
+  else if (style === 'shiplap'){ for (let y = .1; y < PH - .01; y += .13) box(0, W, y + .005, Math.min(y + .13, PH), F, F + .012, V); base(); }
+  else if (style === 'beadboard'){ for (let x = 0; x < W - .01; x += .04) box(x + .003, x + .04, .1, PH, F, F + .008, V); base(); box(0, W, PH - .05, PH, F, F + .018, T); }
+  else if (style === 'fluted'){ for (let x = .013; x < W; x += .028){ const c = new THREE.Mesh(new THREE.CylinderGeometry(.013, .013, PH - .1, 10, 1, false, -Math.PI / 2, Math.PI), V); c.position.set(x, .1 + (PH - .1) / 2, F); c.castShadow = c.receiveShadow = true; g.add(c); } base(); }
+  else if (style === 'slat'){ for (let x = .008; x < W - .02; x += .045) box(x, x + .03, .02, PH - .01, F, F + .018, fin === 'orig' ? hoodMats.oak : V); }
+}
+function applyPanel(){ buildPanel(st.panel, st.pfin, bp); }
+function panelThumb(style){
+  const key = 'panel|' + style + '|' + st.pfin + st.mw + st.mcol + '|' + st.isl + st.up + st.wall; if (thumbCache[key]) return thumbCache[key];
+  const g = new THREE.Group(); buildPanel(style, st.pfin, g); const sp = tSun.position.clone(), ex = thumbR.toneMappingExposure; tSun.position.set(-3, 1.2, 1.2); thumbR.toneMappingExposure = .5; const url = snap(g, [1.75, .7, 3.2], [1.35, .44, 0]); tSun.position.copy(sp); thumbR.toneMappingExposure = ex; return (thumbCache[key] = url);
+}
+
+// --- render (natural daylight raster: window sun + room-captured reflections + AO, no noise) ---
+const rov = document.createElement('div'); rov.id = 'rov'; rov.hidden = true; document.body.appendChild(rov);
+let rendering = false;
+function renderRig(){
+  const undo = [], set = (o, k, v) => { const old = o[k]; undo.push(() => { o[k] = old; }); o[k] = v; };
+  const night = !!st.night, rig = new THREE.Group(); rig.name = 'Render_rig';
+  scene.add(rig); undo.push(() => scene.remove(rig));
+  scene.traverse(o => { if (o.isHemisphereLight) set(o, 'intensity', night ? o.intensity * .6 : st.light === 'bright' ? .5 : .28);
+    if (o.isSpotLight && o.position.y > H - .1) set(o, 'intensity', o.intensity * (night ? 1 : st.light === 'bright' ? .8 : .55)); });
+  set(sun, 'visible', false);
+  if (!night){
+    // walls and ceiling block light, so daylight enters only through the window
+    walls.traverse(o => { if (o.isMesh && o !== bl) set(o, 'castShadow', true); });
+    const D = new THREE.DirectionalLight(0xffefd6, 5.5); D.position.set(RX0 - 4.5, 3.9, 2.5); D.target.position.set(1.6, 0, 1.9);
+    D.castShadow = true; D.shadow.mapSize.set(4096, 4096); Object.assign(D.shadow.camera, { left: -5, right: 5, top: 5, bottom: -5, near: .5, far: 18 });
+    D.shadow.bias = -.0003; D.shadow.normalBias = .02; D.shadow.radius = 3; D.shadow.blurSamples = 12; rig.add(D, D.target);
+    undo.push(() => { if (D.shadow.map) D.shadow.map.dispose(); });
+    const sky = new THREE.RectAreaLight(0xe4ecff, 7, 1.2, 1.3); sky.position.set(RX0 + .03, 1.55, 1.9); sky.lookAt(RX0 + 5, 1.1, 1.9); rig.add(sky);
+    set(M.blinds, 'emissiveIntensity', 1.1);
+  }
+  const dir = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+  const F = new THREE.RectAreaLight(0xfff6ec, night ? .35 : .8, 3, 1.8); F.position.copy(camera.position).addScaledVector(dir, .3); F.position.y += .3; F.lookAt(controls.target); rig.add(F);
+  set(M.floor, 'roughness', Math.max(.28, M.floor.roughness - .12)); set(M.quartz, 'roughness', .18);
+  // reflections and bounce light from the kitchen itself
+  const cubeRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); const cc = new THREE.CubeCamera(.05, 30, cubeRT);
+  cc.position.set(2.2, 1.35, 3.0); scene.add(cc); cc.update(renderer, scene); scene.remove(cc);
+  const envRT = pmrem.fromCubemap(cubeRT.texture); cubeRT.dispose();
+  set(scene, 'environment', envRT.texture); set(scene, 'environmentIntensity', { bright: .95, day: .75, evening: .45, lamps: .4 }[st.light] || .75);
+  undo.push(() => envRT.dispose());
+  set(renderer, 'toneMappingExposure', { bright: 1.12, day: .97, evening: 1.08, lamps: 1.15 }[st.light] || .97);
+  return () => { for (const f of undo.reverse()) f(); };
+}
+async function doRender(){
+  if (rendering) return; rendering = true;
+  rov.hidden = false; rov.innerHTML = '<div class="rbox"><b>Рендер…</b><p id="rprog">Готовлю картинку, несколько секунд</p></div>';
+  await new Promise(r => setTimeout(r, 50));
+  let url = null, unrig = null, composer = null;
+  const pr = renderer.getPixelRatio(), sz = renderer.getSize(new THREE.Vector2());
+  try {
+    const [{ EffectComposer }, { RenderPass }, { GTAOPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+      import('three/addons/postprocessing/EffectComposer.js'), import('three/addons/postprocessing/RenderPass.js'),
+      import('three/addons/postprocessing/GTAOPass.js'), import('three/addons/postprocessing/UnrealBloomPass.js'), import('three/addons/postprocessing/OutputPass.js')]);
+    renderer.setAnimationLoop(null); controls.enabled = false; unrig = renderRig();
+    const W = Math.min(2400, renderer.capabilities.maxTextureSize), Hh = Math.round(W / camera.aspect);
+    renderer.setPixelRatio(1); renderer.setSize(W, Hh, false);
+    const rt = new THREE.WebGLRenderTarget(W, Hh, { type: THREE.HalfFloatType, samples: 8 });
+    composer = new EffectComposer(renderer, rt); composer.setPixelRatio(1); composer.setSize(W, Hh);
+    composer.addPass(new RenderPass(scene, camera));
+    const ao = new GTAOPass(scene, camera, W, Hh); ao.updateGtaoMaterial({ radius: .35, distanceExponent: 1.5, thickness: 1, scale: 1, samples: 16 }); ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 }); ao.blendIntensity = 1;
+    composer.addPass(ao); composer.addPass(new OutputPass());
+    composer.render(); composer.render();
+    url = renderer.domElement.toDataURL('image/jpeg', .92);
+  } catch (err){
+    console.warn('studio render failed, using plain render', err);
+    renderer.render(scene, camera); url = renderer.domElement.toDataURL('image/jpeg', .92);
+  }
+  if (composer){ composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); }
+  if (unrig) unrig(); renderer.setPixelRatio(pr); renderer.setSize(sz.x, sz.y, false); resize(); controls.enabled = true; renderer.setAnimationLoop(loop);
+  const rec = { id: Date.now(), url, thumb: await thumbOf(url), cfg: { ...st, tab: undefined } };
+  await gallery.put(rec); rendering = false; window.__renderDone = true;
+  if (st.tab === 'renders') render();
+  showRender(rec.id, 'Сохранено во вкладке «Рендеры».');
+}
+document.getElementById('renderBtn').addEventListener('click', doRender);
+
+// --- saved renders: Claude cloud storage (assets + db, same on every device) -> IndexedDB -> memory ---
+const capUse = n => { try { return window.claude && window.claude.use ? window.claude.use(n).catch(() => null) : Promise.resolve(null); } catch (e){ return Promise.resolve(null); } };
+let cloudP = null;
+function cloud(){ return cloudP || (cloudP = (async () => { try { const [db, user, assets] = await Promise.all([capUse('db'), capUse('user'), capUse('assets')]);
+  if (!db || !user || !assets) return null; const uid = await user.id(); if (!uid) return null; return { col: db.collection('data/users/' + uid), assets }; } catch (e){ return null; } })()); }
+const gallery = { db: null, mem: [], list: [],
+  async open(){ if (this.db !== null) return this.db; this.db = await new Promise(res => { try { const r = indexedDB.open('kitchen-renders', 1); r.onupgradeneeded = () => r.result.createObjectStore('r', { keyPath: 'id' }); r.onsuccess = () => res(r.result); r.onerror = () => res(false); } catch (e){ res(false); } }); return this.db; },
+  tx(mode){ return this.db.transaction('r', mode).objectStore('r'); },
+  req(q){ return new Promise((res, rej) => { q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); },
+  async local(){ try { return (await this.open()) ? await this.req(this.tx('readonly').getAll()) : this.mem.slice(); } catch (e){ return this.mem.slice(); } },
+  async load(){ let L = await this.local(); const c = await cloud();
+    if (c){ try { const snap = await c.col.get(); L = L.concat(snap.docs.filter(d => d.exists).map(d => d.data())); } catch (e){} }
+    const seen = new Set(); this.list = L.filter(x => x && x.id && !seen.has(x.id) && seen.add(x.id)).sort((a, b) => b.id - a.id); return this.list; },
+  async put(o){ const c = await cloud(); let done = false;
+    if (c){ try { const blob = await (await fetch(o.url)).blob(); const a = await c.assets.upload(blob);
+      await c.col.doc(String(o.id)).set({ id: o.id, asset: a.id, url: a.url, thumb: o.thumb, cfg: JSON.parse(JSON.stringify(o.cfg)), cloud: true }); done = true; } catch (e){ console.warn('cloud save failed', e); } }
+    if (!done){ try { if (await this.open()) await this.req(this.tx('readwrite').put(o)); else this.mem.push(o); } catch (e){ this.mem.push(o); } }
+    await this.load(); for (const x of this.list.slice(40)) await this.del(x.id, true); if (this.list.length > 40) await this.load(); },
+  async del(id, quiet){ const r = this.list.find(x => x.id === id);
+    if (r && r.cloud){ const c = await cloud(); if (c){ try { await c.col.doc(String(id)).delete(); if (r.asset) await c.assets.delete(r.asset); } catch (e){} } }
+    else { try { if (await this.open()) await this.req(this.tx('readwrite').delete(id)); } catch (e){} this.mem = this.mem.filter(x => x.id !== id); }
+    if (!quiet) await this.load(); } };
+function thumbOf(url){ return new Promise(res => { const im = new Image(); im.onload = () => { const c = document.createElement('canvas'), w = 420; c.width = w; c.height = Math.round(w * im.height / im.width); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', .8)); }; im.onerror = () => res(url); im.src = url; }); }
+const nm = (arr, id) => (arr.find(x => x.id === id) || {}).name || '';
+function descOf(c){ const p = id => { const q = PAINTS.find(x => x.id === id); return !q ? '' : q.wood ? 'эспрессо' : q.name; };
+  return `Верх: ${p(c.up)} · Низ: ${p(c.wall)} · Остров: ${p(c.isl)} · Фартук: ${nm(TILES, c.tile).replace('Оригинал: ', '')} · Пол: ${nm(FLOORS, c.floor).replace('Оригинал: ', '')}${c.desk ? ' · Ниша: ' + p(c.desk) : ''}`; }
+const when = id => new Date(id).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+function showRender(id, msg){
+  const L = gallery.list, i = L.findIndex(x => x.id === id), r = L[i]; if (!r){ rov.hidden = true; return; }
+  rov.hidden = false;
+  rov.innerHTML = `<div class="rbox wide"><img src="${r.url}" alt="Рендер кухни">
+    <p>${msg ? `<b style="color:var(--ink)">${esc(msg)}</b> ` : ''}${esc(when(r.id))} · ${esc(descOf(r.cfg))}</p>
+    <div class="rrow">${i < L.length - 1 ? '<button data-nav="1">← Предыдущий</button>' : ''}${i > 0 ? '<button data-nav="-1">Следующий →</button>' : ''}
+      <button data-act="apply">Вернуть этот дизайн</button><button data-act="dl">Скачать</button>
+      <button data-act="copy">Скопировать код дизайна</button><button data-act="del">Удалить</button><button data-act="close">Закрыть</button></div>
+    <p style="font-size:12.5px">Сохранить картинку: «Скачать» или удерживайте её (на компьютере правая кнопка мыши). Для фотореалистичного рендера пришлите мне код дизайна.</p></div>`;
+  rov.onclick = async e => { const b = e.target.closest('button'); if (!b){ if (e.target === rov){ rov.hidden = true; rov.innerHTML = ''; } return; }
+    if (b.dataset.nav) return showRender(L[i + +b.dataset.nav].id);
+    const a = b.dataset.act;
+    if (a === 'close'){ rov.hidden = true; rov.innerHTML = ''; }
+    else if (a === 'apply'){ st = { ...structuredClone(DEF), ...structuredClone(r.cfg), tab: st.tab, sec: st.sec, secTab: st.secTab, est: st.est }; save(); applyAll(); render(); rov.hidden = true; rov.innerHTML = ''; }
+    else if (a === 'del'){ await gallery.del(r.id); if (st.tab === 'renders') render(); const n = gallery.list[Math.min(i, gallery.list.length - 1)]; n ? showRender(n.id) : (rov.hidden = true, rov.innerHTML = ''); }
+    else if (a === 'dl'){ const dl = await capUse('downloads'); if (!dl){ if (window.claude){ b.textContent = 'Удерживайте картинку, чтобы сохранить'; return; } const x = document.createElement('a'); x.href = r.url; x.download = `kitchen-render-${r.id}.jpg`; document.body.appendChild(x); x.click(); x.remove(); b.textContent = 'Сохранено'; return; }
+      try { const blob = await (await fetch(r.url)).blob(); await dl.save({ filename: `kitchen-render-${r.id}.jpg`, data: blob }); b.textContent = 'Сохранено'; }
+      catch (x){ b.textContent = x && x.code === 'declined' ? 'Скачать' : 'Не удалось, удерживайте картинку'; } }
+    else if (a === 'copy'){ const code = 'KITCHEN:' + JSON.stringify(r.cfg); try { await navigator.clipboard.writeText(code); b.textContent = 'Скопировано'; } catch (x){ b.textContent = 'Не удалось, вот код ниже'; rov.querySelector('.rbox').insertAdjacentHTML('beforeend', `<textarea readonly style="width:100%;height:70px;margin-top:8px">${esc(code)}</textarea>`); } } };
+}
+function galleryHTML(){
+  const L = gallery.list;
+  if (!L.length) return `<h2>Сохранённые рендеры</h2><p class="note">Пока пусто. Нажмите «Рендер» вверху: каждая картинка сохранится здесь вместе с дизайном, и к любому варианту можно будет вернуться.</p>`;
+  return `<h2>Сохранённые рендеры (${L.length})</h2><div class="rgal">${L.map((r, k) => `<button data-rview="${r.id}"><img src="${r.thumb}" alt=""><span><b>${k === 0 ? 'Последний' : k === 1 ? 'Предыдущий' : '№' + (L.length - k)}</b> · ${esc(when(r.id))}</span><span class="rd">${esc(descOf(r.cfg))}</span></button>`).join('')}</div>
+    <p class="note">${L.some(x => x.cloud) ? 'Рендеры хранятся в вашем аккаунте Claude и видны на любом устройстве' : 'Рендеры хранятся в этом браузере'} (до 40 последних). Нажмите на картинку, чтобы открыть её, вернуть этот дизайн, скачать или удалить.</p>`;
+}
+
+
+// --- state + UI ---
+const DEF = { light: 'bright', desk: 'orig', dtop: 'quartz', nook: true, wall: 'orig', up: 'orig', isl: 'orig', zone: 'all', hw: 'orig', style: 'bar', fin: 'nickel', hood: 'orig', tile: 'orig', floor: 'orig', panel: 'flat', pfin: 'orig', mw: 'mid', mcol: 'same', leds: {}, temp: 3000, night: false, tab: 'paint', sec: 'kit', secTab: { kit: 'paint', isl: 'ipaint', desk: 'nook' }, hwI: { own: false, hw: 'orig', style: 'bar', fin: 'nickel' }, hwD: { own: false, hw: 'orig', style: 'bar', fin: 'nickel' }, est: null };
+let st = structuredClone(DEF);
+try { const sv = JSON.parse(localStorage.getItem('kitchen-cfg') || '{}'); if (sv.wall && !sv.up) sv.up = sv.wall; Object.assign(st, sv); } catch (e) {}
+const save = () => { try { localStorage.setItem('kitchen-cfg', JSON.stringify(st)); } catch (e) {} };
+function applyAll(){ applyPaint('run', st.wall); applyPaint('up', st.up); applyPaint('isl', st.isl); applyHWst(); buildHood(st.hood); applyTile(st.tile); applyFloor(st.floor); applyPanel(); applyLED(); applyPaint('desk', st.desk); applyDeskTop(st.dtop); nook.visible = st.nook !== false; }
+
+// ---------- cost estimate ----------
+const EZ = [['up', 'Кухня, верхние шкафы'], ['run', 'Кухня, нижние шкафы'], ['isl', 'Остров'], ['desk', 'Ниша']];
+const estDef = () => ({ v: 2, price: 200, inPrice: 150, fr: { on: true, p: 300 }, z: Object.fromEntries(EZ.map(([k]) => [k, { on: true, inside: false, n: null }])), dust: { on: true, p: 0 }, pc: { on: true, p: 0 } });
+function countFronts(){ const c = { up: 0, run: 0, isl: 0, desk: 0 };
+  root.traverse(o => { if (!o.userData.zone || !(o.userData.zone in c)) return; for (let p = o; p; p = p.parent) if (!p.visible) return; c[o.userData.zone]++; }); return c; }
+const money = v => '$' + (Math.round(v * 100) / 100).toLocaleString('en-US');
+function estCalc(){ const e = st.est, auto = countFronts(), rows = [];
+  for (const [k, t] of EZ){ const z = e.z[k], n = z.n ?? auto[k]; if (!z.on || !n) { rows.push({ k, t, n, auto: auto[k], sum: 0 }); continue; }
+    rows.push({ k, t, n, auto: auto[k], sum: n * e.price + (z.inside ? n * e.inPrice : 0) }); }
+  const extra = (e.fr.on ? +e.fr.p || 0 : 0) + (e.dust.on ? +e.dust.p || 0 : 0) + (e.pc.on ? +e.pc.p || 0 : 0);
+  return { rows, total: rows.reduce((a, r) => a + r.sum, 0) + extra }; }
+function estText(){ const e = st.est, { rows, total } = estCalc(), L = ['Смета на покраску шкафов'];
+  for (const r of rows){ const z = e.z[r.k]; if (!z.on || !r.n) continue; L.push(`${r.t}: ${r.n} фасадов × ${money(e.price)} = ${money(r.n * e.price)}`); if (z.inside) L.push(`  покраска внутри: ${r.n} × ${money(e.inPrice)} = ${money(r.n * e.inPrice)}`); }
+  if (e.fr.on) L.push(`Шкаф со встроенным холодильником: ${money(+e.fr.p || 0)}`);
+  if (e.dust.on) L.push(`Dust containment: ${money(+e.dust.p || 0)}`); if (e.pc.on) L.push(`Paint containment: ${money(+e.pc.p || 0)}`);
+  L.push(`Итого: ${money(total)}`); return L.join('\n'); }
+function estHTML(){ const e = st.est, { rows, total } = estCalc();
+  return `<div class="card" style="margin:0 0 4px"><b>Смета на покраску</b><p>Фасады (дверцы и ящики) посчитаны по модели автоматически. Количество и цены можно поменять, всё сохраняется.</p></div>
+  <h2>Цены</h2><div class="est"><div class="r"><b>Покраска фасада, за штуку</b><input type="number" min="0" step="5" data-ep="price" value="${e.price}"></div>
+  <div class="r"><b>Покраска шкафа внутри, за фасад</b><input type="number" min="0" step="5" data-ep="inPrice" value="${e.inPrice}"></div></div>
+  <h2>Шкафы</h2><div class="est">${rows.map(r => { const z = e.z[r.k]; return `<div class="r"><div><b>${r.t}</b><br><small>по модели: ${r.auto} фасадов${r.k === 'desk' && !nook.visible ? ' (ниша скрыта)' : ''}</small></div><div class="sum" data-es="${r.k}">${money(r.sum)}</div>
+    <div class="opts"><label><input type="checkbox" data-ez="${r.k}" data-f="on" ${z.on ? 'checked' : ''}> красим</label><label>фасадов <input type="number" min="0" data-ez="${r.k}" data-f="n" value="${z.n ?? r.auto}"></label><label><input type="checkbox" data-ez="${r.k}" data-f="inside" ${z.inside ? 'checked' : ''}> + внутри</label></div></div>`; }).join('')}</div>
+  <h2>Доплаты</h2><div class="est"><div class="r"><div><label><input type="checkbox" data-ec="fr" data-f="on" ${e.fr.on ? 'checked' : ''}> <b>Шкаф со встроенным холодильником</b></label><small>Панели и шкаф над холодильником</small></div><input type="number" min="0" step="10" data-ec="fr" data-f="p" value="${e.fr.p}"></div></div>
+  <h2>Защита помещения</h2><div class="est">${[['dust', 'Dust containment', 'Плёнка и защита от пыли'], ['pc', 'Paint containment', 'Укрытие от краски']].map(([k, t, s]) => `<div class="r"><div><label><input type="checkbox" data-ec="${k}" data-f="on" ${e[k].on ? 'checked' : ''}> <b>${t}</b></label><small>${s}</small></div><input type="number" min="0" step="10" data-ec="${k}" data-f="p" value="${e[k].p}" placeholder="$"></div>`).join('')}</div>
+  <div class="est" style="margin-top:14px"><div class="tot"><span>Итого</span><b id="estTot">${money(total)}</b></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button data-ecopy="1">Скопировать смету</button><button data-ereset="1">Пересчитать по модели</button></div></div>
+  <p class="note">«Внутри» считается так же по числу фасадов: 12 фасадов × $150. Цены за dust и paint containment впишите свои.</p>`; }
+function estUpdate(){ const { rows, total } = estCalc(); for (const r of rows){ const el = body.querySelector(`[data-es="${r.k}"]`); if (el) el.textContent = money(r.sum); } const t = document.getElementById('estTot'); if (t) t.textContent = money(total); }
+
+// ---------- sections ----------
+const SECS = { kit: [['paint', 'Шкафы'], ['hw', 'Ручки'], ['hood', 'Вытяжка'], ['tile', 'Фартук'], ['floor', 'Пол'], ['led', 'Свет']],
+  isl: [['ipaint', 'Цвет'], ['hw', 'Ручки'], ['panel', 'Панель']], desk: [['nook', 'Цвет и стол'], ['hw', 'Ручки']] };
+const SEC_VIEW = { kit: 'overview', isl: 'island', desk: 'nook' };
+const hwOf = sec => sec === 'isl' ? (st.hwI.own ? st.hwI : st) : sec === 'desk' ? (st.hwD.own ? st.hwD : st) : st;
+function applyHWst(){ applyHW({ kit: { style: st.style, fin: st.fin }, isl: hwOf('isl'), desk: hwOf('desk') }); }
+const hwTarget = () => st.sec === 'isl' ? st.hwI : st.sec === 'desk' ? st.hwD : st;
+function swatches(attr, cur){ return `<div class="sw">${PAINTS.map(x => `<button data-${attr}="${x.id}" aria-pressed="${x.id === cur}"><i style="${x.wood ? 'background:linear-gradient(90deg,#2a160f,#3d2318 40%,#2a160f)' : 'background:' + x.hex}"></i>${esc(x.name)}<small>${esc(x.code)}</small></button>`).join('')}</div>`; }
+const pname = id => { const q = PAINTS.find(x => x.id === id); return q.wood ? 'эспрессо' : q.name + ' ' + q.code; };
+function renderTabs(){
+  document.querySelectorAll('#secs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.sec === st.sec && !['est', 'renders'].includes(st.tab)));
+  document.getElementById('estBtn').setAttribute('aria-pressed', st.tab === 'est'); document.getElementById('galBtn').setAttribute('aria-pressed', st.tab === 'renders');
+  const T = document.getElementById('tabs'); T.style.display = ['est', 'renders'].includes(st.tab) ? 'none' : ''; T.innerHTML = SECS[st.sec].map(([k, t]) => `<button data-t="${k}" aria-pressed="${st.tab === k}">${t}</button>`).join('');
+}
+function hwHTML(){ const sec = st.sec, own = sec === 'kit' || hwTarget().own, t = own ? hwTarget() : st, p = HW.find(x => x.id === t.hw) || HW.find(x => x.id === 'custom');
+  let h = sec === 'kit' ? '<p class="note" style="margin:0 0 10px">Ручки на верхних и нижних шкафах кухни.</p>'
+    : `<div class="seg" style="margin-bottom:10px"><button data-hwown="0" aria-pressed="${!own}">Как на кухне</button><button data-hwown="1" aria-pressed="${own}">Свои ручки</button></div>`;
+  if (!own) return h + `<p class="note">Сейчас на ${sec === 'isl' ? 'острове' : 'нише'} такие же ручки, как на кухне: ${esc(p.name)}. Нажмите «Свои ручки», чтобы выбрать отдельно.</p>`;
+  return h + `<div class="card" style="margin:0 0 4px"><b>${esc(p.name)}</b><p>${esc(p.note)}</p>${p.url ? `<p>${link(p.url, 'Открыть в ' + p.shop)}${p.url2 ? ' · ' + link(p.url2, 'кнобы Massey') : ''}</p>` : ''}</div>
+      <h2>Готовые варианты и где купить</h2><div class="list">${HW.filter(x => x.id !== 'custom').map(x => item('hw', x.id, x.id === t.hw, hwThumb(x.style, x.fin), x.name, `${STYLES[x.style]} · ${FIN[x.fin].name}${x.price ? ' · ' + x.price : ''}`)).join('')}</div>
+      <h2>Своя комбинация: форма (в покрытии «${esc(FIN[t.fin].name)}»)</h2><div class="sw">${Object.entries(STYLES).map(([k, n]) => `<button data-style="${k}" aria-pressed="${t.style === k}"><i style="background-image:url(${hwThumb(k, t.fin)});height:58px"></i>${n}</button>`).join('')}</div>
+      <h2>Покрытие</h2><div class="chips">${Object.entries(FIN).map(([k, f]) => `<button data-fin="${k}" aria-pressed="${t.fin === k}"><i style="background:${f.hex}"></i>${f.name}</button>`).join('')}</div>`; }
+const body = document.getElementById('body');
+const link = (u, t) => u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>` : '';
+const thumbs = {};
+const item = (attr, id, on, img, title, sub) => `<button data-${attr}="${id}" aria-pressed="${on}"><i style="background-image:url(${img})"></i><div><b>${esc(title)}</b><span>${esc(sub)}</span></div></button>`;
+function render(){
+  renderTabs();
+  let h = '';
+  if (st.tab === 'paint'){
+    const cur = st.zone === 'up' ? st.up : st.wall, p = PAINTS.find(x => x.id === cur);
+    h += `<h2>Что красим на кухне</h2><div class="seg">${[['all', 'Верх и низ'], ['up', 'Верхние'], ['wall', 'Нижние']].map(([k, t]) => `<button data-zone="${k}" aria-pressed="${st.zone === k}">${t}</button>`).join('')}</div>
+      <p class="note"><b style="color:var(--ink);font-weight:600">Сейчас:</b> ${[['Верх', st.up], ['Низ', st.wall]].map(([t, id]) => { const q = PAINTS.find(x => x.id === id); return t + ': ' + esc(q.wood ? 'эспрессо' : q.name + ' ' + q.code); }).join(' · ')}</p>`;
+    let grp = '';
+    for (const x of PAINTS){ if (x.g !== grp){ h += (grp ? '</div>' : '') + `<h2>${esc(x.g === 'Оригинал' ? 'Sherwin-Williams, краска Emerald' : x.g)}</h2><div class="sw">`; grp = x.g; }
+      h += `<button data-paint="${x.id}" aria-pressed="${x.id === cur}"><i style="${x.wood ? 'background:linear-gradient(90deg,#2a160f,#3d2318 40%,#2a160f)' : 'background:' + x.hex}"></i>${esc(x.name)}<small>${esc(x.code)}</small></button>`; }
+    h += `</div><div class="card"><b>${esc(p.name)} · ${esc(p.code)}</b>${p.wood ? '<p>Текущие фасады: тёмная морилка по дереву.</p>' : `<p>Для шкафов в линейке Emerald у Sherwin-Williams есть Emerald Urethane Trim Enamel (satin или semi-gloss): твёрдая моющаяся эмаль. Образец цвета можно заказать на сайте. ${link(SW_URL, 'Цвета для шкафов на сайте SW')}</p>`}</div>
+      <p class="note">Цвета на экране приблизительные: Sherwin-Williams не публикует точные значения для экрана. Смотрите живой образец при свете вашей кухни.</p>`;
+  } else if (st.tab === 'hw'){
+    h += hwHTML();
+  } else if (st.tab === 'hood'){
+    const p = HOODS.find(x => x.id === st.hood); let grp = '';
+    h += `<div class="card" style="margin:0 0 4px"><b>${esc(p.name)}</b><p>${esc(p.note)}</p>${p.url ? `<p>${link(p.url, 'Открыть в ' + p.shop)}</p>` : ''}${p.kind.startsWith('Кастомная') ? '<p>Кастомный короб делает столяр (МДФ, дерево) или гипсокартонщик (штукатурка). Внутри ставят встраиваемый мотор (range hood insert) под ширину короба. Короба из МДФ красятся в цвет верхних шкафов.</p>' : ''}</div><div class="list">`;
+    for (const x of HOODS){ const k = x.kind.split(' ·')[0]; if (k !== grp){ h += `<h2>${esc(k === 'Как сейчас' ? 'Оригинал' : k === 'Покупная' ? 'Можно купить' : 'Кастомные (на заказ)')}</h2>`; grp = k; }
+      h += item('hood', x.id, x.id === st.hood, hoodThumb(x.id), x.name, x.kind + (x.price ? ' · ' + x.price : '')); }
+    buildHood(st.hood); h += '</div>';
+  } else if (st.tab === 'tile'){
+    const p = TILES.find(x => x.id === st.tile);
+    h += `<div class="card" style="margin:0 0 4px"><b>${esc(p.name)}</b><p>${esc(p.spec)}${p.note ? '. ' + esc(p.note) : ''}</p>${p.id !== 'orig' ? `<p>${link(p.url || FD_URL, p.url ? 'Открыть на Floor & Decor' : 'Раздел «Backsplash» на Floor & Decor')}</p>` : ''}</div>
+      <h2>Плитка Floor &amp; Decor</h2><div class="list">${TILES.map(x => { thumbs[x.id] = thumbs[x.id] || tileThumb(x); return item('tile', x.id, x.id === st.tile, thumbs[x.id], x.name, x.spec); }).join('')}</div>
+      <p class="note">Цвет и рисунок плитки переданы приблизительно (часть цветов угадана по названию). Цены с сайта Floor &amp; Decor, ноябрь 2026.</p>`;
+  } else if (st.tab === 'floor'){
+    const p = FLOORS.find(x => x.id === st.floor);
+    h += `<div class="card" style="margin:0 0 4px"><b>${esc(p.name)}</b><p>${esc(p.spec)}${p.note ? '. ' + esc(p.note) : ''}</p>${p.url ? `<p>${link(p.url, 'Открыть на Floor & Decor')}</p>` : ''}</div>
+      <h2>Полы Floor &amp; Decor</h2><div class="list">${FLOORS.map(x => item('floor', x.id, x.id === st.floor, floorThumb(x), x.name, x.spec)).join('')}</div>
+      <p class="note">LVP: водостойкий виниловый ламинат. Керамогранит под дерево самый прочный. Инженерная доска: настоящий дуб. Цены за кв. фут, ноябрь 2026.</p>`;
+  } else if (st.tab === 'ipaint'){
+    h += `<div class="card" style="margin:0 0 4px"><b>Цвет шкафов острова</b><p>Сейчас: ${esc(pname(st.isl))}. Панель со стороны стульев настраивается во вкладке «Панель».</p></div>` + swatches('ipaint', st.isl);
+  } else if (st.tab === 'panel'){
+    const p = PANELS.find(x => x.id === st.panel) || MOLD.find(x => x.id === st.panel);
+    h += `<div class="card" style="margin:0 0 4px"><b>${esc(p.name)}</b><p>${esc(p.note)}</p><p>Делается из МДФ и готового молдинга (например, panel moulding 1–1½") в любом строительном магазине, потом красится вместе со шкафами.</p></div>
+      <h2>Цвет панели</h2><div class="chips">${Object.entries(PFIN).map(([k, t]) => `<button data-pfin="${k}" aria-pressed="${st.pfin === k}">${t}</button>`).join('')}</div>
+      <h2>Или свой цвет Sherwin-Williams</h2><div class="dots">${PAINTS.filter(x => !x.wood).map(x => `<button data-pfin="${x.id}" aria-pressed="${st.pfin === x.id}" title="${esc(x.name + ' ' + x.code)}" style="background:${x.hex}"></button>`).join('')}</div>
+      ${PAINTS.some(x => x.id === st.pfin && !x.wood) ? `<p class="note">Выбрано: ${esc(PAINTS.find(x => x.id === st.pfin).name)} ${esc(PAINTS.find(x => x.id === st.pfin).code)}</p>` : ''}
+      <h2>Молдинг: ширина</h2><div class="chips">${Object.entries(MW).map(([k, t]) => `<button data-mw="${k}" aria-pressed="${st.mw === k}">${t.name}</button>`).join('')}</div>
+      <h2>Молдинг: цвет</h2><div class="chips">${Object.entries(MCOL).map(([k, t]) => `<button data-mcol="${k}" aria-pressed="${st.mcol === k}">${t}</button>`).join('')}</div>
+      <h2>Молдинги-рамки</h2><div class="list">${MOLD.map(x => item('panel', x.id, x.id === st.panel, panelThumb(x.id), x.name, x.note)).join('')}</div>
+      <h2>Другие стили</h2><div class="list">${PANELS.map(x => item('panel', x.id, x.id === st.panel, panelThumb(x.id), x.name, x.note)).join('')}</div>`;
+  } else if (st.tab === 'nook'){
+    const p = PAINTS.find(x => x.id === st.desk);
+    h += `<div class="card" style="margin:0 0 4px"><b>Встроенный стол с верхними шкафами</b><p>Ниша с четырьмя дверцами сверху, столешницей и двумя ящиками, как на вашем фото. Стоит у стены напротив кухни. Размеры примерные. Ручки для ниши выбираются во вкладке «Ручки» этого раздела.</p></div>
+      <div class="seg"><button data-nook="1" aria-pressed="${st.nook !== false}">Показать нишу</button><button data-nook="0" aria-pressed="${st.nook === false}">Скрыть</button></div>
+      <h2>Цвет шкафов ниши</h2>${swatches('desk', st.desk)}
+      <p class="note">Сейчас: ${esc(p.wood ? 'эспрессо (как на фото)' : p.name + ' ' + p.code)}</p>
+      <h2>Столешница</h2><div class="chips">${Object.entries(DTOPS).map(([k, t]) => `<button data-dtop="${k}" aria-pressed="${st.dtop === k}"><i style="background:${t.hex}"></i>${t.name}</button>`).join('')}</div>`;
+  } else if (st.tab === 'est'){
+    h += estHTML();
+  } else if (st.tab === 'renders'){
+    h += galleryHTML();
+  } else {
+    h += `<h2>Светодиодная подсветка</h2><div class="list">${LEDS.map(x => `<button data-led="${x.id}" aria-pressed="${!!st.leds[x.id]}" style="grid-template-columns:1fr"><div><b>${st.leds[x.id] ? '✓ ' : ''}${esc(x.name)}</b><span>${esc(x.note)}</span></div></button>`).join('')}</div>
+      <h2>Цвет света</h2><div class="chips">${Object.entries(TEMPS).map(([k, t]) => `<button data-temp="${k}" aria-pressed="${+st.temp === +k}"><i style="background:${t.hex}"></i>${t.name}</button>`).join('')}</div>
+      <h2>Свет в комнате</h2><div class="seg">${Object.entries(LIGHTS).map(([k, t]) => `<button data-light="${k}" aria-pressed="${st.light === k}">${t}</button>`).join('')}</div><p class="note">Этот же переключатель есть внизу над моделью. Подсветку лучше всего видно в режимах «Вечер» и «Лампы».</p>
+      <p class="note">Для кухни обычно берут ленту 2700–3000K в алюминиевом профиле с рассеивателем, под шкафами ближе к передней кромке.</p>`;
+  }
+  body.innerHTML = h;
+}
+document.getElementById('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; st.tab = b.dataset.t; st.secTab[st.sec] = st.tab; save(); render(); body.scrollTop = 0; });
+document.getElementById('secs').addEventListener('click', e => { const b = e.target.closest('button[data-sec]'); if (!b) return; st.sec = b.dataset.sec; st.tab = st.secTab[st.sec];
+  if (st.sec === 'desk' && !nook.visible){ st.nook = true; nook.visible = true; } go(SEC_VIEW[st.sec]); save(); render(); body.scrollTop = 0; });
+const backToSec = () => { st.tab = st.secTab[st.sec]; };
+document.getElementById('estBtn').addEventListener('click', () => { if (st.tab === 'est') backToSec(); else st.tab = 'est'; save(); render(); body.scrollTop = 0; });
+document.getElementById('galBtn').addEventListener('click', () => { if (st.tab === 'renders') backToSec(); else { st.tab = 'renders'; gallery.load().then(() => { if (st.tab === 'renders') render(); }); } save(); render(); body.scrollTop = 0; });
+body.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
+  if (d.rview){ showRender(+d.rview); return; }
+  if (d.ecopy){ const t = estText(); navigator.clipboard.writeText(t).then(() => { b.textContent = 'Скопировано'; }, () => { b.insertAdjacentHTML('afterend', `<textarea readonly style="width:100%;height:150px;margin-top:8px">${esc(t)}</textarea>`); }); return; }
+  if (d.ereset){ for (const [k] of EZ) st.est.z[k].n = null; save(); render(); return; }
+  if (d.desk){ st.desk = d.desk; applyPaint('desk', d.desk); if (!nook.visible){ st.nook = true; nook.visible = true; } go('nook'); save(); const y = body.scrollTop; render(); body.scrollTop = y; return; }
+  if (d.dtop){ st.dtop = d.dtop; applyDeskTop(d.dtop); go('nook'); save(); const y = body.scrollTop; render(); body.scrollTop = y; return; }
+  if (d.nook){ st.nook = d.nook === '1'; nook.visible = st.nook; if (st.nook) go('nook'); save(); render(); return; }
+  if (d.zone){ st.zone = d.zone; }
+  else if (d.paint){ const zn = st.zone, all = zn === 'all';
+    if (all || zn === 'up'){ st.up = d.paint; applyPaint('up', d.paint); }
+    if (all || zn === 'wall'){ st.wall = d.paint; applyPaint('run', d.paint); }
+    go(zn === 'all' ? 'overview' : 'wall'); }
+  else if (d.ipaint){ st.isl = d.ipaint; applyPaint('isl', d.ipaint); if (st.panel === 'doors') applyPanel(); go('island'); }
+  else if (d.hwown){ const t = hwTarget(); t.own = d.hwown === '1'; if (t.own && t.hw === 'orig' && st.hw !== 'orig') Object.assign(t, { hw: st.hw, style: st.style, fin: st.fin }); applyHWst(); go(SEC_VIEW[st.sec]); }
+  else if (d.hw){ const x = HW.find(v => v.id === d.hw), t = hwTarget(); Object.assign(t, { hw: x.id, style: x.style, fin: x.fin }); applyHWst(); go(SEC_VIEW[st.sec]); }
+  else if (d.style){ const t = hwTarget(); t.style = d.style; t.hw = HW.find(v => v.style === t.style && v.fin === t.fin)?.id || 'custom'; applyHWst(); }
+  else if (d.fin){ const t = hwTarget(); t.fin = d.fin; t.hw = HW.find(v => v.style === t.style && v.fin === t.fin)?.id || 'custom'; applyHWst(); }
+  else if (d.hood){ st.hood = d.hood; buildHood(st.hood); go('wall'); }
+  else if (d.tile){ st.tile = d.tile; applyTile(st.tile); go('wall'); }
+  else if (d.panel){ st.panel = d.panel; applyPanel(); go('seats'); }
+  else if (d.mw){ st.mw = d.mw; applyPanel(); go('seats'); }
+  else if (d.mcol){ st.mcol = d.mcol; applyPanel(); go('seats'); }
+  else if (d.pfin){ st.pfin = d.pfin; applyPanel(); go('seats'); }
+  else if (d.floor){ st.floor = d.floor; applyFloor(st.floor); go('overview'); }
+  else if (d.led){ st.leds[d.led] = !st.leds[d.led]; if (st.leds[d.led] && !st.night) st.light = 'evening'; applyLED(); go(d.led === 'top' ? 'seats' : d.led === 'toe' ? 'island' : 'wall'); }
+  else if (d.temp){ st.temp = +d.temp; applyLED(); }
+  else if (d.light){ st.light = d.light; applyLight(); }
+  else return;
+  save(); const y = body.scrollTop; render(); body.scrollTop = y;
+});
+body.addEventListener('input', e => { const i = e.target, d = i.dataset, E = st.est; if (!E) return;
+  const num = () => { const v = parseFloat(i.value); return isNaN(v) || v < 0 ? 0 : v; };
+  if (d.ep) E[d.ep] = num();
+  else if (d.ez){ const z = E.z[d.ez]; if (d.f === 'n') z.n = i.value === '' ? null : Math.round(num()); else z[d.f] = i.checked; }
+  else if (d.ec){ if (d.f === 'p') E[d.ec].p = num(); else E[d.ec].on = i.checked; }
+  else return; save(); estUpdate(); });
+HW.push({ id: 'custom', style: 'bar', fin: 'nickel', name: 'Своя комбинация', note: 'Форма и покрытие выбраны вручную. Похожие ручки есть у Amerock и Top Knobs почти во всех покрытиях.' });
+document.getElementById('reset').addEventListener('click', () => { st = { ...structuredClone(DEF), tab: st.tab, sec: st.sec, secTab: st.secTab, est: st.est }; save(); applyAll(); render(); });
+for (const k of ['wall', 'up', 'isl']) if (!PAINTS.some(x => x.id === st[k])) st[k] = 'orig';
+if (!HOODS.some(x => x.id === st.hood)) st.hood = 'orig'; if (!TILES.some(x => x.id === st.tile)) st.tile = 'orig'; if (!FLOORS.some(x => x.id === st.floor)) st.floor = 'orig';
+if (!PAINTS.some(x => x.id === st.desk)) st.desk = 'orig'; if (!DTOPS[st.dtop]) st.dtop = 'quartz'; if (!LIGHTS[st.light]) st.light = st.night ? 'evening' : 'bright'; if (!TEMPS[st.temp]) st.temp = 3000; if (typeof st.leds !== 'object' || !st.leds) st.leds = {};
+if (!['all', 'up', 'wall'].includes(st.zone)) st.zone = 'all'; if (!STYLES[st.style]) st.style = 'bar'; if (!FIN[st.fin]) st.fin = 'nickel'; if (!HW.some(x => x.id === st.hw)) st.hw = 'custom';
+if (!PANELS.some(x => x.id === st.panel) && !MOLD.some(x => x.id === st.panel)) st.panel = 'flat'; if (!MW[st.mw]) st.mw = 'mid'; if (!MCOL[st.mcol]) st.mcol = 'same'; if (!PFIN[st.pfin] && !PAINTS.some(x => x.id === st.pfin && !x.wood)) st.pfin = 'orig';
+{ const d0 = estDef(), e = st.est && typeof st.est === 'object' ? st.est : {}; st.est = { ...d0, ...e, z: Object.fromEntries(EZ.map(([k]) => [k, { ...d0.z[k], ...(e.z?.[k] || {}) }])), fr: { ...d0.fr, ...(e.fr || {}) }, dust: { ...d0.dust, ...(e.dust || {}) }, pc: { ...d0.pc, ...(e.pc || {}) } }; if (!e.v){ if (st.est.price === 150) st.est.price = 200; st.est.v = 2; } }
+if (!SECS[st.sec]) st.sec = 'kit';
+st.secTab = { ...DEF.secTab, ...(st.secTab || {}) }; for (const k in SECS) if (!SECS[k].some(([t]) => t === st.secTab[k])) st.secTab[k] = DEF.secTab[k];
+for (const k of ['hwI', 'hwD']){ st[k] = { ...DEF[k], ...(st[k] && typeof st[k] === 'object' ? st[k] : {}) }; const t = st[k]; if (!STYLES[t.style]) t.style = 'bar'; if (!FIN[t.fin]) t.fin = 'nickel'; if (!HW.some(x => x.id === t.hw)) t.hw = 'custom'; }
+if (st.tab !== 'est' && st.tab !== 'renders'){ if (!SECS[st.sec].some(([t]) => t === st.tab)){ const f = Object.keys(SECS).find(k => SECS[k].some(([t]) => t === st.tab)); if (f) st.sec = f; else st.tab = st.secTab[st.sec]; } st.secTab[st.sec] = st.tab; }
+applyAll(); render(); gallery.load().then(() => { if (st.tab === 'renders') render(); });
+// ---------- views ----------
+const V = {
+  overview: [[4.9, 2.45, 5.3], [1.9, .8, 1.3]],
+  wall: [[3.9, 1.75, 2.0], [1.7, 1.25, .2]],
+  island: [[4.5, 1.8, .6], [1.8, .55, 2.0]],
+  seats: [[1.95, 1.55, 5.4], [1.95, 1.1, .8]],
+  top: [[2.2, 7.5, 2.65], [2.2, 0, 2.0]],
+  nook: [[3.12, 1.5, 2.75], [3.12, 1.3, 5.6]],
+};
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let anim = null;
+function go(name, instant){ const [p, t] = V[name];
+  document.querySelectorAll('#views button[data-v]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === name));
+  if (instant || reduce){ camera.position.set(...p); controls.target.set(...t); controls.update(); return; }
+  anim = { p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...p), t1: new THREE.Vector3(...t), s: performance.now() }; }
+document.getElementById('views').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) go(b.dataset.v); });
+const wb = document.getElementById('walls');
+wb.addEventListener('click', () => { walls.visible = !walls.visible; wb.setAttribute('aria-pressed', walls.visible); });
+new ResizeObserver(() => resize()).observe(canvas);
+
+function resize(){ const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 68 : 50; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize(); go('overview', true);
+function loop(t){
+  if (anim){ const k = Math.min(1, (t - anim.s) / 900), e = k < .5 ? 2 * k * k : 1 - ((-2 * k + 2) ** 2) / 2;
+    camera.position.lerpVectors(anim.p0, anim.p1, e); controls.target.lerpVectors(anim.t0, anim.t1, e); if (k >= 1) anim = null; }
+  controls.update(); renderer.render(scene, camera); }
+renderer.setAnimationLoop(loop);
+document.getElementById('load').remove();
+window.__k = { scene, root, camera, controls, renderer, go, walls, THREE };
+}
+</script>
+<script>
+// Visit log -> Supabase (same table and phone notification as the closet page). Owner devices are skipped: open once with ?owner=1.
+(function logVisit(){
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get("owner") === "1"){ localStorage.setItem("closetOwner", "1"); history.replaceState(null, "", location.pathname + location.hash); }
+    if (q.get("owner") === "0"){ localStorage.removeItem("closetOwner"); history.replaceState(null, "", location.pathname + location.hash); }
+    if (localStorage.getItem("closetOwner") === "1") return;
+  } catch (e) {}
+  let vid = "";
+  try { vid = localStorage.getItem("closetVisitor") || ""; if (!vid){ vid = Math.random().toString(36).slice(2, 12); localStorage.setItem("closetVisitor", vid); } } catch (e) {}
+  const row = { page: "kitchen", variant: null, visitor_id: vid || null, device: navigator.userAgent.slice(0, 300),
+    referrer: (document.referrer || "").slice(0, 300) || null, lang: (navigator.language || "").slice(0, 20),
+    tz: (Intl.DateTimeFormat().resolvedOptions().timeZone || "").slice(0, 60), screen: (screen.width + "x" + screen.height).slice(0, 20) };
+  fetch("https://lbamryztsbmmprhcfsdg.supabase.co/rest/v1/closet_page_views", { method: "POST", keepalive: true,
+    headers: { "apikey": "sb_publishable_BxrxaE95_p7IXEEfwZmYhA_G9mDDQ_H", "Content-Type": "application/json", "Prefer": "return=minimal" },
+    body: JSON.stringify(row) }).catch(() => {});
+})();
+</script>
+</body>
+</html>
